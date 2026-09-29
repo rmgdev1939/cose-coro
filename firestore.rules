@@ -1,0 +1,233 @@
+rules_version = '2';
+// Reglas de seguridad para Cose Coro (Firestore).
+// Se pegan en Firebase → Firestore Database → Reglas → Publicar.
+// El primer administrador se marca a mano en la consola: después de crear su
+// cuenta y confirmar el correo, en users/{su uid} poner status = "verificado"
+// y role = "admin". Nadie puede darse ese rol solo.
+// Para entrar a los datos hace falta: correo confirmado + cuenta aprobada.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function emailOk() { return signedIn() && request.auth.token.email_verified == true; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function hasMe() { return exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function verified() { return emailOk() && hasMe() && me().status == "verificado"; }
+    function admin() { return verified() && me().role == "admin"; }
+    function validProfile(d) {
+      return d.name is string && d.name.size() >= 1 && d.name.size() <= 60
+        && (!("cargo" in d) || (d.cargo is string && d.cargo.size() <= 40))
+        && (!("phone" in d) || (d.phone is string && d.phone.size() <= 20));
+    }
+    function tokenVerified() { return request.auth.token.email_verified == true; }
+    // Editar el mapa: cargos Autoservicio e Inventario, y los administradores.
+    // (Si cambia, cambiar también EDIT_CARGOS en la app.)
+    function mapEditor() { return verified() && (me().role == "admin" || me().get("cargo", "") in ["Autoservicio", "Inventario"]); }
+    // Chat: dos personas son compañeros si su conexión está aceptada.
+    // La conexión de a y b se guarda en conexiones/{uid menor}_{uid mayor}.
+    function pid(a, b) { return a < b ? a + "_" + b : b + "_" + a; }
+    // Supervisión: SOLO la cuenta de Rafael Angel Morin Gutierrez puede leer
+    // todos los chats (sin escribir en ellos). Hacer admin a otra persona no
+    // le da este permiso: para cambiarlo hay que cambiar esta regla.
+    function supervisor() { return verified() && request.auth.uid == "eabbcqq01NSHmbCiXMMToQIMzU72"; }
+    function isCompa(a, b) {
+      return get(/databases/$(database)/documents/conexiones/$(pid(a, b))).data.status == "aceptada";
+    }
+
+    // Cuentas de trabajadores
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
+      // Alta propia: siempre entra como pendiente y empleado, con su propio correo.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["name", "email", "cargo", "emailVerified", "status", "role", "createdAt"])
+        && request.resource.data.status == "pendiente"
+        && request.resource.data.role == "empleado"
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.emailVerified == tokenVerified()
+        && validProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      // Perfil propio: nombre, teléfono, y marcar el correo como confirmado
+      // (solo si el token de Firebase lo dice). El cargo solo lo cambia un
+      // administrador, porque da permisos (editar el mapa).
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(admin()
+             ? ["name", "cargo", "phone", "emailVerified", "updatedAt"]
+             : ["name", "phone", "emailVerified", "updatedAt"])
+        && validProfile(request.resource.data)
+        && (!("emailVerified" in request.resource.data) || request.resource.data.emailVerified == tokenVerified())
+        && request.resource.data.updatedAt == request.time;
+      // Administrador: aprueba o quita acceso, da o quita el rol de admin y
+      // cambia el cargo de otros (nunca a sí mismo). Solo aprueba a quien ya
+      // confirmó su correo.
+      allow update: if admin() && request.auth.uid != uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "role", "cargo"])
+        && (!("cargo" in request.resource.data) || (request.resource.data.cargo is string && request.resource.data.cargo.size() <= 40))
+        && request.resource.data.status in ["verificado", "bloqueado"]
+        && request.resource.data.role in ["empleado", "admin"]
+        && (request.resource.data.status != "verificado" || resource.data.emailVerified == true);
+      allow delete: if false;
+    }
+
+    // Lista de cargos: la ve cualquiera (hace falta para crear la cuenta) y
+    // solo el administrador la cambia.
+    match /config/cargos {
+      allow get: if true;
+      allow write: if admin()
+        && request.resource.data.keys().hasOnly(["list", "updatedBy", "updatedAt"])
+        && request.resource.data.list is list
+        && request.resource.data.list.size() >= 1 && request.resource.data.list.size() <= 40
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // Mapa de la tienda: una zona por documento
+    match /mapa/{zone} {
+      allow read: if verified();
+      allow write: if mapEditor()
+        && request.resource.data.keys().hasOnly(["items", "updatedAt", "updatedBy", "updatedByName"])
+        && request.resource.data.items is list
+        && request.resource.data.items.size() <= 300
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // Registro de cambios del mapa: se agrega, nunca se edita ni se borra
+    match /mapaLog/{id} {
+      allow read: if admin();
+      allow create: if mapEditor()
+        && request.resource.data.keys().hasOnly(["zone", "action", "item", "by", "byName", "at"])
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.at == request.time;
+      allow update, delete: if false;
+    }
+
+    // ---------------- Chat ----------------------------------------------------
+    // Perfil público (nombre, cargo, ícono) que ven los compañeros aprobados.
+    match /perfiles/{uid} {
+      allow read: if verified();
+      allow create, update: if verified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["name", "cargo", "icon", "updatedAt"])
+        && request.resource.data.name == me().name
+        && request.resource.data.cargo == me().get("cargo", "")
+        && request.resource.data.icon is string && request.resource.data.icon.size() <= 20
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if admin() || (signedIn() && request.auth.uid == uid);
+    }
+
+    // Solicitudes de compañero: una por pareja. La envía uno, la acepta el otro;
+    // cualquiera de los dos la puede cancelar, rechazar o quitar (borrar).
+    match /conexiones/{cid} {
+      allow read: if verified() && request.auth.uid in resource.data.members;
+      allow create: if verified()
+        && request.resource.data.keys().hasOnly(["members", "from", "to", "fromName", "toName", "status", "createdAt"])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+        && cid == pid(request.auth.uid, request.resource.data.to)
+        && request.resource.data.members == (request.auth.uid < request.resource.data.to
+             ? [request.auth.uid, request.resource.data.to] : [request.resource.data.to, request.auth.uid])
+        && request.resource.data.status == "pendiente"
+        && request.resource.data.fromName == me().name
+        && request.resource.data.toName is string && request.resource.data.toName.size() <= 60
+        && exists(/databases/$(database)/documents/perfiles/$(request.resource.data.to))
+        && request.resource.data.createdAt == request.time;
+      allow update: if verified() && request.auth.uid == resource.data.to
+        && resource.data.status == "pendiente"
+        && request.resource.data.status == "aceptada"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "acceptedAt"])
+        && request.resource.data.acceptedAt == request.time;
+      allow delete: if verified() && request.auth.uid in resource.data.members;
+    }
+
+    // Conversaciones: "directo" (dos compañeros, id = conexión) o "grupo".
+    match /chats/{chatId} {
+      function newMembers() { return request.resource.data.members; }
+      function okMember(i) { return newMembers().size() <= i || isCompa(request.auth.uid, newMembers()[i]); }
+
+      allow read: if verified() && (request.auth.uid in resource.data.members || supervisor());
+
+      allow create: if verified()
+        && request.resource.data.type == "directo"
+        && request.resource.data.keys().hasOnly(["type", "members", "createdBy", "createdAt"])
+        && newMembers().size() == 2
+        && request.auth.uid in newMembers()
+        && newMembers()[0] < newMembers()[1]
+        && chatId == newMembers()[0] + "_" + newMembers()[1]
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && isCompa(newMembers()[0], newMembers()[1]);
+
+      // Grupo nuevo: quien lo crea va primero y solo mete a sus compañeros
+      // (hasta 8 al crearlo; luego se agregan de uno en uno).
+      allow create: if verified()
+        && request.resource.data.type == "grupo"
+        && request.resource.data.keys().hasOnly(["type", "members", "name", "createdBy", "createdAt"])
+        && request.resource.data.createdBy == request.auth.uid
+        && newMembers()[0] == request.auth.uid
+        && newMembers().size() >= 2 && newMembers().size() <= 9
+        && newMembers().toSet().size() == newMembers().size()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 40
+        && request.resource.data.createdAt == request.time
+        && okMember(1) && okMember(2) && okMember(3) && okMember(4)
+        && okMember(5) && okMember(6) && okMember(7) && okMember(8);
+
+      // Último mensaje (para la lista de chats): lo escribe quien envía.
+      allow update: if verified() && request.auth.uid in resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["lastText", "lastAt", "lastFrom", "lastFromName"])
+        && request.resource.data.lastFrom == request.auth.uid
+        && request.resource.data.lastFromName == me().name
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 120
+        && request.resource.data.lastAt == request.time;
+
+      // Grupo: cualquier miembro agrega a un compañero suyo (uno a la vez, al final).
+      allow update: if verified() && resource.data.type == "grupo"
+        && request.auth.uid in resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members"])
+        && newMembers().size() == resource.data.members.size() + 1
+        && newMembers().size() <= 50
+        && !(newMembers()[newMembers().size() - 1] in resource.data.members)
+        && newMembers() == resource.data.members.concat([newMembers()[newMembers().size() - 1]])
+        && isCompa(request.auth.uid, newMembers()[newMembers().size() - 1]);
+
+      // Grupo: salirse (cada quien se quita a sí mismo).
+      allow update: if signedIn() && resource.data.type == "grupo"
+        && request.auth.uid in resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members"])
+        && newMembers().size() == resource.data.members.size() - 1
+        && newMembers().toSet() == resource.data.members.toSet().difference([request.auth.uid].toSet());
+
+      allow delete: if false;
+
+      // Mensajes: solo miembros; en un chat directo, solo si siguen siendo compañeros.
+      match /mensajes/{mid} {
+        function chatNow() { return get(/databases/$(database)/documents/chats/$(chatId)).data; }
+        function chatAfter() { return getAfter(/databases/$(database)/documents/chats/$(chatId)).data; }
+        allow read: if verified() && (request.auth.uid in chatNow().members || supervisor());
+        allow create: if verified()
+          && request.resource.data.keys().hasOnly(["from", "fromName", "text", "at"])
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.fromName == me().name
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && request.resource.data.at == request.time
+          && request.auth.uid in chatAfter().members
+          && (chatAfter().type == "grupo" || isCompa(chatAfter().members[0], chatAfter().members[1]));
+        allow update, delete: if false;
+      }
+    }
+
+    // Hasta dónde leyó cada quien cada chat (para marcar los no leídos).
+    match /lecturas/{uid} {
+      allow read: if verified() && request.auth.uid == uid;
+      allow create, update: if verified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["c"])
+        && request.resource.data.c is map;
+      allow delete: if false;
+    }
+
+    // Todo lo demás, cerrado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "cosecoro-rules-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "cd .. && npx -y firebase-tools@14 emulators:exec --only firestore,database --project demo-cosecoro \"node tests/rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0"
+  }
+}
