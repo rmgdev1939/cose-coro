@@ -1796,7 +1796,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 22 · 29 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 23 · 29 sep 2026</span>
 </footer>
 
 </main>
@@ -5928,11 +5928,6 @@
         },
               function(){ toast("No se pudo cambiar el usuario (sin permiso)."); });
     }
-    function setRole(targetUid, role){
-      F.updateDoc(F.doc(db, "users", targetUid), { role:role })
-        .then(function(){ toast(role === "admin" ? "Ahora es administrador ✓" : "Ya no es administrador."); },
-              function(){ toast("No se pudo cambiar el rol (sin permiso)."); });
-    }
     var STATUS_LABEL = { pendiente:"pendiente", verificado:"con acceso", bloqueado:"sin acceso" };
     function stopAdmin(){
       adminUnsubs.forEach(function(u){ try{ u(); }catch(e){} });
@@ -5971,10 +5966,8 @@
           .forEach(function(u){
             var btns = [];
             if (u.uid !== uid){
+              // hay un solo administrador: aquí no se nombran otros
               if (u.status === "verificado"){
-                btns.push(u.role === "admin"
-                  ? { text:"Quitar admin", fn:function(){ setRole(u.uid, "empleado"); } }
-                  : { text:"Hacer admin", fn:function(){ setRole(u.uid, "admin"); } });
                 btns.push({ text:"Quitar acceso", fn:function(){ setStatus(u.uid, "bloqueado"); } });
               } else if (u.emailVerified === true){
                 btns.push({ text:"Dar acceso", primary:true, fn:function(){ setStatus(u.uid, "verificado"); } });

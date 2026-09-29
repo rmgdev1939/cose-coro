@@ -1,4 +1,4 @@
-const CACHE = "coseimpa-cosecoro-v22";
+const CACHE = "coseimpa-cosecoro-v23";
 const ASSETS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (event) => {

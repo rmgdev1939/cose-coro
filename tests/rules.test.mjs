@@ -214,6 +214,12 @@ await t("la admin cambia su propio cargo", () => assertSucceeds(updateDoc(doc(A,
 await t("la admin no pone un cargo de más de 40 letras", () => assertFails(updateDoc(doc(A, "users", "C"), { cargo: "x".repeat(41) })));
 await t("B no le cambia el cargo a C", () => assertFails(updateDoc(doc(B, "users", "C"), { cargo: "Caja" })));
 
+console.log("un solo administrador");
+await t("la admin no nombra administrador a C", () => assertFails(updateDoc(doc(A, "users", "C"), { role: "admin" })));
+await t("la admin no le quita el rol a otro admin", () => assertFails(updateDoc(doc(A, "users", RAFA), { role: "empleado" })));
+await t("nadie se nombra administrador a sí mismo", () => assertFails(updateDoc(doc(C, "users", "C"), { role: "admin", updatedAt: serverTimestamp() })));
+await t("la admin aún aprueba o quita acceso", () => assertSucceeds(updateDoc(doc(A, "users", "C"), { status: "bloqueado" })));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));

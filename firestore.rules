@@ -56,14 +56,14 @@ service cloud.firestore {
         && validProfile(request.resource.data)
         && (!("emailVerified" in request.resource.data) || request.resource.data.emailVerified == tokenVerified())
         && request.resource.data.updatedAt == request.time;
-      // Administrador: aprueba o quita acceso, da o quita el rol de admin y
-      // cambia el cargo de otros (nunca a sí mismo). Solo aprueba a quien ya
-      // confirmó su correo.
+      // Administrador: aprueba o quita acceso y cambia el cargo de otros
+      // (nunca a sí mismo). Solo aprueba a quien ya confirmó su correo.
+      // Hay un solo administrador (Rafael): desde la app nadie puede dar ni
+      // quitar el rol de admin (el campo role no se puede cambiar).
       allow update: if admin() && request.auth.uid != uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "role", "cargo"])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo"])
         && (!("cargo" in request.resource.data) || (request.resource.data.cargo is string && request.resource.data.cargo.size() <= 40))
         && request.resource.data.status in ["verificado", "bloqueado"]
-        && request.resource.data.role in ["empleado", "admin"]
         && (request.resource.data.status != "verificado" || resource.data.emailVerified == true);
       allow delete: if false;
     }
