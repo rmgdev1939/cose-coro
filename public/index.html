@@ -293,6 +293,7 @@
   .tool-tile.tile-piso{border-left-color:var(--brand-brown);}
   .tool-tile.tile-mapa{border-left-color:var(--accent);}
   .tool-tile.tile-concreto{border-left-color:var(--ink-soft);}
+  .tool-tile.tile-calc{border-left-color:var(--brand-orange);}
   .tool-tile .tool-icon{
     width:40px; height:40px; border-radius:10px; background:var(--surface-2);
     display:flex; align-items:center; justify-content:center; flex:none;
@@ -1075,63 +1076,17 @@
     <button class="btn primary" type="submit">Buscar</button>
   </form>
 
-  <p class="lede">O elige una herramienta. Cada una calcula materiales al instante, con la lista lista para pasarle al cliente.</p>
+  <p class="lede">O elige una herramienta.</p>
 
   <div class="home-list">
-    <button class="tool-tile tile-cieloraso" data-target="cieloraso">
-      <span class="tool-icon" style="color:var(--brand-orange)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></svg>
-      </span>
+    <button class="tool-tile tile-calc" data-target="calculadoras">
+      <span class="tool-icon" style="color:var(--brand-orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h.01M16 18.5h.01"/></svg></span>
       <span class="tool-text">
-        <span class="tool-title">Cielo Raso</span>
-        <span class="tool-sub">Láminas de anime, perfilería y ángulo</span>
+        <span class="tool-title">Calcular materiales</span>
+        <span class="tool-sub">Cielo raso, pintura, bloques, cerámica y concreto</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-
-    <button class="tool-tile tile-recubrimientos" data-target="recubrimientos">
-      <span class="tool-icon" style="color:var(--brand-blue)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l4 4-8.5 8.5a2 2 0 0 1-1.2.58l-3 .3.3-3a2 2 0 0 1 .58-1.2L14.5 4"/><path d="M4 21l3-1 8-8" stroke-linecap="round"/></svg>
-      </span>
-      <span class="tool-text">
-        <span class="tool-title">Recubrimientos</span>
-        <span class="tool-sub">Pintura, impermeabilizante, fondo y techos</span>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-
-    <button class="tool-tile tile-bloques" data-target="bloques">
-      <span class="tool-icon" style="color:var(--brand-green)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="8" height="5"/><rect x="13" y="9" width="8" height="5"/><rect x="7" y="4" width="10" height="5"/></svg>
-      </span>
-      <span class="tool-text">
-        <span class="tool-title">Bloques y Cemento</span>
-        <span class="tool-sub">Bloques, cemento y arena por pared</span>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-
-    <button class="tool-tile tile-piso" data-target="piso">
-      <span class="tool-icon" style="color:var(--brand-brown)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-      </span>
-      <span class="tool-text">
-        <span class="tool-title">Piso y Cerámica</span>
-        <span class="tool-sub">Cajas de cerámica, cemento cola y boquilla</span>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-
-    <button class="tool-tile tile-concreto" data-target="concreto">
-    <span class="tool-icon" style="color:var(--ink-soft)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18h18M5 18V9h14v9M8 9V5h8v4" stroke-linejoin="round"/><path d="M9 13h.01M12 15h.01M15 12h.01" stroke-linecap="round"/></svg>
-    </span>
-    <span class="tool-text">
-      <span class="tool-title">Concreto</span>
-      <span class="tool-sub">Cemento, arena y piedra para losas, columnas y vigas</span>
-    </span>
-    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
 
   <button class="tool-tile tile-mapa" data-target="mapa">
       <span class="tool-icon" style="color:var(--accent)">
@@ -1215,12 +1170,79 @@
   </details>
 </div>
 
-<div class="screen" id="screen-cieloraso" hidden>
-
+<div class="screen" id="screen-calculadoras" hidden>
   <div class="backbar">
     <button class="backbtn" data-back>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Calcular materiales</p>
+  <p class="lede" style="margin-top:-8px;">Elige qué va a construir el cliente. Cada calculadora da la lista de materiales al instante, lista para pasársela.</p>
+  <div class="home-list">
+    <button class="tool-tile tile-cieloraso" data-target="cieloraso">
+      <span class="tool-icon" style="color:var(--brand-orange)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16M15 4v16"/></svg>
+      </span>
+      <span class="tool-text">
+        <span class="tool-title">Cielo Raso</span>
+        <span class="tool-sub">Láminas de anime, perfilería y ángulo</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-recubrimientos" data-target="recubrimientos">
+      <span class="tool-icon" style="color:var(--brand-blue)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3l4 4-8.5 8.5a2 2 0 0 1-1.2.58l-3 .3.3-3a2 2 0 0 1 .58-1.2L14.5 4"/><path d="M4 21l3-1 8-8" stroke-linecap="round"/></svg>
+      </span>
+      <span class="tool-text">
+        <span class="tool-title">Recubrimientos</span>
+        <span class="tool-sub">Pintura, impermeabilizante, fondo y techos</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-bloques" data-target="bloques">
+      <span class="tool-icon" style="color:var(--brand-green)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="8" height="5"/><rect x="13" y="9" width="8" height="5"/><rect x="7" y="4" width="10" height="5"/></svg>
+      </span>
+      <span class="tool-text">
+        <span class="tool-title">Bloques y Cemento</span>
+        <span class="tool-sub">Bloques, cemento y arena por pared</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-piso" data-target="piso">
+      <span class="tool-icon" style="color:var(--brand-brown)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      </span>
+      <span class="tool-text">
+        <span class="tool-title">Piso y Cerámica</span>
+        <span class="tool-sub">Cajas de cerámica, cemento cola y boquilla</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-concreto" data-target="concreto">
+    <span class="tool-icon" style="color:var(--ink-soft)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18h18M5 18V9h14v9M8 9V5h8v4" stroke-linejoin="round"/><path d="M9 13h.01M12 15h.01M15 12h.01" stroke-linecap="round"/></svg>
+    </span>
+    <span class="tool-text">
+      <span class="tool-title">Concreto</span>
+      <span class="tool-sub">Cemento, arena y piedra para losas, columnas y vigas</span>
+    </span>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  </div>
+</div>
+
+<div class="screen" id="screen-cieloraso" hidden>
+
+  <div class="backbar">
+    <button class="backbtn" data-back-calc>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Calculadoras
     </button>
   </div>
 
@@ -1329,9 +1351,9 @@
 <div class="screen" id="screen-recubrimientos" hidden>
 
   <div class="backbar">
-    <button class="backbtn" data-back>
+    <button class="backbtn" data-back-calc>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Calculadoras
     </button>
   </div>
 
@@ -1446,9 +1468,9 @@
 <div class="screen" id="screen-bloques" hidden>
 
   <div class="backbar">
-    <button class="backbtn" data-back>
+    <button class="backbtn" data-back-calc>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Calculadoras
     </button>
   </div>
 
@@ -1536,9 +1558,9 @@
 <div class="screen" id="screen-piso" hidden>
 
   <div class="backbar">
-    <button class="backbtn" data-back>
+    <button class="backbtn" data-back-calc>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Calculadoras
     </button>
   </div>
 
@@ -1614,9 +1636,9 @@
 
 <div class="screen" id="screen-concreto" hidden>
   <div class="backbar">
-    <button class="backbtn" data-back>
+    <button class="backbtn" data-back-calc>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Calculadoras
     </button>
   </div>
   <p class="lede">Calcula los sacos de <strong>cemento</strong> y los m³ de <strong>arena</strong> y <strong>piedra picada</strong> para vaciar una losa, un piso o varias columnas y vigas, con la cabilla si la necesitas.</p>
@@ -1842,7 +1864,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 24 · 30 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 25 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -1855,7 +1877,7 @@
 
   // --- navigation between the home menu and each tool "page" ---------------
   var screens = {
-    home: $("screen-home"), cieloraso: $("screen-cieloraso"), recubrimientos: $("screen-recubrimientos"),
+    home: $("screen-home"), calculadoras: $("screen-calculadoras"), cieloraso: $("screen-cieloraso"), recubrimientos: $("screen-recubrimientos"),
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
@@ -1863,6 +1885,7 @@
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
+    calculadoras: "Calcular materiales",
     cieloraso: "Cielo raso · herramienta de campo",
     recubrimientos: "Recubrimientos · pintura y techos",
     bloques: "Bloques y cemento",
@@ -1897,6 +1920,9 @@
 
   document.querySelectorAll(".tool-tile[data-target]").forEach(function(tile){
     tile.addEventListener("click", function(){ showScreen(tile.dataset.target); });
+  });
+  document.querySelectorAll("[data-back-calc]").forEach(function(btn){
+    btn.addEventListener("click", function(){ showScreen("calculadoras"); });
   });
   document.querySelectorAll("[data-back]").forEach(function(btn){
     btn.addEventListener("click", function(){ showScreen("home"); });
