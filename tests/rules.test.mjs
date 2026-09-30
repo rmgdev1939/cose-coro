@@ -34,6 +34,8 @@ U.INV = { name: "Iván Inventario", role: "empleado", status: "verificado", carg
 U.AUT = { name: "Aura Autoservicio", role: "empleado", status: "verificado", cargo: "Autoservicio" };
 U.MEC = { name: "Mario Mecánico", role: "empleado", status: "verificado", cargo: "Mecánicos" };
 U.GER = { name: "Gina Gerencia", role: "empleado", status: "verificado", cargo: "Gerencia" };
+U.CHO = { name: "Carlos Chofer", role: "empleado", status: "verificado", cargo: "Choferes" };
+U.COM = { name: "Coral Compras", role: "empleado", status: "verificado", cargo: "Compras" };
 U[RAFA] = { name: "Rafael Supervisor", role: "admin", status: "verificado" };
 for (let i = 1; i <= 9; i++) U["U" + i] = { name: "Extra " + i, role: "empleado", status: "verificado" };
 
@@ -274,6 +276,27 @@ await t("el mecánico lo pasa a taller", () => assertSucceeds(updateDoc(doc(MEC,
 await t("no cambia quién lo creó", () => assertFails(updateDoc(doc(MEC, "vehiculos", "v1"), { creadoPor: "X", updatedAt: serverTimestamp(), updatedBy: "MEC", updatedByName: "Mario Mecánico" })));
 await t("el mecánico no borra", () => assertFails(deleteDoc(doc(MEC, "vehiculos", "v1"))));
 await t("la admin borra", () => assertSucceeds(deleteDoc(doc(A, "vehiculos", "v1"))));
+
+console.log("mantenimientos, revisiones y faltantes");
+const CHO = as("CHO"), COM = as("COM");
+await setDoc(doc(MEC, "vehiculos", "v9"), veh("MEC", "Mario Mecánico"));
+const mant = (who, name, extra = {}) => Object.assign({ vehiculoId: "v9", placa: "A12BC3D", fecha: "2026-09-30", tipo: "aceite", km: 150000, detalle: "Aceite 15W40", by: who, byName: name, at: serverTimestamp() }, extra);
+await t("el mecánico registra un mantenimiento", () => assertSucceeds(addDoc(collection(MEC, "mantenimientos"), mant("MEC", "Mario Mecánico"))));
+await t("el chofer no registra mantenimientos", () => assertFails(addDoc(collection(CHO, "mantenimientos"), mant("CHO", "Carlos Chofer"))));
+await t("mantenimiento de un vehículo que no existe no", () => assertFails(addDoc(collection(MEC, "mantenimientos"), mant("MEC", "Mario Mecánico", { vehiculoId: "nope" }))));
+await t("el chofer ve los vehículos", () => assertSucceeds(getDocs(collection(CHO, "vehiculos"))));
+await t("el chofer no edita vehículos", () => assertFails(updateDoc(doc(CHO, "vehiculos", "v9"), { km: 1, updatedAt: serverTimestamp(), updatedBy: "CHO", updatedByName: "Carlos Chofer" })));
+const rev = (who, name, extra = {}) => Object.assign({ vehiculoId: "v9", placa: "A12BC3D", puntos: { cauchos: true, luces: false }, fallas: 1, km: 150100, combustible: "1/2", nota: "Luz de cruce izquierda", by: who, byName: name, at: serverTimestamp() }, extra);
+await t("el chofer hace la revisión diaria", () => assertSucceeds(addDoc(collection(CHO, "revisiones"), rev("CHO", "Carlos Chofer"))));
+await t("ventas no hace revisiones", () => assertFails(addDoc(collection(INV, "revisiones"), rev("INV", "Iván Inventario"))));
+await t("el mecánico ve las revisiones", () => assertSucceeds(getDocs(collection(MEC, "revisiones"))));
+const falt = (who, name, extra = {}) => Object.assign({ producto: "Silicón transparente", nota: "", by: who, byName: name, at: serverTimestamp(), estado: "pendiente" }, extra);
+await t("cualquiera anota un faltante", () => assertSucceeds(setDoc(doc(INV, "faltantes", "f1"), falt("INV", "Iván Inventario"))));
+await t("no se anota a nombre de otro", () => assertFails(setDoc(doc(INV, "faltantes", "f2"), falt("COM", "Coral Compras"))));
+await t("compras ve todos los faltantes", () => assertSucceeds(getDocs(collection(COM, "faltantes"))));
+await t("ventas no ve todos los faltantes", () => assertFails(getDocs(collection(AUT, "faltantes"))));
+await t("compras lo marca pedido", () => assertSucceeds(updateDoc(doc(COM, "faltantes", "f1"), { estado: "pedido" })));
+await t("inventario no lo marca", () => assertFails(updateDoc(doc(INV, "faltantes", "f1"), { estado: "descartado" })));
 
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();

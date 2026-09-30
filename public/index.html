@@ -883,6 +883,19 @@
   .fl-st.fuera{background:color-mix(in srgb, #E5534B 14%, var(--surface)); color:#C2403A;}
   .fl-desc{font-weight:600; font-size:0.9rem; color:var(--ink);}
   .fl-sub{font-size:0.78rem; color:var(--ink-soft);}
+  .rv-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .rv-pt{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 11px; border-radius:10px; border:1px solid var(--line); background:var(--ok-bg); color:var(--ok-fg); font-family:inherit; font-size:0.84rem; font-weight:600; cursor:pointer; text-align:left;}
+  .rv-pt.mal{background:color-mix(in srgb, #E5534B 14%, var(--surface)); color:#C2403A; border-color:#E5534B;}
+  .h-item{padding:9px 0; border-bottom:1px solid var(--line); font-size:0.84rem; color:var(--ink);}
+  .h-item:last-child{border-bottom:none;}
+  .h-item .h-t{font-weight:700;} .h-item .h-s{color:var(--ink-soft); font-size:0.76rem;}
+  .h-item.mal .h-t{color:#C2403A;}
+  .tool-tile.tile-falt{border-left-color:#C2403A;}
+  .fa-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .fa-row:last-child{border-bottom:none;}
+  .fa-row .txt{flex:1; min-width:0;} .fa-row .m{font-weight:600; font-size:0.9rem;} .fa-row .s{font-size:0.74rem; color:var(--ink-soft); overflow-wrap:anywhere;}
+  .fa-row .btns{display:flex; flex-direction:column; gap:4px; flex:none;}
+  .fa-n{flex:none; min-width:34px; text-align:center; font-weight:700; font-size:0.95rem; color:#C2403A;}
   .fl-notas{font-size:0.8rem; color:var(--ink); background:var(--surface-2); border-radius:8px; padding:6px 9px; white-space:pre-wrap; overflow-wrap:anywhere;}
 
   [hidden]{display:none!important;}
@@ -1229,6 +1242,15 @@
       <span class="tool-text">
         <span class="tool-title">Editor del mapa</span>
         <span class="tool-sub">Autoservicio e inventario: dónde va cada artículo</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-falt" id="faTile" type="button" hidden>
+      <span class="tool-icon" style="color:#C2403A"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/><path d="M4 6h16"/><path d="M9 11l6 6M15 11l-6 6"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Lo pidieron y no hay</span>
+        <span class="tool-sub" id="faTileSub">Anota lo que un cliente buscó y no teníamos</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -2144,6 +2166,33 @@
   </div>
 </div>
 
+<div class="screen" id="screen-faltantes" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Lo pidieron y no hay</p>
+  <section class="card">
+    <form class="pf-form" id="faForm" novalidate>
+      <div><label for="faProd">¿Qué buscó el cliente?</label><input type="text" id="faProd" class="hist-search" maxlength="80" autocomplete="off" placeholder="Ej: silicón transparente para vidrio"></div>
+      <div><label for="faNota">Detalle (opcional)</label><input type="text" id="faNota" class="hist-search" maxlength="200" autocomplete="off" placeholder="Ej: medida, marca o cantidad"></div>
+      <p class="pf-msg" id="faMsg"></p>
+      <button class="btn primary" type="submit" id="faSend">Anotar</button>
+    </form>
+  </section>
+  <section class="card" id="faAdminCard" hidden>
+    <div class="card-title"><span>Lo más pedido</span></div>
+    <select id="faFiltro" class="hist-search" aria-label="Filtrar lista" style="margin-bottom:8px;"><option value="pendiente">Pendientes</option><option value="pedido">Pedidos</option><option value="descartado">Descartados</option><option value="todos">Todos</option></select>
+    <div id="faLista"></div>
+  </section>
+  <section class="card">
+    <div class="card-title">Lo que yo anoté</div>
+    <div id="faMios"></div>
+  </section>
+</div>
+
 <div class="screen" id="screen-flota" hidden>
   <div class="backbar">
     <button class="backbtn" data-back>
@@ -2154,6 +2203,10 @@
   <p class="dash-greet">Vehículos</p>
   <div class="fl-stats" id="flStats"></div>
   <button class="btn primary" id="flAdd" type="button" style="width:100%;" hidden>+ Agregar vehículo</button>
+  <section class="card" id="flAlertCard" hidden>
+    <div class="card-title">Revisiones con fallas · últimos 7 días</div>
+    <div id="flAlerts"></div>
+  </section>
   <section class="card"><div id="flList"></div></section>
 </div>
 
@@ -2179,6 +2232,37 @@
       <p class="pf-msg" id="flMsg"></p>
       <button class="btn primary" type="submit" id="flSave">Guardar</button>
     </form>
+  </section>
+  <section class="card" id="rvCard" hidden>
+    <div class="card-title">Revisión diaria</div>
+    <form class="pf-form" id="rvForm" novalidate>
+      <div class="rv-grid" id="rvPuntos"></div>
+      <div class="dims">
+        <div><label for="rvKm">Kilometraje</label><input type="number" id="rvKm" class="hist-search" inputmode="numeric" min="0"></div>
+        <div class="select-field"><label for="rvComb">Combustible</label><select id="rvComb" class="hist-search"><option value="lleno">Lleno</option><option value="3/4">3/4</option><option value="1/2" selected>1/2</option><option value="1/4">1/4</option><option value="vacio">Reserva</option></select></div>
+      </div>
+      <div><label for="rvNota">Nota (qué falla)</label><textarea id="rvNota" class="hist-search" rows="2" maxlength="300" placeholder="Ej: luz de cruce izquierda quemada"></textarea></div>
+      <p class="pf-msg" id="rvMsg"></p>
+      <button class="btn primary" type="submit" id="rvSave">Enviar revisión</button>
+    </form>
+  </section>
+  <section class="card" id="mtCard" hidden>
+    <div class="card-title">Mantenimientos</div>
+    <form class="pf-form" id="mtForm" novalidate>
+      <div class="dims">
+        <div><label for="mtFecha">Fecha</label><input type="date" id="mtFecha" class="hist-search"></div>
+        <div class="select-field"><label for="mtTipo">Tipo</label><select id="mtTipo" class="hist-search"><option value="aceite">Aceite y filtros</option><option value="cauchos">Cauchos</option><option value="frenos">Frenos</option><option value="bateria">Batería</option><option value="electrico">Eléctrico</option><option value="motor">Motor</option><option value="otro">Otro</option></select></div>
+      </div>
+      <div><label for="mtKm">Kilometraje</label><input type="number" id="mtKm" class="hist-search" inputmode="numeric" min="0"></div>
+      <div><label for="mtDet">Qué se hizo</label><textarea id="mtDet" class="hist-search" rows="2" maxlength="500" placeholder="Ej: cambio de aceite 15W40 y filtro"></textarea></div>
+      <p class="pf-msg" id="mtMsg"></p>
+      <button class="btn primary" type="submit" id="mtSave">Registrar mantenimiento</button>
+    </form>
+    <div id="mtList" style="margin-top:12px;"></div>
+  </section>
+  <section class="card" id="rvHistCard" hidden>
+    <div class="card-title">Revisiones recientes</div>
+    <div id="rvList"></div>
   </section>
 </div>
 
@@ -2321,7 +2405,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 28 · 30 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 29 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -2338,7 +2422,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -2368,6 +2452,7 @@
     leccion: "Capacitación",
     techo: "Techos · láminas y tornillos",
     tanque: "Tanques de agua",
+    faltantes: "Lo pidieron y no hay",
     flota: "Vehículos",
     vehiculo: "Vehículos"
   };
@@ -3143,6 +3228,7 @@
     });
     if (!matches.length){
       list.innerHTML = '<div class="dash-empty">No aparece en las zonas ya cargadas. Puede estar en una zona que aún falta — pregunta en el mostrador.</div>';
+      if (window.coseFaltantes) window.coseFaltantes.offer(list, raw);
       missTimer = setTimeout(function(){ recordMiss(raw.toLowerCase()); }, 1500);
       return;
     }
@@ -4749,7 +4835,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var KEY = "cosecoro_perfil"; // { cargo, phone }
   // Cargos iniciales. Con la nube, el administrador edita la lista.
-  var DEFAULT_CARGOS = ["Administración", "Gerencia", "Autoservicio", "Caja", "Ventas", "Inventario", "Patio", "Compras", "Mecánicos", "Sistema"];
+  var DEFAULT_CARGOS = ["Administración", "Gerencia", "Autoservicio", "Caja", "Ventas", "Inventario", "Patio", "Compras", "Mecánicos", "Choferes", "Sistema"];
   function local(){ try{ var v = JSON.parse(localStorage.getItem(KEY) || "null"); return v && typeof v === "object" ? v : {}; }catch(e){ return {}; } }
   function saveLocal(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
   function localName(){ try{ return localStorage.getItem("coseimpa_profile_name") || ""; }catch(e){ return ""; } }
@@ -6916,7 +7002,43 @@
   var TIPOS = { camion:"Camión", camioneta:"Camioneta", carro:"Carro", moto:"Moto", montacargas:"Montacargas", otro:"Otro" };
   var ESTADOS = { operativo:"Operativo", taller:"En taller", fuera:"Fuera de servicio" };
   var X = null, unsub = null, list = [], editId = null, filtro = "todos";
-  function puedeVer(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos" || me.cargo === "Gerencia"); }
+  function puedeVer(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos" || me.cargo === "Gerencia" || me.cargo === "Choferes"); }
+  function puedeRevisar(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos" || me.cargo === "Choferes"); }
+  var PUNTOS = [["cauchos", "Cauchos"], ["aceite", "Aceite"], ["refrigerante", "Agua / refrigerante"], ["frenos", "Frenos"], ["luces", "Luces"], ["espejos", "Espejos y corneta"]];
+  var MT = { aceite:"Aceite y filtros", cauchos:"Cauchos", frenos:"Frenos", bateria:"Batería", electrico:"Eléctrico", motor:"Motor", otro:"Otro" };
+  var mants = [], revs = [], unsubs2 = [], firstRev = true, curV = null, puntos = {};
+  function fecha(ts){ var t = ts && ts.toMillis ? ts.toMillis() : 0; return t ? new Date(t).toLocaleString("es-VE", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }) : "ahora"; }
+  function hist(box, items, fn){ box.innerHTML = ""; if (!items.length){ box.appendChild(el("div", "c-empty", "Nada registrado todavía.")); return; } items.forEach(function(x){ box.appendChild(fn(x)); }); }
+  function revItem(r, conPlaca){
+    var d = el("div", "h-item" + (r.fallas ? " mal" : ""));
+    var malos = PUNTOS.filter(function(p){ return r.puntos && r.puntos[p[0]] === false; }).map(function(p){ return p[1]; });
+    d.appendChild(el("div", "h-t", (conPlaca ? r.placa + " · " : "") + (r.fallas ? "⚠️ " + malos.join(", ") : "✓ Todo bien")));
+    d.appendChild(el("div", "h-s", r.byName + " · " + fecha(r.at) + " · " + (+r.km).toLocaleString("es-VE") + " km · combustible " + r.combustible + (r.nota ? " · " + r.nota : "")));
+    return d;
+  }
+  function paintDetalle(){
+    if (!X || !curV || current() !== "vehiculo") return;
+    var ms = mants.filter(function(m){ return m.vehiculoId === curV; });
+    var rs = revs.filter(function(r){ return r.vehiculoId === curV; }).slice(0, 10);
+    hist($("mtList"), ms, function(m){
+      var d = el("div", "h-item");
+      d.appendChild(el("div", "h-t", (MT[m.tipo] || m.tipo) + " · " + m.fecha.split("-").reverse().join("/")));
+      d.appendChild(el("div", "h-s", (+m.km).toLocaleString("es-VE") + " km · " + m.byName + (m.detalle ? " · " + m.detalle : "")));
+      return d;
+    });
+    hist($("rvList"), rs, function(r){ return revItem(r, false); });
+  }
+  function paintPuntos(){
+    var box = $("rvPuntos"); box.innerHTML = "";
+    PUNTOS.forEach(function(p){
+      var ok = puntos[p[0]] !== false;
+      var b = el("button", "rv-pt" + (ok ? "" : " mal")); b.type = "button";
+      b.appendChild(el("span", "", p[1])); b.appendChild(el("span", "", ok ? "✓ Bien" : "✗ Falla"));
+      b.setAttribute("aria-pressed", String(!ok));
+      b.addEventListener("click", function(){ puntos[p[0]] = !ok ? true : false; paintPuntos(); });
+      box.appendChild(b);
+    });
+  }
   function puedeEditar(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos"); }
   function current(){ return window.coseApp ? window.coseApp.current() : ""; }
   function km(n){ return (+n || 0).toLocaleString("es-VE") + " km"; }
@@ -6934,6 +7056,10 @@
       b.addEventListener("click", function(){ filtro = s[0]; paint(); });
       $("flStats").appendChild(b);
     });
+    var semana = Date.now() - 7 * 86400000;
+    var alerts = revs.filter(function(r){ return r.fallas > 0 && r.at && r.at.toMillis && r.at.toMillis() > semana; });
+    $("flAlertCard").hidden = !alerts.length || X.me.cargo === "Choferes";
+    hist($("flAlerts"), alerts.slice(0, 10), function(r){ return revItem(r, true); });
     var box = $("flList"); box.innerHTML = "";
     var shown = list.filter(function(v){ return filtro === "todos" || v.estado === filtro; });
     if (!shown.length) box.appendChild(el("div", "c-empty", list.length ? "Ningún vehículo en esta lista." : (edit ? "Todavía no hay vehículos. Toca «Agregar vehículo»." : "Todavía no hay vehículos registrados.")));
@@ -6966,7 +7092,49 @@
     $("flMsg").textContent = ""; $("flMsg").className = "pf-msg";
     $("flForm").querySelectorAll("input, select, textarea").forEach(function(i){ i.disabled = !edit; });
     $("flSave").hidden = !edit;
+    curV = v ? v.id : null;
+    puntos = {};
+    $("rvCard").hidden = !(v && puedeRevisar(X.me));
+    $("mtCard").hidden = !v;
+    $("mtForm").hidden = !edit;
+    $("rvHistCard").hidden = !v;
+    if (v){
+      paintPuntos();
+      $("rvKm").value = v.km; $("rvNota").value = ""; $("rvMsg").textContent = "";
+      $("mtFecha").value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      $("mtKm").value = v.km; $("mtDet").value = ""; $("mtMsg").textContent = "";
+    }
     window.coseApp.showScreen("vehiculo");
+    paintDetalle();
+  }
+  function saveRev(e){
+    e.preventDefault();
+    var v = list.filter(function(x){ return x.id === curV; })[0], msg = $("rvMsg"), F = X.F;
+    if (!v) return;
+    var kmv = parseInt($("rvKm").value || "0", 10);
+    if (!(kmv >= 0)){ msg.className = "pf-msg err"; msg.textContent = "Revisa el kilometraje."; return; }
+    var p = {}, fallas = 0;
+    PUNTOS.forEach(function(x){ var ok = puntos[x[0]] !== false; p[x[0]] = ok; if (!ok) fallas++; });
+    $("rvSave").disabled = true;
+    F.addDoc(F.collection(X.db, "revisiones"), { vehiculoId:v.id, placa:v.placa, puntos:p, fallas:fallas, km:kmv, combustible:$("rvComb").value,
+      nota:$("rvNota").value.trim().slice(0, 300), by:X.uid, byName:X.me.name, at:F.serverTimestamp() })
+      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = fallas ? "✓ Enviada. Los mecánicos ven las fallas." : "✓ Enviada: todo bien."; puntos = {}; paintPuntos(); $("rvNota").value = ""; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
+      .then(function(){ $("rvSave").disabled = false; });
+  }
+  function saveMant(e){
+    e.preventDefault();
+    var v = list.filter(function(x){ return x.id === curV; })[0], msg = $("mtMsg"), F = X.F;
+    if (!v) return;
+    var f = $("mtFecha").value, kmv = parseInt($("mtKm").value || "0", 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f)){ msg.className = "pf-msg err"; msg.textContent = "Elige la fecha."; return; }
+    if (!(kmv >= 0)){ msg.className = "pf-msg err"; msg.textContent = "Revisa el kilometraje."; return; }
+    $("mtSave").disabled = true;
+    F.addDoc(F.collection(X.db, "mantenimientos"), { vehiculoId:v.id, placa:v.placa, fecha:f, tipo:$("mtTipo").value, km:kmv,
+      detalle:$("mtDet").value.trim().slice(0, 500), by:X.uid, byName:X.me.name, at:F.serverTimestamp() })
+      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Mantenimiento registrado."; $("mtDet").value = ""; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo guardar. Revisa tu internet."; })
+      .then(function(){ $("mtSave").disabled = false; });
   }
   function save(e){
     e.preventDefault();
@@ -7018,10 +7186,25 @@
       $("flTileSub").textContent = list.length ? list.length + " vehículo(s) · " + list.filter(function(v){ return v.estado === "taller"; }).length + " en taller" : "Registro de la flota";
       paint();
     }, function(){});
+    var F = X.F;
+    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, "mantenimientos"), F.orderBy("at", "desc"), F.limit(200)), function(snap){
+      mants = []; snap.forEach(function(d){ var m = d.data({ serverTimestamps:"estimate" }); m.id = d.id; mants.push(m); });
+      paintDetalle();
+    }, function(){}));
+    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, "revisiones"), F.orderBy("at", "desc"), F.limit(100)), function(snap){
+      if (!firstRev && puedeEditar(X.me)) snap.docChanges().forEach(function(ch){
+        var r = ch.doc.data();
+        if (ch.type === "added" && r.fallas > 0 && r.by !== X.uid) X.toast("⚠️ " + r.placa + ": revisión con fallas de " + r.byName);
+      });
+      firstRev = false;
+      revs = []; snap.forEach(function(d){ var r = d.data({ serverTimestamps:"estimate" }); r.id = d.id; revs.push(r); });
+      paint(); paintDetalle();
+    }, function(){}));
   }
   function stop(){
     if (unsub){ try{ unsub(); }catch(e){} unsub = null; }
-    X = null; list = [];
+    unsubs2.forEach(function(u){ try{ u(); }catch(e){} }); unsubs2 = [];
+    X = null; list = []; mants = []; revs = []; firstRev = true; curV = null;
     $("flTile").hidden = true;
     var cur = current();
     if (cur === "flota" || cur === "vehiculo") window.coseApp.showScreen("home");
@@ -7030,8 +7213,138 @@
   $("flAdd").addEventListener("click", function(){ if (X) openForm(null); });
   $("flForm").addEventListener("submit", function(e){ if (X) save(e); else e.preventDefault(); });
   $("flBack").addEventListener("click", function(){ window.coseApp.showScreen("flota"); paint(); });
+  $("rvForm").addEventListener("submit", function(e){ if (X) saveRev(e); else e.preventDefault(); });
+  $("mtForm").addEventListener("submit", function(e){ if (X) saveMant(e); else e.preventDefault(); });
   (function(){ var h = (location.hash || "").slice(1); if (h === "flota" || h === "vehiculo") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0); })();
   window.coseFlota = { start:start, stop:stop };
+})();
+</script>
+
+<script>
+// ============================================================================
+// "LO PIDIERON Y NO HAY": cualquiera anota en 2 toques lo que un cliente
+// buscó y no había (faltantes/). Compras, Gerencia y el administrador ven la
+// lista agrupada por producto, ordenada por cuántas veces lo pidieron, y la
+// marcan como "pedido" o "descartado".
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var X = null, unsubs = [], mios = [], todos = [], fil = "pendiente";
+  function verTodo(me){ return !!me && (me.role === "admin" || me.cargo === "Compras" || me.cargo === "Gerencia"); }
+  function norm(s){ return X && X.norm ? X.norm(s) : String(s).toLowerCase().trim(); }
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
+  function dia(t){ return t ? new Date(t).toLocaleDateString("es-VE", { day:"numeric", month:"short" }) : "hoy"; }
+
+  function paint(){
+    if (!X || current() !== "faltantes") return;
+    var box = $("faMios"); box.innerHTML = "";
+    mios.slice(0, 15).forEach(function(f){
+      var d = el("div", "h-item");
+      d.appendChild(el("div", "h-t", f.producto));
+      d.appendChild(el("div", "h-s", dia(ms(f.at)) + (f.nota ? " · " + f.nota : "") + " · " + ({ pendiente:"Pendiente", pedido:"Compras lo pidió ✓", descartado:"Descartado" }[f.estado] || f.estado)));
+      box.appendChild(d);
+    });
+    if (!mios.length) box.appendChild(el("div", "c-empty", "Todavía no has anotado nada."));
+    if (!verTodo(X.me)) return;
+    // agrupar por producto
+    var g = {};
+    todos.forEach(function(f){
+      var k = norm(f.producto);
+      var o = g[k] || (g[k] = { nombre:f.producto, docs:[], veces:0, ultimo:0, quienes:{}, notas:[] });
+      o.docs.push(f); o.veces++; o.ultimo = Math.max(o.ultimo, ms(f.at)); o.quienes[f.byName.split(" ")[0]] = 1;
+      if (f.nota) o.notas.push(f.nota);
+    });
+    var grupos = Object.keys(g).map(function(k){
+      var o = g[k];
+      o.estado = o.docs.some(function(f){ return f.estado === "pendiente"; }) ? "pendiente" : o.docs.some(function(f){ return f.estado === "pedido"; }) ? "pedido" : "descartado";
+      return o;
+    }).filter(function(o){ return fil === "todos" || o.estado === fil; })
+      .sort(function(a, b){ return b.veces - a.veces || b.ultimo - a.ultimo; });
+    var lb = $("faLista"); lb.innerHTML = "";
+    if (!grupos.length) lb.appendChild(el("div", "c-empty", "Nada en esta lista."));
+    grupos.forEach(function(o){
+      var r = el("div", "fa-row");
+      r.appendChild(el("span", "fa-n mono", o.veces + "×"));
+      var t = el("div", "txt");
+      t.appendChild(el("div", "m", o.nombre));
+      t.appendChild(el("div", "s", "Último: " + dia(o.ultimo) + " · " + Object.keys(o.quienes).join(", ") + (o.notas.length ? " · " + o.notas.slice(0, 2).join(" / ") : "")));
+      r.appendChild(t);
+      var bb = el("div", "btns");
+      [["pedido", "Pedido"], ["descartado", "Descartar"], ["pendiente", "Pendiente"]].forEach(function(b){
+        if (b[0] === o.estado) return;
+        var x = el("button", "hist-copybtn" + (b[0] === "pedido" ? " wa" : ""), b[1]); x.type = "button";
+        x.addEventListener("click", function(){
+          x.disabled = true;
+          var bt = X.F.writeBatch(X.db);
+          o.docs.forEach(function(f){ if (f.estado !== b[0]) bt.update(X.F.doc(X.db, "faltantes", f.id), { estado:b[0] }); });
+          bt.commit().catch(function(){ X.toast("No se pudo cambiar. Revisa tu internet."); x.disabled = false; });
+        });
+        bb.appendChild(x);
+      });
+      r.appendChild(bb);
+      lb.appendChild(r);
+    });
+  }
+  function anotar(e){
+    e.preventDefault();
+    var prod = $("faProd").value.trim().replace(/\s+/g, " ").slice(0, 80), msg = $("faMsg");
+    if (prod.length < 2){ msg.className = "pf-msg err"; msg.textContent = "Escribe qué buscó el cliente."; return; }
+    $("faSend").disabled = true;
+    X.F.addDoc(X.F.collection(X.db, "faltantes"), { producto:prod, nota:$("faNota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:X.F.serverTimestamp(), estado:"pendiente" })
+      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Anotado: " + prod + ". Compras lo verá."; $("faProd").value = ""; $("faNota").value = ""; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo anotar. Revisa tu internet."; })
+      .then(function(){ $("faSend").disabled = false; });
+  }
+  function open(prefill){
+    if (!X) return;
+    window.coseApp.showScreen("faltantes");
+    $("faAdminCard").hidden = !verTodo(X.me);
+    $("faMsg").textContent = "";
+    if (prefill){ $("faProd").value = prefill; }
+    paint();
+  }
+  function start(ctx){
+    if (X){ X.me = ctx.me; return; }
+    X = ctx;
+    $("faTile").hidden = false;
+    var F = X.F;
+    unsubs.push(F.onSnapshot(F.query(F.collection(X.db, "faltantes"), F.where("by", "==", X.uid)), function(s){
+      mios = []; s.forEach(function(d){ var f = d.data({ serverTimestamps:"estimate" }); f.id = d.id; mios.push(f); });
+      mios.sort(function(a, b){ return ms(b.at) - ms(a.at); });
+      paint();
+    }, function(){}));
+    if (verTodo(X.me)) unsubs.push(F.onSnapshot(F.query(F.collection(X.db, "faltantes"), F.orderBy("at", "desc"), F.limit(500)), function(s){
+      todos = []; s.forEach(function(d){ var f = d.data({ serverTimestamps:"estimate" }); f.id = d.id; todos.push(f); });
+      var pend = {}; todos.forEach(function(f){ if (f.estado === "pendiente") pend[norm(f.producto)] = 1; });
+      $("faTileSub").textContent = Object.keys(pend).length + " producto(s) pendientes por revisar";
+      paint();
+    }, function(){}));
+  }
+  function stop(){
+    unsubs.forEach(function(u){ try{ u(); }catch(e){} }); unsubs = [];
+    X = null; mios = []; todos = [];
+    $("faTile").hidden = true;
+    $("faTileSub").textContent = "Anota lo que un cliente buscó y no teníamos";
+    if (current() === "faltantes") window.coseApp.showScreen("home");
+  }
+  $("faTile").addEventListener("click", function(){ open(); });
+  $("faForm").addEventListener("submit", function(e){ if (X) anotar(e); else e.preventDefault(); });
+  $("faFiltro").addEventListener("change", function(){ fil = this.value; paint(); });
+  if ((location.hash || "").slice(1) === "faltantes") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
+  window.coseFaltantes = {
+    start:start, stop:stop,
+    // botón en el buscador del mapa cuando no aparece nada
+    offer:function(box, q){
+      if (!X || !q) return;
+      var b = el("button", "btn", "Anotar «" + q.slice(0, 40) + "» en Lo pidieron y no hay"); b.type = "button";
+      b.style.marginTop = "10px"; b.style.width = "100%";
+      b.addEventListener("click", function(){ open(q.slice(0, 80)); });
+      box.appendChild(b);
+    }
+  };
 })();
 </script>
 
@@ -7301,6 +7614,7 @@
       if (window.coseAvisos) window.coseAvisos.stop();
       if (window.coseCapac) window.coseCapac.stop();
       if (window.coseFlota) window.coseFlota.stop();
+      if (window.coseFaltantes) window.coseFaltantes.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -7312,6 +7626,7 @@
       if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
+      if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();

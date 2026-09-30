@@ -233,7 +233,8 @@ service cloud.firestore {
 
     // Vehículos (flota): los ven Mecánicos, Gerencia y el administrador; los
     // agregan y editan Mecánicos y el administrador; borrar, solo el administrador.
-    function flotaVer() { return verified() && (me().role == "admin" || me().get("cargo", "") in ["Mecánicos", "Gerencia"]); }
+    function flotaVer() { return verified() && (me().role == "admin" || me().get("cargo", "") in ["Mecánicos", "Gerencia", "Choferes"]); }
+    function comprasVer() { return verified() && (me().role == "admin" || me().get("cargo", "") in ["Compras", "Gerencia"]); }
     function flotaEditar() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Mecánicos"); }
     function vehiculoOk(d) {
       return d.keys().hasOnly(["placa", "tipo", "marca", "modelo", "anio", "color", "km", "estado", "notas", "creadoPor", "creadoPorNombre", "createdAt", "updatedAt", "updatedBy", "updatedByName"])
@@ -256,6 +257,58 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
       allow update: if flotaEditar() && vehiculoOk(request.resource.data)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["placa", "tipo", "marca", "modelo", "anio", "color", "km", "estado", "notas", "updatedAt", "updatedBy", "updatedByName"]);
+      allow delete: if admin();
+    }
+
+    // Mantenimientos de cada vehículo (los registran Mecánicos y el administrador).
+    match /mantenimientos/{id} {
+      allow read: if flotaVer();
+      allow create: if flotaEditar()
+        && request.resource.data.keys().hasOnly(["vehiculoId", "placa", "fecha", "tipo", "km", "detalle", "by", "byName", "at"])
+        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/vehiculos/$(request.resource.data.vehiculoId))
+        && request.resource.data.placa is string && request.resource.data.placa.size() <= 12
+        && request.resource.data.fecha is string && request.resource.data.fecha.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")
+        && request.resource.data.tipo in ["aceite", "cauchos", "frenos", "bateria", "electrico", "motor", "otro"]
+        && request.resource.data.km is int && request.resource.data.km >= 0 && request.resource.data.km <= 3000000
+        && request.resource.data.detalle is string && request.resource.data.detalle.size() <= 500
+        && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
+        && request.resource.data.at == request.time;
+      allow delete: if admin();
+      allow update: if false;
+    }
+
+    // Revisión diaria del vehículo: la hacen Choferes y Mecánicos (y el administrador).
+    match /revisiones/{id} {
+      allow read: if flotaVer();
+      allow create: if verified() && (me().role == "admin" || me().get("cargo", "") in ["Choferes", "Mecánicos"])
+        && request.resource.data.keys().hasOnly(["vehiculoId", "placa", "puntos", "fallas", "km", "combustible", "nota", "by", "byName", "at"])
+        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/vehiculos/$(request.resource.data.vehiculoId))
+        && request.resource.data.placa is string && request.resource.data.placa.size() <= 12
+        && request.resource.data.puntos is map
+        && request.resource.data.fallas is int && request.resource.data.fallas >= 0 && request.resource.data.fallas <= 20
+        && request.resource.data.km is int && request.resource.data.km >= 0 && request.resource.data.km <= 3000000
+        && request.resource.data.combustible in ["vacio", "1/4", "1/2", "3/4", "lleno"]
+        && request.resource.data.nota is string && request.resource.data.nota.size() <= 300
+        && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
+        && request.resource.data.at == request.time;
+      allow delete: if admin();
+      allow update: if false;
+    }
+
+    // "Lo pidieron y no hay": cualquiera lo anota; lo ven y lo marcan Compras,
+    // Gerencia y el administrador.
+    match /faltantes/{id} {
+      allow read: if comprasVer() || (verified() && resource.data.by == request.auth.uid);
+      allow create: if verified()
+        && request.resource.data.keys().hasOnly(["producto", "nota", "by", "byName", "at", "estado"])
+        && request.resource.data.producto is string && request.resource.data.producto.size() >= 2 && request.resource.data.producto.size() <= 80
+        && request.resource.data.nota is string && request.resource.data.nota.size() <= 200
+        && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
+        && request.resource.data.estado == "pendiente"
+        && request.resource.data.at == request.time;
+      allow update: if comprasVer()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado"])
+        && request.resource.data.estado in ["pendiente", "pedido", "descartado"];
       allow delete: if admin();
     }
 
