@@ -225,6 +225,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Estado del sistema (consumo del plan gratis): lo escribe el medidor de
+    // tools/monitor.cjs con la cuenta del dueño; lo lee solo el administrador.
+    match /monitor/{doc} {
+      allow read: if admin();
+      allow write: if false;
+    }
+
     // Todo lo demás, cerrado
     match /{document=**} {
       allow read, write: if false;

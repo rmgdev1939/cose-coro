@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Corre el medidor de Cose Coro cada hora (copia de tools/monitor.cjs en
+     ~/Library/Application Support/CoseCoro, porque macOS no deja a los procesos
+     de fondo leer el Escritorio). Instalar: copiar a ~/Library/LaunchAgents y
+     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.cosecoro.monitor.plist
+     Quitar: launchctl bootout gui/$(id -u)/com.cosecoro.monitor -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cosecoro.monitor</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>/Users/COSECORO-RA/Library/Application Support/CoseCoro/monitor.cjs</string>
+  </array>
+  <key>StartInterval</key><integer>3600</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>/Users/COSECORO-RA/Library/Logs/cosecoro-monitor.log</string>
+  <key>StandardErrorPath</key><string>/Users/COSECORO-RA/Library/Logs/cosecoro-monitor.log</string>
+</dict>
+</plist>

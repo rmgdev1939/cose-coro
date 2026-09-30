@@ -220,6 +220,12 @@ await t("la admin no le quita el rol a otro admin", () => assertFails(updateDoc(
 await t("nadie se nombra administrador a sí mismo", () => assertFails(updateDoc(doc(C, "users", "C"), { role: "admin", updatedAt: serverTimestamp() })));
 await t("la admin aún aprueba o quita acceso", () => assertSucceeds(updateDoc(doc(A, "users", "C"), { status: "bloqueado" })));
 
+console.log("estado del sistema");
+await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), "monitor", "resumen"), { today: { reads: 1 } }); });
+await t("la admin ve el estado del sistema", () => assertSucceeds(getDoc(doc(A, "monitor", "resumen"))));
+await t("un empleado no ve el estado del sistema", () => assertFails(getDoc(doc(INV, "monitor", "resumen"))));
+await t("nadie lo escribe desde la app", () => assertFails(setDoc(doc(A, "monitor", "resumen"), { today: { reads: 0 } })));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));

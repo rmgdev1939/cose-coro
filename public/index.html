@@ -738,6 +738,39 @@
   body.ed-open main{padding-bottom:62vh;}
   body.ed-open footer{display:none;}
 
+  /* --- Estado del sistema ------------------------------------------------ */
+  .mon-body{display:flex; flex-direction:column; gap:18px;}
+  .mon-head{border-radius:14px; padding:14px 16px; border:1px solid var(--line); background:var(--surface);}
+  .mon-head.ok{border-color:var(--accent2); background:var(--ok-bg);}
+  .mon-head.warn{border-color:var(--accent); background:var(--est-bg);}
+  .mon-head.crit{border-color:#E5534B; background:color-mix(in srgb, #E5534B 14%, var(--surface));}
+  .mon-h1{font-family:"Baloo 2", system-ui, sans-serif; font-weight:700; font-size:1.1rem; color:var(--ink);}
+  .mon-h2{font-size:0.78rem; color:var(--ink-soft);}
+  .mon-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .mon-g{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px 12px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:2px; --c:var(--accent2);}
+  .mon-g.warn{--c:var(--accent);} .mon-g.crit{--c:#E5534B;}
+  .mon-g svg{width:100%; max-width:150px; height:auto;}
+  .mon-g .trk{fill:none; stroke:var(--surface-2); stroke-width:10; stroke-linecap:round;}
+  .mon-g .val{fill:none; stroke:var(--c); stroke-width:10; stroke-linecap:round;}
+  .mon-p{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.3rem; margin-top:-26px; color:var(--ink);}
+  .mon-t{font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); margin-top:4px;}
+  .mon-b{font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:0.8rem; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .mon-s{font-size:0.7rem; color:var(--ink-soft);}
+  .mon-chart{display:flex; align-items:flex-end; gap:4px; height:150px; padding-top:4px;}
+  .mon-col{flex:1; min-width:0; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:3px;}
+  .mon-bar{width:100%; max-width:26px; border-radius:5px 5px 2px 2px; background:var(--accent2);}
+  .mon-col.warn .mon-bar{background:var(--accent);} .mon-col.crit .mon-bar{background:#E5534B;}
+  .mon-v{font-size:0.56rem; color:var(--ink-soft);}
+  .mon-d{font-size:0.58rem; color:var(--ink-soft); white-space:nowrap;}
+  .mon-tiles{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;}
+  .mon-tiles .dash-stat.mon-warn{border-color:var(--accent); background:var(--est-bg);}
+  @media (max-width:380px){ .mon-tiles{grid-template-columns:1fr 1fr;} }
+  .mon-ev{display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--line);}
+  .mon-ev:last-child{border-bottom:none;}
+  .mon-ev .txt{flex:1; min-width:0; font-size:0.86rem; color:var(--ink); line-height:1.45;}
+  .mon-dot{width:10px; height:10px; border-radius:50%; background:var(--accent2); flex:none; margin-top:5px;}
+  .mon-ev.warn .mon-dot{background:var(--accent);} .mon-ev.crit .mon-dot{background:#E5534B;}
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -859,6 +892,7 @@
       <button class="seg-tab" data-fs="125" type="button">Muy grande</button>
     </div>
   </section>
+  <button class="btn" id="dashMonitorBtn" type="button" style="width:100%;" hidden>Estado del sistema<span class="badge" id="dashMonitorBadge" hidden></span></button>
   <button class="btn" id="dashAdminBtn" type="button" style="width:100%;" hidden>Usuarios y cambios del mapa<span class="badge" id="dashAdminBadge" hidden></span></button>
   <button class="btn primary" id="dashReportBtn" type="button" style="width:100%;">Ver reporte de uso</button>
   <div class="actions" style="display:flex; gap:10px;">
@@ -1664,6 +1698,18 @@
   </section>
 </div>
 
+<div class="screen" id="screen-monitor" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back-dash>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Dashboard
+    </button>
+  </div>
+  <p class="dash-greet">Estado del sistema</p>
+  <p class="lede" style="margin-top:-8px;">Consumo del plan gratis de Firebase, medido cada hora, y la evaluación del día. Solo lo ve el administrador.</p>
+  <div id="monBody" class="mon-body"></div>
+</div>
+
 <div class="screen" id="screen-editor" hidden>
   <div class="backbar">
     <button class="backbtn" id="edBack" type="button">
@@ -1796,7 +1842,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 23 · 29 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 24 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -1813,7 +1859,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -1833,7 +1879,8 @@
     chat: "Chat del equipo",
     conv: "Chat del equipo",
     grupo: "Nuevo grupo",
-    editor: "Editor del mapa"
+    editor: "Editor del mapa",
+    monitor: "Estado del sistema"
   };
 
   function showScreen(name, pushHash){
@@ -5133,6 +5180,7 @@
   window.coseChat = {
     start: start,
     stop: stop,
+    onlineCount: function(){ return Object.keys(estado).filter(function(u){ return estado[u] && estado[u].on === true; }).length; },
     paintAv: function(node){ if (X && ICON_BY[myIcon]) paintAv(node); else { node.classList.remove("has-ic"); node.style.removeProperty("--c"); } },
     avatar: avatar
   };
@@ -5477,6 +5525,171 @@
 
 <script>
 // ============================================================================
+// ESTADO DEL SISTEMA (solo el administrador): medidores del plan gratis de
+// Firebase, historial de 14 días, conteos y la evaluación del día.
+// Los datos los guarda cada hora tools/monitor.cjs en monitor/resumen; los
+// "conectados ahora" salen en vivo del chat (Realtime Database).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var X = null, data = null, unsub = null, timer = null;
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
+  function fmt(n){ return Math.round(n).toLocaleString("es-VE"); }
+  function pct(v, lim){ return lim ? Math.min(999, v / lim * 100) : 0; }
+  function level(p){ return p >= 80 ? "crit" : p >= 50 ? "warn" : "ok"; }
+  function ago(t){
+    var m = Math.round((Date.now() - t) / 60000);
+    return m < 1 ? "hace un momento" : m < 60 ? "hace " + m + " min" : m < 1440 ? "hace " + Math.round(m / 60) + " h" : "hace " + Math.round(m / 1440) + " días";
+  }
+  function hora(t){ return new Date(t).toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" }); }
+  function bytes(b){ return b >= 1073741824 ? (b / 1073741824).toFixed(2) + " GB" : b >= 1048576 ? (b / 1048576).toFixed(1) + " MB" : Math.round(b / 1024) + " KB"; }
+
+  // Medidor semicircular
+  function gauge(title, p, big, sub){
+    var box = el("div", "mon-g " + level(p));
+    var r = 42, len = Math.PI * r, fill = Math.max(0, Math.min(100, p)) / 100 * len;
+    box.innerHTML = '<svg viewBox="0 0 100 58" aria-hidden="true"><path class="trk" d="M8 50 A42 42 0 0 1 92 50"/>' +
+      '<path class="val" d="M8 50 A42 42 0 0 1 92 50" stroke-dasharray="' + fill.toFixed(1) + ' ' + len.toFixed(1) + '"/></svg>';
+    box.appendChild(el("div", "mon-p", (p < 10 ? p.toFixed(1) : Math.round(p)) + " %"));
+    box.appendChild(el("div", "mon-t", title));
+    box.appendChild(el("div", "mon-b", big));
+    if (sub) box.appendChild(el("div", "mon-s", sub));
+    box.setAttribute("role", "img");
+    box.setAttribute("aria-label", title + ": " + big + " (" + Math.round(p) + " % del límite gratis)");
+    return box;
+  }
+  function tile(n, label, warn){
+    var t = el("div", "dash-stat" + (warn ? " mon-warn" : ""));
+    t.appendChild(el("div", "n mono", fmt(n)));
+    t.appendChild(el("div", "l", label));
+    return t;
+  }
+
+  function paint(){
+    if (!X || window.coseApp.current() !== "monitor") return;
+    var box = $("monBody");
+    box.innerHTML = "";
+    var online = window.coseChat && window.coseChat.onlineCount ? window.coseChat.onlineCount() : 0;
+    if (!data){
+      box.appendChild(el("p", "c-empty", "Todavía no hay mediciones. El medidor corre cada hora en la computadora de Rafael."));
+      return;
+    }
+    var L = data.limits || {}, T = data.today || {}, now = Date.now();
+    var qs = ms(data.quotaStart), qr = ms(data.quotaReset), upd = ms(data.updatedAt);
+    var frac = Math.max(0.05, Math.min(1, (upd - qs) / 86400000));
+    var projReads = (T.reads || 0) / frac;
+    var pReads = pct(T.reads || 0, L.reads), pWrites = pct(T.writes || 0, L.writes), pConn = pct(online, L.connections),
+        pRtdb = pct((data.rtdb || {}).monthBytes || 0, L.rtdbMonthBytes);
+    var worst = Math.max(pReads, pWrites, pConn, pRtdb, pct(projReads, L.reads) * 0.8);
+    var stale = now - upd > 3 * 3600000;
+
+    // semáforo
+    var lv = stale ? "warn" : level(worst);
+    var head = el("div", "mon-head " + lv);
+    head.appendChild(el("div", "mon-h1", lv === "ok" ? "Todo bien: el plan gratis está holgado" : lv === "warn" ? (stale ? "Medición atrasada" : "Atención: el consumo va subiendo") : "Alerta: cerca del límite gratis"));
+    head.appendChild(el("div", "mon-h2", "Medido " + ago(upd) + " · el contador diario se reinicia a las " + hora(qr) + " (hora de Venezuela)"));
+    box.appendChild(head);
+
+    // medidores
+    var g = el("div", "mon-grid");
+    g.appendChild(gauge("Lecturas hoy", pReads, fmt(T.reads || 0) + " de " + fmt(L.reads), "Estimado al final del día: " + fmt(projReads)));
+    g.appendChild(gauge("Escrituras hoy", pWrites, fmt(T.writes || 0) + " de " + fmt(L.writes)));
+    g.appendChild(gauge("Conectados ahora", pConn, online + " de " + L.connections, "Máximo de hoy: " + (T.peakConn || 0)));
+    g.appendChild(gauge("Datos del chat en vivo (mes)", pRtdb, bytes((data.rtdb || {}).monthBytes || 0) + " de 10 GB"));
+    box.appendChild(g);
+
+    // historial 14 días
+    var hist = (data.history || []).slice(-14);
+    var card = el("section", "card");
+    card.appendChild(el("div", "card-title", "Lecturas por día (últimos " + hist.length + " días)"));
+    var max = Math.max(1000, Math.max.apply(null, hist.map(function(d){ return d.reads || 0; })));
+    var chart = el("div", "mon-chart");
+    hist.forEach(function(d){
+      var col = el("div", "mon-col " + level(pct(d.reads || 0, L.reads)));
+      var bar = el("div", "mon-bar"); bar.style.height = Math.max(2, (d.reads || 0) / max * 100) + "%";
+      bar.title = d.date + ": " + fmt(d.reads || 0) + " lecturas, " + fmt(d.writes || 0) + " escrituras";
+      col.appendChild(el("span", "mon-v mono", (d.reads || 0) >= 1000 ? ((d.reads || 0) / 1000).toFixed(1) + "k" : String(d.reads || 0)));
+      col.appendChild(bar);
+      col.appendChild(el("span", "mon-d", d.date.slice(8) + "/" + d.date.slice(5, 7)));
+      chart.appendChild(col);
+    });
+    card.appendChild(chart);
+    card.appendChild(el("p", "smap-note", "Límite gratis: " + fmt(L.reads) + " lecturas por día. La escala de las barras llega a " + fmt(max) + "."));
+    box.appendChild(card);
+
+    // conteos
+    var C = data.counts || {};
+    var st = el("div", "mon-tiles");
+    st.appendChild(tile(C.verificados || 0, "usuarios aprobados"));
+    st.appendChild(tile(C.pendientes || 0, "esperando aprobación", (C.pendientes || 0) > 0));
+    st.appendChild(tile(C.conexiones || 0, "parejas de compañeros"));
+    st.appendChild(tile(C.chats || 0, "chats"));
+    st.appendChild(tile(C.mensajes || 0, "mensajes"));
+    st.appendChild(tile(C.cambiosMapa || 0, "cambios del mapa"));
+    box.appendChild(st);
+
+    // evaluación del día
+    var ev = el("section", "card");
+    ev.appendChild(el("div", "card-title", "Evaluación de hoy"));
+    function item(kind, text, action){
+      var r = el("div", "mon-ev " + kind);
+      r.appendChild(el("span", "mon-dot"));
+      var t = el("div", "txt"); t.appendChild(el("div", "m", text)); r.appendChild(t);
+      if (action){
+        var b = el("button", "hist-copybtn", action.text); b.type = "button";
+        b.addEventListener("click", action.fn); r.appendChild(b);
+      }
+      ev.appendChild(r);
+    }
+    var users = Math.max(1, C.verificados || 1), perUser = projReads / users;
+    item(level(pct(projReads, L.reads)), "Lecturas: al ritmo de hoy terminarías el día en " + fmt(projReads) + " (" + Math.round(pct(projReads, L.reads)) + " % del límite).");
+    item("ok", "Capacidad: cada usuario gasta unas " + fmt(perUser) + " lecturas al día; el plan gratis alcanza para unas " + fmt(L.reads / Math.max(1, perUser)) + " personas con este uso.");
+    item(level(pWrites), "Escrituras: " + fmt(T.writes || 0) + " hoy (" + pWrites.toFixed(1) + " %).");
+    item(level(pct(T.peakConn || 0, L.connections)), "Conexiones: máximo " + (T.peakConn || 0) + " a la vez hoy; el límite es " + L.connections + ".");
+    if ((C.pendientes || 0) > 0) item("warn", (C.pendientes === 1 ? "1 persona espera" : C.pendientes + " personas esperan") + " tu aprobación.", { text:"Aprobar", fn:function(){ window.coseApp.showScreen("admin"); } });
+    if ((C.solicitudes || 0) > 0) item("ok", C.solicitudes + " solicitudes de compañero sin responder en el chat.");
+    if (stale) item("warn", "La medición no se actualiza desde " + ago(upd) + ". El medidor corre en tu computadora: debe estar encendida y con internet.");
+    item("ok", "Si algún día se llega al límite no hay cobros: el plan gratis deja de guardar datos nuevos hasta que se reinicia el contador.");
+    box.appendChild(ev);
+  }
+
+  function badge(){
+    var C = (data && data.counts) || {};
+    var n = C.pendientes || 0;
+    $("dashMonitorBadge").hidden = !n;
+    $("dashMonitorBadge").textContent = n;
+  }
+  function start(ctx){
+    if (X){ X.me = ctx.me; return; }
+    X = ctx;
+    $("dashMonitorBtn").hidden = false;
+    unsub = X.F.onSnapshot(X.F.doc(X.db, "monitor", "resumen"), function(s){
+      data = s.exists() ? s.data({ serverTimestamps:"estimate" }) : null;
+      badge(); paint();
+    }, function(){ data = null; paint(); });
+    timer = setInterval(paint, 30000); // "conectados ahora" y "medido hace…"
+  }
+  function stop(){
+    if (!X) return;
+    if (unsub){ try{ unsub(); }catch(e){} unsub = null; }
+    clearInterval(timer); timer = null;
+    X = null; data = null;
+    $("dashMonitorBtn").hidden = true;
+    if (window.coseApp.current() === "monitor") window.coseApp.showScreen("home");
+  }
+  $("dashMonitorBtn").addEventListener("click", function(){ if (X){ window.coseApp.showScreen("monitor"); paint(); } });
+  new MutationObserver(function(){ if (!$("screen-monitor").hidden) paint(); })
+    .observe($("screen-monitor"), { attributes:true, attributeFilter:["hidden"] });
+  if ((location.hash || "").slice(1) === "monitor") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
+
+  window.coseMonitor = { start:start, stop:stop };
+})();
+</script>
+
+<script>
+// ============================================================================
 // MODO NUBE (Firebase): cuentas de trabajadores + mapa compartido en vivo.
 // Mientras FIREBASE_CONFIG sea null, Cose Coro funciona en modo local
 // (como el archivo de WhatsApp y el artifact) y este bloque no hace nada.
@@ -5737,6 +5950,7 @@
       setDot(0);
       if (window.coseChat) window.coseChat.stop();
       if (window.coseEditor) window.coseEditor.stop();
+      if (window.coseMonitor) window.coseMonitor.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -5745,6 +5959,7 @@
       var admin = me.role === "admin";
       if (window.coseChat) window.coseChat.start({ app:app, db:db, F:F, FB:FB, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseEditor) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
+      if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
         if (!admin && adminWatching) stopAdmin();

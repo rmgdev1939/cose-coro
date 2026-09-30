@@ -16,6 +16,7 @@ App (PWA) para el personal de la sucursal Coro de Coseimpa: calculadoras de mate
 | `database.rules.json` | Reglas de la Realtime Database (solo el "en línea" del chat) |
 | `firebase.json`, `.firebaserc` | Configuración de Firebase Hosting y del simulador |
 | `tests/` | Pruebas de las reglas de seguridad |
+| `tools/monitor.cjs` | Medidor del plan gratis: guarda el consumo en `monitor/resumen` para la pantalla "Estado del sistema". Corre cada hora en la computadora de Rafael (`tools/com.cosecoro.monitor.plist`, instalado desde una copia en `~/Library/Application Support/CoseCoro`) |
 
 ## Publicar
 
