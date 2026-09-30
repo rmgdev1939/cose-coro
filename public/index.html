@@ -777,7 +777,12 @@
   .mon-ev.warn .mon-dot{background:var(--accent);} .mon-ev.crit .mon-dot{background:#E5534B;}
 
   /* --- Campanita y soporte ------------------------------------------------ */
-  .chat-chip.bell-chip{left:auto; right:56px;}
+  .chat-chip.bell-chip{left:auto; right:50px;}
+  #chatBtn{left:auto; right:88px;}
+  #helpBtn{left:12px;}
+  .profile-chip{right:12px;}
+  #chatBtnBadge{position:absolute; top:-1px; right:-1px; width:11px; height:11px; min-width:0; padding:0; border-radius:50%; background:#E5534B; border:2px solid var(--surface); font-size:0; margin:0;}
+  @media (max-width:400px){ header.top .brand{font-size:1.12rem;} header.top .mark{width:26px; height:26px;} }
   .chat-chip.bell-chip .badge{right:-10px;}
   .nt-item{display:flex; align-items:flex-start; gap:10px; width:100%; padding:11px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; color:inherit; text-align:left;}
   button.nt-item{cursor:pointer;}
@@ -2435,7 +2440,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.1</span>
+    <span id="appVersion">CC/1.2</span>
   </div>
 </footer>
 
@@ -5449,7 +5454,7 @@
   function paintBadges(){
     var nUnread = Object.keys(chats).filter(unread).length;
     var nReq = Object.keys(conex).filter(function(k){ return conex[k].status === "pendiente" && conex[k].to === uid(); }).length;
-    setBadge($("chatBtnBadge"), nUnread + nReq);
+    $("chatBtnBadge").hidden = !(nUnread + nReq); // punto rojo si hay mensajes o solicitudes
     setBadge($("chatTileBadge"), nUnread + nReq);
     setBadge($("chatTabBadge"), nUnread);
     setBadge($("compaTabBadge"), nReq);
@@ -5921,6 +5926,7 @@
     X = ctx;
     firstConex = true; firstChats = true; perfilesLoaded = false; syncing = "";
     $("chatTile").hidden = false;
+    $("chatBtn").hidden = false;
     $("pfIconCard").hidden = false;
     $("supTab").hidden = X.uid !== SUPERVISOR;
     var f = F(), db = X.db, me = uid();
