@@ -865,6 +865,26 @@
   .tool-tile.tile-techo{border-left-color:var(--brand-brown);}
   .tool-tile.tile-tanque{border-left-color:var(--brand-blue);}
 
+  /* --- Vehículos ----------------------------------------------------------- */
+  .tool-tile.tile-flota{border-left-color:var(--ink-soft);}
+  .fl-stats{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;}
+  @media (max-width:420px){ .fl-stats{grid-template-columns:1fr 1fr;} }
+  .fl-stat{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:var(--surface); font-family:inherit; color:var(--ink); cursor:pointer; text-align:left;}
+  .fl-stat.on{border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink);}
+  .fl-stat .n{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.3rem;}
+  .fl-stat .l{font-size:0.72rem; color:var(--ink-soft);}
+  .fl-stat.taller .n{color:var(--est-fg);} .fl-stat.fuera .n{color:#E5534B;} .fl-stat.operativo .n{color:var(--ok-fg);}
+  .fl-item{display:flex; flex-direction:column; gap:3px; width:100%; padding:12px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; color:inherit; text-align:left; cursor:pointer;}
+  .fl-item:last-child{border-bottom:none;}
+  .fl-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .fl-placa{font-weight:700; font-size:1.05rem; letter-spacing:0.06em; color:var(--ink); border:1.5px solid var(--ink); border-radius:6px; padding:1px 8px;}
+  .fl-st{font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:10px;}
+  .fl-st.operativo{background:var(--ok-bg); color:var(--ok-fg);} .fl-st.taller{background:var(--est-bg); color:var(--est-fg);}
+  .fl-st.fuera{background:color-mix(in srgb, #E5534B 14%, var(--surface)); color:#C2403A;}
+  .fl-desc{font-weight:600; font-size:0.9rem; color:var(--ink);}
+  .fl-sub{font-size:0.78rem; color:var(--ink-soft);}
+  .fl-notas{font-size:0.8rem; color:var(--ink); background:var(--surface-2); border-radius:8px; padding:6px 9px; white-space:pre-wrap; overflow-wrap:anywhere;}
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -884,7 +904,7 @@
         <h2 id="gTitle">Entrar</h2>
         <p id="gIntro">Solo para trabajadores de la sucursal Coro.</p>
         <div id="gNameRow" hidden><label for="gName">Nombre y apellido</label><input type="text" id="gName" class="hist-search" autocomplete="name" maxlength="60"></div>
-        <div id="gCargoRow" hidden><label for="gCargo">Cargo</label><select id="gCargo"></select></div>
+        <div id="gCargoRow" hidden><label for="gCargo">Área</label><select id="gCargo"></select></div>
         <div><label for="gEmail">Correo</label><input type="email" id="gEmail" class="hist-search" autocomplete="email" inputmode="email"></div>
         <div><label for="gPass">Clave</label><input type="password" id="gPass" class="hist-search" autocomplete="current-password" minlength="6"></div>
         <div id="gPass2Row" hidden><label for="gPass2">Repite la clave</label><input type="password" id="gPass2" class="hist-search" autocomplete="new-password" minlength="6"></div>
@@ -1042,7 +1062,7 @@
   <p class="dash-greet">Usuarios y cambios</p>
   <section class="card">
     <div class="card-title">Esperando aprobación</div>
-    <p class="smap-note" style="margin:0 0 6px;">Revisa el cargo antes de aprobar: Autoservicio e Inventario pueden editar el mapa. Si no es el correcto, cámbialo después en «Usuarios».</p>
+    <p class="smap-note" style="margin:0 0 6px;">Revisa el área antes de aprobar: Autoservicio e Inventario pueden editar el mapa. Si no es la correcta, cámbiala después en «Usuarios».</p>
     <div id="admPending"></div>
   </section>
   <section class="card">
@@ -1050,11 +1070,11 @@
     <div id="admUsers"></div>
   </section>
   <section class="card">
-    <div class="card-title">Cargos</div>
+    <div class="card-title">Áreas</div>
     <p class="smap-note" style="margin:0 0 6px;">Son las opciones que ve cada trabajador al crear su cuenta y en su perfil.</p>
     <div class="cargo-chips" id="admCargos"></div>
     <form class="me-add" id="admCargoForm">
-      <input type="text" id="admCargoNew" class="hist-search" placeholder="Nuevo cargo (ej: Vendedor)" maxlength="40" autocomplete="off">
+      <input type="text" id="admCargoNew" class="hist-search" placeholder="Nueva área (ej: Despacho)" maxlength="40" autocomplete="off">
       <button class="btn primary" type="submit">Agregar</button>
     </form>
     <p class="smap-note" id="admCargoMsg"></p>
@@ -1084,7 +1104,7 @@
     <div class="card-title">Mis datos</div>
     <form class="pf-form" id="pfForm" novalidate>
       <div><label for="pfName">Nombre y apellido</label><input type="text" id="pfName" class="hist-search" maxlength="60" autocomplete="name"></div>
-      <div class="select-field"><label for="pfCargo">Cargo</label><select id="pfCargo"></select></div>
+      <div class="select-field"><label for="pfCargo">Área</label><select id="pfCargo"></select></div>
       <div><label for="pfPhone">Teléfono (opcional)</label><input type="tel" id="pfPhone" class="hist-search" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="Ej: 0414 1234567"></div>
       <div id="pfEmailRow" hidden><label>Correo</label><div class="pf-ro" id="pfEmail"></div></div>
       <p class="pf-msg" id="pfMsg"></p>
@@ -1209,6 +1229,15 @@
       <span class="tool-text">
         <span class="tool-title">Editor del mapa</span>
         <span class="tool-sub">Autoservicio e inventario: dónde va cada artículo</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-flota" id="flTile" type="button" hidden>
+      <span class="tool-icon" style="color:var(--ink-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Vehículos</span>
+        <span class="tool-sub" id="flTileSub">Registro de la flota</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -2030,7 +2059,7 @@
     <details class="faq"><summary>Mi cuenta dice «en revisión»</summary><p>El administrador tiene que aprobarla. Cuando lo haga, la app se abre sola; no tienes que hacer nada más.</p></details>
     <details class="faq"><summary>¿Cómo agrego a un compañero en el chat?</summary><p>Chat del equipo → «Compañeros» → busca su nombre → «Agregar». Cuando acepte tu solicitud, ya pueden escribirse. También puedes armar grupos con tus compañeros.</p></details>
     <details class="faq"><summary>¿Quién puede ver mis mensajes?</summary><p>Tus compañeros de cada conversación. Los chats son para el trabajo y la administración puede revisarlos.</p></details>
-    <details class="faq"><summary>¿Por qué no veo el Editor del mapa?</summary><p>Solo lo usan Autoservicio, Inventario y el administrador. Si tu cargo está mal, pídele al administrador que lo cambie.</p></details>
+    <details class="faq"><summary>¿Por qué no veo el Editor del mapa?</summary><p>Solo lo usan Autoservicio, Inventario y el administrador. Si tu área está mal, pídele al administrador que lo cambie.</p></details>
     <details class="faq"><summary>¿De dónde sale la tasa del dólar?</summary><p>Es la tasa oficial del BCV del día. Se actualiza sola con internet; sin conexión se usa la última guardada, y también puedes escribirla a mano.</p></details>
     <details class="faq"><summary>¿Funciona sin internet?</summary><p>Las calculadoras y el mapa guardado sí. El chat, las notificaciones y los cambios del mapa necesitan internet.</p></details>
     <details class="faq"><summary>¿Por qué no me llegan avisos con la app cerrada?</summary><p>Por ahora las notificaciones llegan con Cose Coro abierta: la campanita y el número rojo te muestran lo nuevo al entrar.</p></details>
@@ -2113,6 +2142,44 @@
     <p class="pf-msg" id="edMsg"></p>
     <div class="nolv" style="margin-top:4px;"><div class="nh" id="edSuggestH"></div><div class="chips" id="edSuggest"></div></div>
   </div>
+</div>
+
+<div class="screen" id="screen-flota" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Vehículos</p>
+  <div class="fl-stats" id="flStats"></div>
+  <button class="btn primary" id="flAdd" type="button" style="width:100%;" hidden>+ Agregar vehículo</button>
+  <section class="card"><div id="flList"></div></section>
+</div>
+
+<div class="screen" id="screen-vehiculo" hidden>
+  <div class="backbar">
+    <button class="backbtn" id="flBack" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Vehículos
+    </button>
+  </div>
+  <p class="dash-greet" id="flFormTitle">Agregar vehículo</p>
+  <section class="card">
+    <form class="pf-form" id="flForm" novalidate>
+      <div><label for="flPlaca">Placa</label><input type="text" id="flPlaca" class="hist-search" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="Ej: A12BC3D"></div>
+      <div class="select-field"><label for="flTipo">Tipo</label><select id="flTipo" class="hist-search"><option value="camion">Camión</option><option value="camioneta">Camioneta</option><option value="carro">Carro</option><option value="moto">Moto</option><option value="montacargas">Montacargas</option><option value="otro">Otro</option></select></div>
+      <div><label for="flMarca">Marca</label><input type="text" id="flMarca" class="hist-search" maxlength="30" autocomplete="off" placeholder="Ej: Ford"></div>
+      <div><label for="flModelo">Modelo</label><input type="text" id="flModelo" class="hist-search" maxlength="30" autocomplete="off" placeholder="Ej: Cargo 815"></div>
+      <div><label for="flAnio">Año (opcional)</label><input type="number" id="flAnio" class="hist-search" inputmode="numeric" min="1950" max="2100" placeholder="Ej: 2012"></div>
+      <div><label for="flColor">Color</label><input type="text" id="flColor" class="hist-search" maxlength="20" autocomplete="off" placeholder="Ej: Blanco"></div>
+      <div><label for="flKm">Kilometraje</label><input type="number" id="flKm" class="hist-search" inputmode="numeric" min="0" placeholder="Ej: 150000"></div>
+      <div class="select-field"><label for="flEstado">Estado</label><select id="flEstado" class="hist-search"><option value="operativo">Operativo</option><option value="taller">En taller</option><option value="fuera">Fuera de servicio</option></select></div>
+      <div><label for="flNotas">Notas</label><textarea id="flNotas" class="hist-search" rows="3" maxlength="500" placeholder="Ej: cambio de aceite pendiente, caucho trasero gastado"></textarea></div>
+      <p class="pf-msg" id="flMsg"></p>
+      <button class="btn primary" type="submit" id="flSave">Guardar</button>
+    </form>
+  </section>
 </div>
 
 <div class="screen" id="screen-capac" hidden>
@@ -2203,7 +2270,7 @@
     </section>
     <section class="card">
       <div class="card-title">Agregar compañero</div>
-      <input type="search" id="chatFind" class="hist-search" placeholder="Busca por nombre o cargo" autocomplete="off" aria-label="Buscar compañeros de trabajo">
+      <input type="search" id="chatFind" class="hist-search" placeholder="Busca por nombre o área" autocomplete="off" aria-label="Buscar compañeros de trabajo">
       <div id="chatFindList"></div>
     </section>
     <section class="card" id="chatReqOutCard" hidden>
@@ -2254,7 +2321,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 27 · 30 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 28 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -2271,7 +2338,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -2300,7 +2367,9 @@
     capac: "Capacitación",
     leccion: "Capacitación",
     techo: "Techos · láminas y tornillos",
-    tanque: "Tanques de agua"
+    tanque: "Tanques de agua",
+    flota: "Vehículos",
+    vehiculo: "Vehículos"
   };
 
   function showScreen(name, pushHash){
@@ -4680,7 +4749,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var KEY = "cosecoro_perfil"; // { cargo, phone }
   // Cargos iniciales. Con la nube, el administrador edita la lista.
-  var DEFAULT_CARGOS = ["Administración", "Autoservicio", "Caja", "Ventas", "Inventario", "Patio", "Compras", "Sistema"];
+  var DEFAULT_CARGOS = ["Administración", "Gerencia", "Autoservicio", "Caja", "Ventas", "Inventario", "Patio", "Compras", "Mecánicos", "Sistema"];
   function local(){ try{ var v = JSON.parse(localStorage.getItem(KEY) || "null"); return v && typeof v === "object" ? v : {}; }catch(e){ return {}; } }
   function saveLocal(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
   function localName(){ try{ return localStorage.getItem("coseimpa_profile_name") || ""; }catch(e){ return ""; } }
@@ -4690,7 +4759,7 @@
     var list = cargos().slice();
     if (current && list.indexOf(current) === -1) list.push(current);
     sel.innerHTML = "";
-    var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "Elige tu cargo"; sel.appendChild(o0);
+    var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "Elige tu área"; sel.appendChild(o0);
     list.forEach(function(c){ var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o); });
     sel.value = current || "";
   }
@@ -4703,7 +4772,7 @@
     if (window.coseChat) window.coseChat.paintAv($("acctAv"));
     $("acctName").textContent = nm;
     var cargo = (me ? me.cargo : l.cargo) || "";
-    $("acctSub").textContent = [cargo || "Sin cargo", me ? me.email : ""].filter(Boolean).join(" · ");
+    $("acctSub").textContent = [cargo || "Sin área", me ? me.email : ""].filter(Boolean).join(" · ");
     var meta = $("acctMeta");
     meta.innerHTML = "";
     function tag(t, cls){ var s = document.createElement("span"); s.textContent = t; if (cls) s.className = cls; meta.appendChild(s); }
@@ -4732,7 +4801,7 @@
     $("pfPassCard").hidden = !me;
     msg($("pfMsg"), ""); msg($("pwMsg"), "");
     $("pfNote").textContent = me
-      ? "Tus datos se guardan en tu cuenta y los ve el administrador." + (me.role !== "admin" ? " Tu cargo lo cambia el administrador." : "")
+      ? "Tus datos se guardan en tu cuenta y los ve el administrador." + (me.role !== "admin" ? " Tu área la cambia el administrador." : "")
       : "Tu perfil se guarda solo en este teléfono.";
     window.coseApp.showScreen("perfil");
   }
@@ -5079,8 +5148,7 @@
         b.type = "button"; b.dataset.icon = ic.id;
         b.setAttribute("aria-label", "Ícono " + ic.label);
         b.appendChild(avatar(ic.id, "", "lg"));
-        b.appendChild(el("span", "", ic.label));
-        b.addEventListener("click", function(){ setIcon(ic.id); });
+                b.addEventListener("click", function(){ setIcon(ic.id); });
         box.appendChild(b);
       });
     }
@@ -5308,7 +5376,7 @@
     }
     people.slice(0, 40).forEach(function(u){
       var p = perfiles[u];
-      box.appendChild(row({ av: avatar(iconOf(u), p.name), title: p.name, sub: p.cargo || "Sin cargo",
+      box.appendChild(row({ av: avatar(iconOf(u), p.name), title: p.name, sub: p.cargo || "Sin área",
         onClick: function(){ openProfile(u); },
         buttons: [ { text:"Agregar", primary:true, fn:function(btn){ sendRequest(u, btn); } } ] }));
     });
@@ -5330,7 +5398,7 @@
     var av = $("ppAv"); av.innerHTML = "";
     av.appendChild(avatar(iconOf(u), nameOf(u), "xl", u === me ? null : isOnline(u)));
     $("ppName").textContent = nameOf(u) + (u === me ? " (tú)" : "");
-    $("ppCargo").textContent = p.cargo || (u === me ? X.me.cargo : "") || "Sin cargo";
+    $("ppCargo").textContent = p.cargo || (u === me ? X.me.cargo : "") || "Sin área";
     $("ppSeen").textContent = u === me ? "" : seen(u);
     $("ppSeen").className = "pp-sub" + (isOnline(u) ? " on" : "");
     var med = $("ppMed"); med.innerHTML = "";
@@ -6837,6 +6905,138 @@
 
 <script>
 // ============================================================================
+// VEHÍCULOS (flota): registro de los vehículos de la empresa. Los ven
+// Mecánicos, Gerencia y el administrador; agregan y editan Mecánicos y el
+// administrador (reglas: flotaVer / flotaEditar). Datos en vehiculos/{id}.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var TIPOS = { camion:"Camión", camioneta:"Camioneta", carro:"Carro", moto:"Moto", montacargas:"Montacargas", otro:"Otro" };
+  var ESTADOS = { operativo:"Operativo", taller:"En taller", fuera:"Fuera de servicio" };
+  var X = null, unsub = null, list = [], editId = null, filtro = "todos";
+  function puedeVer(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos" || me.cargo === "Gerencia"); }
+  function puedeEditar(me){ return !!me && (me.role === "admin" || me.cargo === "Mecánicos"); }
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function km(n){ return (+n || 0).toLocaleString("es-VE") + " km"; }
+
+  function paint(){
+    if (!X || current() !== "flota") return;
+    var edit = puedeEditar(X.me);
+    $("flAdd").hidden = !edit;
+    var c = { operativo:0, taller:0, fuera:0 };
+    list.forEach(function(v){ c[v.estado] = (c[v.estado] || 0) + 1; });
+    $("flStats").innerHTML = "";
+    [["todos", "Todos", list.length], ["operativo", "Operativos", c.operativo], ["taller", "En taller", c.taller], ["fuera", "Fuera de servicio", c.fuera]].forEach(function(s){
+      var b = el("button", "fl-stat " + s[0] + (filtro === s[0] ? " on" : "")); b.type = "button";
+      b.appendChild(el("span", "n mono", String(s[2]))); b.appendChild(el("span", "l", s[1]));
+      b.addEventListener("click", function(){ filtro = s[0]; paint(); });
+      $("flStats").appendChild(b);
+    });
+    var box = $("flList"); box.innerHTML = "";
+    var shown = list.filter(function(v){ return filtro === "todos" || v.estado === filtro; });
+    if (!shown.length) box.appendChild(el("div", "c-empty", list.length ? "Ningún vehículo en esta lista." : (edit ? "Todavía no hay vehículos. Toca «Agregar vehículo»." : "Todavía no hay vehículos registrados.")));
+    shown.forEach(function(v){
+      var b = el("button", "fl-item"); b.type = "button";
+      var top = el("div", "fl-top");
+      top.appendChild(el("span", "fl-placa mono", v.placa));
+      top.appendChild(el("span", "fl-st " + v.estado, ESTADOS[v.estado] || v.estado));
+      b.appendChild(top);
+      b.appendChild(el("div", "fl-desc", [TIPOS[v.tipo], v.marca, v.modelo, v.anio].filter(Boolean).join(" · ")));
+      b.appendChild(el("div", "fl-sub", km(v.km) + (v.color ? " · " + v.color : "") + (v.updatedByName ? " · actualizó " + v.updatedByName.split(" ")[0] : "")));
+      if (v.notas) b.appendChild(el("div", "fl-notas", v.notas));
+      b.addEventListener("click", function(){ openForm(v); });
+      box.appendChild(b);
+    });
+  }
+  function openForm(v){
+    editId = v ? v.id : null;
+    var edit = puedeEditar(X.me);
+    $("flFormTitle").textContent = v ? (edit ? "Editar " + v.placa : v.placa) : "Agregar vehículo";
+    $("flPlaca").value = v ? v.placa : "";
+    $("flTipo").value = v ? v.tipo : "camion";
+    $("flMarca").value = v ? v.marca : "";
+    $("flModelo").value = v ? v.modelo : "";
+    $("flAnio").value = v && v.anio ? v.anio : "";
+    $("flColor").value = v ? v.color : "";
+    $("flKm").value = v ? v.km : "";
+    $("flEstado").value = v ? v.estado : "operativo";
+    $("flNotas").value = v ? v.notas : "";
+    $("flMsg").textContent = ""; $("flMsg").className = "pf-msg";
+    $("flForm").querySelectorAll("input, select, textarea").forEach(function(i){ i.disabled = !edit; });
+    $("flSave").hidden = !edit;
+    window.coseApp.showScreen("vehiculo");
+  }
+  function save(e){
+    e.preventDefault();
+    var msg = $("flMsg"), F = X.F;
+    function bad(t){ msg.className = "pf-msg err"; msg.textContent = t; }
+    var placa = $("flPlaca").value.trim().toUpperCase().replace(/\s+/g, "").slice(0, 12);
+    var anio = $("flAnio").value ? parseInt($("flAnio").value, 10) : null;
+    var kmv = parseInt($("flKm").value || "0", 10);
+    if (placa.length < 2) return bad("Escribe la placa.");
+    if (anio !== null && !(anio >= 1950 && anio <= 2100)) return bad("Revisa el año.");
+    if (!(kmv >= 0)) return bad("Revisa el kilometraje.");
+    var data = {
+      placa:placa, tipo:$("flTipo").value, marca:$("flMarca").value.trim().slice(0, 30), modelo:$("flModelo").value.trim().slice(0, 30),
+      color:$("flColor").value.trim().slice(0, 20), km:kmv, estado:$("flEstado").value, notas:$("flNotas").value.trim().slice(0, 500),
+      updatedAt:F.serverTimestamp(), updatedBy:X.uid, updatedByName:X.me.name
+    };
+    if (anio !== null) data.anio = anio;
+    $("flSave").disabled = true; msg.className = "pf-msg"; msg.textContent = "Guardando…";
+    var p;
+    if (editId){
+      if (anio === null) data.anio = F.deleteField();
+      p = F.updateDoc(F.doc(X.db, "vehiculos", editId), data);
+    } else {
+      data.creadoPor = X.uid; data.creadoPorNombre = X.me.name; data.createdAt = F.serverTimestamp();
+      p = F.addDoc(F.collection(X.db, "vehiculos"), data);
+    }
+    // con internet lento, la app guarda el cambio en el teléfono y lo envía sola al reconectar
+    var slow = setTimeout(function(){
+      X.toast("Internet lento: el cambio de " + placa + " quedó en el teléfono y se enviará solo.");
+      $("flSave").disabled = false; msg.textContent = "";
+      window.coseApp.showScreen("flota");
+    }, 8000);
+    p.then(function(){ clearTimeout(slow); if (window.coseApp.current() === "vehiculo"){ X.toast("Vehículo " + placa + " guardado ✓"); window.coseApp.showScreen("flota"); } },
+           function(){ clearTimeout(slow); bad("No se pudo guardar. Revisa tu internet."); })
+     .then(function(){ $("flSave").disabled = false; });
+  }
+
+  function start(ctx){
+    var ver = puedeVer(ctx.me);
+    if (X && !ver){ stop(); return; }
+    if (X){ X.me = ctx.me; paint(); return; }
+    if (!ver) return;
+    X = ctx;
+    $("flTile").hidden = false;
+    unsub = X.F.onSnapshot(X.F.collection(X.db, "vehiculos"), function(snap){
+      list = [];
+      snap.forEach(function(d){ var v = d.data(); v.id = d.id; list.push(v); });
+      list.sort(function(a, b){ return a.placa < b.placa ? -1 : 1; });
+      $("flTileSub").textContent = list.length ? list.length + " vehículo(s) · " + list.filter(function(v){ return v.estado === "taller"; }).length + " en taller" : "Registro de la flota";
+      paint();
+    }, function(){});
+  }
+  function stop(){
+    if (unsub){ try{ unsub(); }catch(e){} unsub = null; }
+    X = null; list = [];
+    $("flTile").hidden = true;
+    var cur = current();
+    if (cur === "flota" || cur === "vehiculo") window.coseApp.showScreen("home");
+  }
+  $("flTile").addEventListener("click", function(){ if (X){ window.coseApp.showScreen("flota"); paint(); } });
+  $("flAdd").addEventListener("click", function(){ if (X) openForm(null); });
+  $("flForm").addEventListener("submit", function(e){ if (X) save(e); else e.preventDefault(); });
+  $("flBack").addEventListener("click", function(){ window.coseApp.showScreen("flota"); paint(); });
+  (function(){ var h = (location.hash || "").slice(1); if (h === "flota" || h === "vehiculo") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0); })();
+  window.coseFlota = { start:start, stop:stop };
+})();
+</script>
+
+<script>
+// ============================================================================
 // MODO NUBE (Firebase): cuentas de trabajadores + mapa compartido en vivo.
 // Mientras FIREBASE_CONFIG sea null, Cose Coro funciona en modo local
 // (como el archivo de WhatsApp y el artifact) y este bloque no hace nada.
@@ -6934,7 +7134,7 @@
       var reg = m === "register";
       $("gTitle").textContent = reg ? "Crear cuenta" : "Entrar";
       $("gIntro").textContent = reg
-        ? "Te enviaremos un correo para confirmar que es tuyo, y el administrador aprueba la cuenta. Cose Coro guarda tu nombre, cargo y correo, los cambios que hagas en el mapa, tus mensajes del chat (son de trabajo y la administración puede revisarlos) y estadísticas de uso de la app para mejorarla."
+        ? "Te enviaremos un correo para confirmar que es tuyo, y el administrador aprueba la cuenta. Cose Coro guarda tu nombre, área y correo, los cambios que hagas en el mapa, tus mensajes del chat (son de trabajo y la administración puede revisarlos) y estadísticas de uso de la app para mejorarla."
         : "Solo para trabajadores de la sucursal Coro.";
       $("gNameRow").hidden = !reg;
       $("gCargoRow").hidden = !reg;
@@ -6965,7 +7165,7 @@
       var err = $("gErr"); err.className = "err"; err.textContent = "";
       if (mode === "register"){
         if (name.length < 2){ err.textContent = "Escribe tu nombre y apellido."; return; }
-        if (!cargo){ err.textContent = "Elige tu cargo."; return; }
+        if (!cargo){ err.textContent = "Elige tu área."; return; }
       }
       if (!email){ err.textContent = "Escribe tu correo."; return; }
       if (pass.length < 6){ err.textContent = "La clave debe tener al menos 6 caracteres."; return; }
@@ -7100,6 +7300,7 @@
       if (window.coseMonitor) window.coseMonitor.stop();
       if (window.coseAvisos) window.coseAvisos.stop();
       if (window.coseCapac) window.coseCapac.stop();
+      if (window.coseFlota) window.coseFlota.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -7110,6 +7311,7 @@
       if (window.coseEditor) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
+      if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
@@ -7314,7 +7516,7 @@
         var pe = $("admPending"); pe.innerHTML = "";
         if (!pending.length) pe.innerHTML = '<div class="rep-empty">Nadie esperando.</div>';
         pending.forEach(function(u){
-          var sub = (u.cargo || "sin cargo") + " · " + u.email + " · se registró " + fmtDate(u.createdAt);
+          var sub = (u.cargo || "sin área") + " · " + u.email + " · se registró " + fmtDate(u.createdAt);
           if (u.emailVerified === true){
             row(pe, u.name, sub, [
               { text:"Aprobar", primary:true, fn:function(){ setStatus(u.uid, "verificado"); } },
@@ -7340,20 +7542,20 @@
               }
             }
             row(ue, u.name + (u.role === "admin" ? " · administrador" : ""),
-              (u.cargo || "sin cargo") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
+              (u.cargo || "sin área") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
               + (window.coseEditor && window.coseEditor.canEdit(u) ? " · edita el mapa" : ""), btns);
             // cargo: lo cambia el administrador (a otros; el suyo, en Mi perfil)
             if (u.uid !== uid && u.status !== "pendiente"){
               var last = ue.lastElementChild, cs = document.createElement("select");
               cs.className = "adm-cargo";
-              cs.setAttribute("aria-label", "Cargo de " + u.name);
+              cs.setAttribute("aria-label", "Área de " + u.name);
               window.coseProfile.fillCargos(cs, u.cargo || "");
-              cs.options[0].textContent = "Sin cargo";
+              cs.options[0].textContent = "Sin área";
               cs.addEventListener("change", function(){
                 var v = cs.value;
                 F.updateDoc(F.doc(db, "users", u.uid), { cargo:v })
-                  .then(function(){ toast("Cargo de " + u.name + ": " + (v || "sin cargo") + " ✓"); },
-                        function(){ toast("No se pudo cambiar el cargo (sin permiso o sin conexión)."); });
+                  .then(function(){ toast("Área de " + u.name + ": " + (v || "sin área") + " ✓"); },
+                        function(){ toast("No se pudo cambiar el área (sin permiso o sin conexión)."); });
               });
               last.querySelector(".txt").appendChild(cs);
             }

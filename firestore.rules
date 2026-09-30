@@ -231,6 +231,34 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Vehículos (flota): los ven Mecánicos, Gerencia y el administrador; los
+    // agregan y editan Mecánicos y el administrador; borrar, solo el administrador.
+    function flotaVer() { return verified() && (me().role == "admin" || me().get("cargo", "") in ["Mecánicos", "Gerencia"]); }
+    function flotaEditar() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Mecánicos"); }
+    function vehiculoOk(d) {
+      return d.keys().hasOnly(["placa", "tipo", "marca", "modelo", "anio", "color", "km", "estado", "notas", "creadoPor", "creadoPorNombre", "createdAt", "updatedAt", "updatedBy", "updatedByName"])
+        && d.placa is string && d.placa.size() >= 2 && d.placa.size() <= 12
+        && d.tipo in ["camion", "camioneta", "carro", "moto", "montacargas", "otro"]
+        && d.marca is string && d.marca.size() <= 30
+        && d.modelo is string && d.modelo.size() <= 30
+        && (!("anio" in d) || (d.anio is int && d.anio >= 1950 && d.anio <= 2100))
+        && d.color is string && d.color.size() <= 20
+        && d.km is int && d.km >= 0 && d.km <= 3000000
+        && d.estado in ["operativo", "taller", "fuera"]
+        && d.notas is string && d.notas.size() <= 500
+        && d.updatedBy == request.auth.uid && d.updatedByName == me().name && d.updatedAt == request.time;
+    }
+    match /vehiculos/{id} {
+      allow read: if flotaVer();
+      allow create: if flotaEditar() && vehiculoOk(request.resource.data)
+        && request.resource.data.creadoPor == request.auth.uid
+        && request.resource.data.creadoPorNombre == me().name
+        && request.resource.data.createdAt == request.time;
+      allow update: if flotaEditar() && vehiculoOk(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["placa", "tipo", "marca", "modelo", "anio", "color", "km", "estado", "notas", "updatedAt", "updatedBy", "updatedByName"]);
+      allow delete: if admin();
+    }
+
     // Capacitación: las lecciones aprobadas de cada quien (el total de
     // medallas se muestra en perfiles/{uid}.medallas).
     match /capacitaciones/{uid} {

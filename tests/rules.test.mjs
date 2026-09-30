@@ -32,6 +32,8 @@ const U = {
 const RAFA = "eabbcqq01NSHmbCiXMMToQIMzU72";
 U.INV = { name: "Iván Inventario", role: "empleado", status: "verificado", cargo: "Inventario" };
 U.AUT = { name: "Aura Autoservicio", role: "empleado", status: "verificado", cargo: "Autoservicio" };
+U.MEC = { name: "Mario Mecánico", role: "empleado", status: "verificado", cargo: "Mecánicos" };
+U.GER = { name: "Gina Gerencia", role: "empleado", status: "verificado", cargo: "Gerencia" };
 U[RAFA] = { name: "Rafael Supervisor", role: "admin", status: "verificado" };
 for (let i = 1; i <= 9; i++) U["U" + i] = { name: "Extra " + i, role: "empleado", status: "verificado" };
 
@@ -258,6 +260,20 @@ await t("Inventario ve la foto y las medallas de B", () => assertSucceeds(getDoc
 await t("B guarda una lección aprobada", () => assertSucceeds(setDoc(doc(B, "capacitaciones", "B"), { hechas: { salitre: { nota: 3, at: serverTimestamp() } } }, { merge: true })));
 await t("C no escribe las lecciones de B", () => assertFails(setDoc(doc(C, "capacitaciones", "B"), { hechas: {} })));
 await t("la admin ve las lecciones de B", () => assertSucceeds(getDoc(doc(A, "capacitaciones", "B"))));
+
+console.log("vehículos");
+const MEC = as("MEC"), GER = as("GER");
+const veh = (who, name, extra = {}) => Object.assign({ placa: "A12BC3D", tipo: "camion", marca: "Ford", modelo: "Cargo 815", anio: 2012, color: "Blanco", km: 150000, estado: "operativo", notas: "", creadoPor: who, creadoPorNombre: name, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), updatedBy: who, updatedByName: name }, extra);
+await t("un mecánico agrega un vehículo", () => assertSucceeds(setDoc(doc(MEC, "vehiculos", "v1"), veh("MEC", "Mario Mecánico"))));
+await t("ventas no agrega vehículos", () => assertFails(setDoc(doc(INV, "vehiculos", "v2"), veh("INV", "Iván Inventario"))));
+await t("gerencia no agrega vehículos", () => assertFails(setDoc(doc(GER, "vehiculos", "v3"), veh("GER", "Gina Gerencia"))));
+await t("gerencia ve los vehículos", () => assertSucceeds(getDocs(collection(GER, "vehiculos"))));
+await t("inventario no ve los vehículos", () => assertFails(getDocs(collection(INV, "vehiculos"))));
+await t("tipo inválido no", () => assertFails(setDoc(doc(MEC, "vehiculos", "v4"), veh("MEC", "Mario Mecánico", { tipo: "avion" }))));
+await t("el mecánico lo pasa a taller", () => assertSucceeds(updateDoc(doc(MEC, "vehiculos", "v1"), { estado: "taller", km: 150500, updatedAt: serverTimestamp(), updatedBy: "MEC", updatedByName: "Mario Mecánico" })));
+await t("no cambia quién lo creó", () => assertFails(updateDoc(doc(MEC, "vehiculos", "v1"), { creadoPor: "X", updatedAt: serverTimestamp(), updatedBy: "MEC", updatedByName: "Mario Mecánico" })));
+await t("el mecánico no borra", () => assertFails(deleteDoc(doc(MEC, "vehiculos", "v1"))));
+await t("la admin borra", () => assertSucceeds(deleteDoc(doc(A, "vehiculos", "v1"))));
 
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
