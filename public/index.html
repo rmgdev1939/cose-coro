@@ -844,6 +844,11 @@
   .pp-med .medalla svg{width:42px; height:50px;}
   .acct-medal:empty{display:none;}
   .pp-med{align-items:center;}
+  .av.av-zoom{cursor:zoom-in;}
+  .foto-viewer{position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.85); display:flex; align-items:center; justify-content:center; padding:24px; cursor:zoom-out;}
+  .foto-viewer figure{margin:0; display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .foto-viewer img{width:min(80vw, 340px); height:min(80vw, 340px); border-radius:16px; object-fit:cover; box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  .foto-viewer figcaption{color:#fff; font-weight:700; font-size:1rem;}
   .pp-med .medal.conn{background:color-mix(in srgb, var(--brand-blue) 14%, var(--surface)); color:var(--brand-blue);}
   .pp-med .medal{font-size:0.78rem; font-weight:700; padding:4px 10px; border-radius:14px; background:var(--est-bg); color:var(--est-fg);}
   .pp-actions{display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; margin-top:12px;}
@@ -2354,6 +2359,10 @@
     <div class="pp-med" id="ppMed"></div>
     <div class="pp-actions" id="ppActions"></div>
   </section>
+</div>
+
+<div class="foto-viewer" id="fotoViewer" hidden role="dialog" aria-label="Foto de perfil">
+  <figure><img id="fotoViewerImg" alt=""><figcaption id="fotoViewerName"></figcaption></figure>
 </div>
 
 <div class="screen" id="screen-chat" hidden>
@@ -5382,15 +5391,15 @@
     msg.textContent = "Preparando la foto…"; msg.className = "pf-msg";
     var url = URL.createObjectURL(file), img = new Image();
     img.onload = function(){
-      var side = Math.min(img.naturalWidth, img.naturalHeight), S = 160;
+      var side = Math.min(img.naturalWidth, img.naturalHeight), S = 240;
       var c = document.createElement("canvas"); c.width = S; c.height = S;
       var g = c.getContext("2d");
       g.fillStyle = "#fff"; g.fillRect(0, 0, S, S);
       g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, S, S);
       URL.revokeObjectURL(url);
       var q = 0.8, data = c.toDataURL("image/jpeg", q);
-      while (data.length > 30000 && q > 0.3){ q -= 0.1; data = c.toDataURL("image/jpeg", q); }
-      if (data.length > 30000){ msg.textContent = "La foto es muy pesada, prueba con otra."; msg.className = "pf-msg err"; return; }
+      while (data.length > 38000 && q > 0.3){ q -= 0.1; data = c.toDataURL("image/jpeg", q); }
+      if (data.length > 38000){ msg.textContent = "La foto es muy pesada, prueba con otra."; msg.className = "pf-msg err"; return; }
       myFoto = data;
       syncPerfil();
       msg.textContent = "✓ Foto guardada. Tus compañeros ya la ven."; msg.className = "pf-msg ok";
@@ -5612,7 +5621,16 @@
     if (!X || !pubUid || current() !== "perfilpub") return;
     var u = pubUid, p = perfiles[u] || {}, me = uid();
     var av = $("ppAv"); av.innerHTML = "";
-    av.appendChild(avatar(iconOf(u), nameOf(u), "xl", u === me ? null : isOnline(u)));
+    var big = avatar(iconOf(u), nameOf(u), "xl", u === me ? null : isOnline(u));
+    if (isFoto(iconOf(u))){
+      // tocar la foto la muestra en grande
+      big.classList.add("av-zoom"); big.setAttribute("role", "button"); big.setAttribute("tabindex", "0");
+      big.setAttribute("aria-hidden", "false"); big.setAttribute("aria-label", "Ver la foto de " + nameOf(u));
+      var abrir = function(){ var v = $("fotoViewer"); $("fotoViewerImg").src = iconOf(u); $("fotoViewerName").textContent = nameOf(u); v.hidden = false; };
+      big.addEventListener("click", abrir);
+      big.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); abrir(); } });
+    }
+    av.appendChild(big);
     $("ppName").textContent = nameOf(u) + (u === me ? " (tú)" : "");
     $("ppCargo").textContent = p.cargo || (u === me ? X.me.cargo : "") || "Sin área";
     $("ppSeen").textContent = u === me ? "" : seen(u);
@@ -6101,6 +6119,8 @@
     myFoto = ""; syncPerfil(); repaintChip(); renderPicker(); paintAll();
     $("pfIconMsg").textContent = "✓ Foto quitada: se usa tu ícono."; $("pfIconMsg").className = "pf-msg ok";
   });
+  $("fotoViewer").addEventListener("click", function(){ this.hidden = true; });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") $("fotoViewer").hidden = true; });
   $("ppBack").addEventListener("click", function(){ show(ppFrom && ppFrom !== "perfilpub" ? ppFrom : "chat"); });
   $("convAv").addEventListener("click", function(){ var c = chatData(openChat); if (X && !supMode && (!c || c.type !== "grupo")) openProfile(c ? otherOf(c.members) : newDirectWith); });
   $("chatNewGroup").addEventListener("click", function(){ if (X) openNewGroup(); });
