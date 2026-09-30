@@ -898,6 +898,12 @@
   .fa-row .txt{flex:1; min-width:0;} .fa-row .m{font-weight:600; font-size:0.9rem;} .fa-row .s{font-size:0.74rem; color:var(--ink-soft); overflow-wrap:anywhere;}
   .fa-row .btns{display:flex; flex-direction:column; gap:4px; flex:none;}
   .fa-n{flex:none; min-width:34px; text-align:center; font-weight:700; font-size:0.95rem; color:#C2403A;}
+  .menu-card{padding:4px 16px;}
+  .menu-row{display:flex; align-items:center; gap:8px; width:100%; padding:14px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; font-size:0.92rem; font-weight:600; color:var(--ink); text-align:left; cursor:pointer;}
+  .menu-card .menu-row:last-of-type{border-bottom:none;}
+  .menu-row::after{content:"›"; margin-left:auto; color:var(--ink-soft); font-size:1.2rem; line-height:1;}
+  .menu-row .badge{margin-left:6px;}
+  .menu-row.danger{color:#C2403A;}
   .fl-notas{font-size:0.8rem; color:var(--ink); background:var(--surface-2); border-radius:8px; padding:6px 9px; white-space:pre-wrap; overflow-wrap:anywhere;}
 
   [hidden]{display:none!important;}
@@ -1000,7 +1006,6 @@
     <div class="acct-head">
       <span class="acct-av" id="acctAv" aria-hidden="true">?</span>
       <div class="acct-txt"><div class="acct-name" id="acctName"></div><div class="acct-sub" id="acctSub"></div></div>
-      <button class="dash-viewall" id="acctEdit" type="button">Editar perfil</button>
     </div>
     <div class="acct-meta" id="acctMeta"></div>
   </section>
@@ -1015,6 +1020,25 @@
     </div>
     <div class="dash-list" id="dashList"></div>
   </section>
+  <section class="card menu-card">
+    <button class="menu-row" id="dashMonitorBtn" type="button" hidden>Estado del sistema<span class="badge" id="dashMonitorBadge" hidden></span></button>
+    <button class="menu-row" id="dashAdminBtn" type="button" hidden>Usuarios y cambios<span class="badge" id="dashAdminBadge" hidden></span></button>
+    <button class="menu-row" id="dashReportBtn" type="button">Reporte de uso</button>
+    <button class="menu-row" id="dashSettingsBtn" type="button">⚙️ Ajustes</button>
+  </section>
+</div>
+
+<div class="screen" id="screen-ajustes" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back-dash>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Dashboard
+    </button>
+  </div>
+  <p class="dash-greet">Ajustes</p>
+  <section class="card menu-card">
+    <button class="menu-row" id="acctEdit" type="button">Mi perfil, foto y clave</button>
+  </section>
   <section class="card">
     <div class="card-title">Tamaño de letra</div>
     <div class="seg-tabs" id="fontTabs" role="tablist">
@@ -1023,14 +1047,11 @@
       <button class="seg-tab" data-fs="125" type="button">Muy grande</button>
     </div>
   </section>
-  <button class="btn" id="dashMonitorBtn" type="button" style="width:100%;" hidden>Estado del sistema<span class="badge" id="dashMonitorBadge" hidden></span></button>
-  <button class="btn" id="dashAdminBtn" type="button" style="width:100%;" hidden>Usuarios y cambios del mapa<span class="badge" id="dashAdminBadge" hidden></span></button>
-  <button class="btn primary" id="dashReportBtn" type="button" style="width:100%;">Ver reporte de uso</button>
-  <div class="actions" style="display:flex; gap:10px;">
-    <button class="btn" id="dashSwitchBtn" type="button">Cambiar de usuario</button>
-    <button class="btn" id="dashLogoutBtn" type="button" hidden>Cerrar sesión</button>
-    <button class="btn" id="dashClearBtn" type="button">Borrar historial</button>
-  </div>
+  <section class="card menu-card">
+    <button class="menu-row" id="dashClearBtn" type="button">Borrar historial de cálculos</button>
+    <button class="menu-row" id="dashSwitchBtn" type="button">Cambiar de usuario</button>
+    <button class="menu-row danger" id="dashLogoutBtn" type="button" hidden>Cerrar sesión</button>
+  </section>
 </div>
 
 <div class="screen" id="screen-reporte" hidden>
@@ -2410,7 +2431,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.0</span>
+    <span id="appVersion">CC/1.1</span>
   </div>
 </footer>
 
@@ -2424,7 +2445,7 @@
 
   // --- navigation between the home menu and each tool "page" ---------------
   var screens = {
-    home: $("screen-home"), calculadoras: $("screen-calculadoras"), cieloraso: $("screen-cieloraso"), recubrimientos: $("screen-recubrimientos"),
+    home: $("screen-home"), ajustes: $("screen-ajustes"), calculadoras: $("screen-calculadoras"), cieloraso: $("screen-cieloraso"), recubrimientos: $("screen-recubrimientos"),
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
@@ -2433,6 +2454,7 @@
   var headerTags = {
     home: "Sucursal Coro · herramientas",
     calculadoras: "Calcular materiales",
+    ajustes: "Ajustes",
     cieloraso: "Cielo raso · herramienta de campo",
     recubrimientos: "Recubrimientos · pintura y techos",
     bloques: "Bloques y cemento",
@@ -3371,6 +3393,7 @@
   });
 
 
+  $("dashSettingsBtn").addEventListener("click", function(){ showScreen("ajustes"); });
   $("profileChip").addEventListener("click", function(e){
     e.stopPropagation();
     renderDashboard();
@@ -3396,10 +3419,10 @@
     var btn = $("dashClearBtn");
     if (getActivity().length && !clearArmed){
       btn.textContent = "Toca otra vez para borrar";
-      clearArmed = setTimeout(function(){ clearArmed = null; btn.textContent = "Borrar historial"; }, 3000);
+      clearArmed = setTimeout(function(){ clearArmed = null; btn.textContent = "Borrar historial de cálculos"; }, 3000);
       return;
     }
-    clearTimeout(clearArmed); clearArmed = null; btn.textContent = "Borrar historial";
+    clearTimeout(clearArmed); clearArmed = null; btn.textContent = "Borrar historial de cálculos";
     clearActivity();
     renderDashboard();
   });
