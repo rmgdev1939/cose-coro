@@ -2442,7 +2442,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.3</span>
+    <span id="appVersion">CC/1.4</span>
   </div>
 </footer>
 
@@ -6629,7 +6629,8 @@
   function newReplies(){ return mine.filter(function(r){ return r.respuesta && ms(r.respondidoAt) > seenAv; }); }
   // la campanita es solo para avisos de la administración (sistema y
   // actualizaciones) y respuestas a reportes; el chat tiene su propio botón
-  function count(){ return newAvisos().length + newReplies().length; }
+  // (y las solicitudes de compañero)
+  function count(){ return newAvisos().length + newReplies().length + chatSum().requests.length; }
   function paintBadge(){
     if (!X) return;
     var n = count();
@@ -6656,6 +6657,7 @@
     var box = $("ntList");
     box.innerHTML = "";
     var n = 0;
+    chatSum().requests.forEach(function(r){ n++; item(box, "comp", r.name + " quiere ser tu compañero", "Toca para aceptar o rechazar", "", true, function(){ window.coseChat.openCompas(); }); });
     newReplies().forEach(function(r){ n++; item(box, "soporte", "Respondieron tu reporte", r.respuesta, when(ms(r.respondidoAt)), true, function(){ openSoporte("mios"); }); });
     avisos.forEach(function(a){
       var isNew = ms(a.at) > seenAv;
