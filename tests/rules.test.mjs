@@ -226,6 +226,27 @@ await t("la admin ve el estado del sistema", () => assertSucceeds(getDoc(doc(A, 
 await t("un empleado no ve el estado del sistema", () => assertFails(getDoc(doc(INV, "monitor", "resumen"))));
 await t("nadie lo escribe desde la app", () => assertFails(setDoc(doc(A, "monitor", "resumen"), { today: { reads: 0 } })));
 
+console.log("avisos y soporte");
+const aviso = (who, name, extra = {}) => Object.assign({ titulo: "Inventario el sábado", texto: "Todos a las 7 am.", tipo: "sistema", by: who, byName: name, at: serverTimestamp() }, extra);
+await t("la admin publica un aviso", () => assertSucceeds(setDoc(doc(A, "avisos", "a1"), aviso("A", "Ana Admin"))));
+await t("un empleado no publica avisos", () => assertFails(setDoc(doc(INV, "avisos", "a2"), aviso("INV", "Iván Inventario"))));
+await t("tipo de aviso inválido no", () => assertFails(setDoc(doc(A, "avisos", "a3"), aviso("A", "Ana Admin", { tipo: "spam" }))));
+await t("un empleado lee los avisos", () => assertSucceeds(getDocs(collection(INV, "avisos"))));
+await t("un pendiente no lee avisos", () => assertFails(getDocs(collection(D, "avisos"))));
+await t("un empleado no borra avisos", () => assertFails(deleteDoc(doc(INV, "avisos", "a1"))));
+await t("la admin borra un aviso", () => assertSucceeds(deleteDoc(doc(A, "avisos", "a1"))));
+const rep = (who, name, extra = {}) => Object.assign({ uid: who, nombre: name, tipo: "fallo", texto: "No carga el mapa", version: "Versión 26", pantalla: "mapa", equipo: "Android", estado: "nuevo", at: serverTimestamp() }, extra);
+await t("un empleado reporta un fallo", () => assertSucceeds(setDoc(doc(INV, "reportes", "r1"), rep("INV", "Iván Inventario"))));
+await t("no reporta a nombre de otro", () => assertFails(setDoc(doc(INV, "reportes", "r2"), rep("AUT", "Aura Autoservicio"))));
+await t("no crea un reporte ya resuelto", () => assertFails(setDoc(doc(INV, "reportes", "r3"), rep("INV", "Iván Inventario", { estado: "resuelto" }))));
+await t("ve su propio reporte", () => assertSucceeds(getDoc(doc(INV, "reportes", "r1"))));
+await t("lista sus reportes", () => assertSucceeds(getDocs(query(collection(INV, "reportes"), where("uid", "==", "INV")))));
+await t("otro empleado no ve el reporte", () => assertFails(getDoc(doc(AUT, "reportes", "r1"))));
+await t("la admin ve todos los reportes", () => assertSucceeds(getDocs(collection(A, "reportes"))));
+await t("la admin responde", () => assertSucceeds(updateDoc(doc(A, "reportes", "r1"), { estado: "resuelto", respuesta: "Listo, ya carga.", respondidoAt: serverTimestamp() })));
+await t("el empleado no cambia el estado", () => assertFails(updateDoc(doc(INV, "reportes", "r1"), { estado: "nuevo" })));
+await t("guardar hasta dónde vio los avisos", () => assertSucceeds(setDoc(doc(INV, "lecturas", "INV"), { av: serverTimestamp() }, { merge: true })));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));

@@ -220,8 +220,47 @@ service cloud.firestore {
     match /lecturas/{uid} {
       allow read: if verified() && request.auth.uid == uid;
       allow create, update: if verified() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["c"])
-        && request.resource.data.c is map;
+        && request.resource.data.keys().hasOnly(["c", "av"])
+        && (!("c" in request.resource.data) || request.resource.data.c is map)
+        && (!("av" in request.resource.data) || request.resource.data.av is timestamp);
+      allow delete: if false;
+    }
+
+    // Avisos del administrador para todos: del sistema o de actualizaciones.
+    match /avisos/{id} {
+      allow read: if verified();
+      allow create: if admin()
+        && request.resource.data.keys().hasOnly(["titulo", "texto", "tipo", "by", "byName", "at"])
+        && request.resource.data.titulo is string && request.resource.data.titulo.size() >= 1 && request.resource.data.titulo.size() <= 80
+        && request.resource.data.texto is string && request.resource.data.texto.size() >= 1 && request.resource.data.texto.size() <= 1000
+        && request.resource.data.tipo in ["sistema", "actualizacion"]
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.byName == me().name
+        && request.resource.data.at == request.time;
+      allow delete: if admin();
+      allow update: if false;
+    }
+
+    // Soporte: cada quien reporta fallos, sugerencias o preguntas y ve los
+    // suyos; el administrador los ve todos, cambia el estado y responde.
+    match /reportes/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || admin());
+      allow create: if verified()
+        && request.resource.data.keys().hasOnly(["uid", "nombre", "tipo", "texto", "version", "pantalla", "equipo", "estado", "at"])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.nombre == me().name
+        && request.resource.data.tipo in ["fallo", "sugerencia", "pregunta"]
+        && request.resource.data.texto is string && request.resource.data.texto.size() >= 5 && request.resource.data.texto.size() <= 2000
+        && request.resource.data.version is string && request.resource.data.version.size() <= 60
+        && request.resource.data.pantalla is string && request.resource.data.pantalla.size() <= 40
+        && request.resource.data.equipo is string && request.resource.data.equipo.size() <= 300
+        && request.resource.data.estado == "nuevo"
+        && request.resource.data.at == request.time;
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "respuesta", "respondidoAt"])
+        && request.resource.data.estado in ["nuevo", "revisando", "resuelto"]
+        && (!("respuesta" in request.resource.data) || (request.resource.data.respuesta is string && request.resource.data.respuesta.size() <= 1000))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(["respuesta"]) || request.resource.data.respondidoAt == request.time);
       allow delete: if false;
     }
 

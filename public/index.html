@@ -772,6 +772,41 @@
   .mon-dot{width:10px; height:10px; border-radius:50%; background:var(--accent2); flex:none; margin-top:5px;}
   .mon-ev.warn .mon-dot{background:var(--accent);} .mon-ev.crit .mon-dot{background:#E5534B;}
 
+  /* --- Campanita y soporte ------------------------------------------------ */
+  .chat-chip.bell-chip{left:auto; right:56px;}
+  .chat-chip.bell-chip .badge{right:-10px;}
+  .nt-item{display:flex; align-items:flex-start; gap:10px; width:100%; padding:11px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; color:inherit; text-align:left;}
+  button.nt-item{cursor:pointer;}
+  .nt-item:last-child{border-bottom:none;}
+  .nt-item .txt{flex:1; min-width:0;}
+  .nt-item .m{display:flex; justify-content:space-between; gap:8px; font-weight:600; font-size:0.9rem; color:var(--ink);}
+  .nt-item .m time{flex:none; font-weight:500; font-size:0.72rem; color:var(--ink-soft);}
+  .nt-item .s{font-size:0.82rem; color:var(--ink-soft); white-space:pre-wrap; overflow-wrap:anywhere;}
+  .nt-item.new .m{color:var(--ink);} .nt-item:not(.new){opacity:0.75;}
+  .nt-item.new .m span:first-child::after{content:" •"; color:var(--accent2);}
+  .nt-kind{flex:none; font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:3px 7px; border-radius:6px; background:var(--surface-2); color:var(--ink-soft); margin-top:2px;}
+  .nt-kind.chat{background:var(--ok-bg); color:var(--ok-fg);}
+  .nt-kind.comp{background:color-mix(in srgb, var(--brand-blue) 15%, var(--surface)); color:var(--brand-blue);}
+  .nt-kind.sistema{background:var(--est-bg); color:var(--est-fg);}
+  .nt-kind.actualizacion{background:var(--accent-soft); color:var(--ink);}
+  .nt-kind.soporte{background:color-mix(in srgb, #E5534B 14%, var(--surface)); color:#C2403A;}
+  .faq{border-bottom:1px solid var(--line); padding:10px 0;}
+  .faq:last-child{border-bottom:none;}
+  .faq summary{cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--ink); list-style-position:outside;}
+  .faq p{margin:8px 0 0; font-size:0.86rem; color:var(--ink-soft); line-height:1.5;}
+  .sp-rep{padding:10px 0; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:5px;}
+  .sp-rep:last-child{border-bottom:none;}
+  .sp-rh{display:flex; align-items:center; gap:8px;}
+  .sp-rh time{margin-left:auto; font-size:0.72rem; color:var(--ink-soft);}
+  .sp-st{font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:10px; background:var(--surface-2); color:var(--ink-soft);}
+  .sp-st.revisando{background:var(--est-bg); color:var(--est-fg);} .sp-st.resuelto{background:var(--ok-bg); color:var(--ok-fg);}
+  .sp-who{font-size:0.76rem; font-weight:600; color:var(--ink);}
+  .sp-tx{font-size:0.86rem; color:var(--ink); white-space:pre-wrap; overflow-wrap:anywhere;}
+  .sp-eq{font-size:0.66rem; color:var(--ink-soft); overflow-wrap:anywhere;}
+  .sp-ans{font-size:0.84rem; color:var(--ink); background:var(--surface-2); border-radius:8px; padding:8px 10px; white-space:pre-wrap;}
+  .sp-adm{display:flex; flex-direction:column; gap:6px; margin:4px 0 0;}
+  .sp-adm button{align-self:flex-start;}
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -838,6 +873,8 @@
     <span class="brand"><span class="b-cose">Cose</span><span class="b-tool">Coro</span></span>
   </div>
   <span class="tag" id="headerTag">Sucursal Coro · herramientas</span>
+  <button class="chat-chip" id="helpBtn" aria-label="Ayuda y soporte" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+  <button class="chat-chip bell-chip" id="bellBtn" aria-label="Notificaciones" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
   <button class="chat-chip" id="chatBtn" aria-label="Chat del equipo" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="badge" id="chatBtnBadge" hidden></span></button>
   <button class="profile-chip" id="profileChip" aria-label="Mi perfil" type="button">?</button>
 </header>
@@ -1720,6 +1757,78 @@
   </section>
 </div>
 
+<div class="screen" id="screen-avisos" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Notificaciones</p>
+  <section class="card">
+    <div id="ntList"></div>
+  </section>
+  <section class="card" id="avAdminCard" hidden>
+    <div class="card-title">Enviar un aviso a todos</div>
+    <form class="pf-form" id="avForm" novalidate>
+      <div class="select-field"><label for="avTipo">Tipo</label>
+        <select id="avTipo" class="hist-search"><option value="sistema">Aviso del sistema</option><option value="actualizacion">Actualización de la app</option></select></div>
+      <div><label for="avTitulo">Título</label><input type="text" id="avTitulo" class="hist-search" maxlength="80" placeholder="Ej: Inventario general el sábado" autocomplete="off"></div>
+      <div><label for="avTexto">Mensaje</label><textarea id="avTexto" class="hist-search" rows="4" maxlength="1000" placeholder="Lo que todos deben saber"></textarea></div>
+      <p class="pf-msg" id="avMsg"></p>
+      <button class="btn primary" type="submit" id="avSend">Enviar a todos</button>
+    </form>
+    <div class="card-title" style="margin-top:16px;">Avisos enviados</div>
+    <div id="ntAdminList"></div>
+  </section>
+</div>
+
+<div class="screen" id="screen-soporte" hidden>
+  <div class="backbar">
+    <button class="backbtn" id="spBack" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Volver
+    </button>
+  </div>
+  <p class="dash-greet">Ayuda y soporte</p>
+  <section class="card">
+    <div class="card-title">Preguntas frecuentes</div>
+    <details class="faq"><summary>¿Cómo instalo Cose Coro en mi teléfono?</summary><p>Abre cosecoro-coro.web.app. En Android (Chrome): menú ⋮ → «Agregar a la pantalla principal». En iPhone (Safari): botón Compartir → «Agregar a inicio». Queda como una app más y se actualiza sola.</p></details>
+    <details class="faq"><summary>Olvidé mi clave</summary><p>En la pantalla de «Entrar», escribe tu correo y toca «Olvidé mi clave». Te llega un correo de Cose Coro para crear una nueva (revisa también spam).</p></details>
+    <details class="faq"><summary>No me llegó el correo de confirmación</summary><p>Revisa la carpeta de spam o promociones. Si no está, entra con tu correo y clave y toca «Reenviar el correo». El remitente es Cose Coro.</p></details>
+    <details class="faq"><summary>Mi cuenta dice «en revisión»</summary><p>El administrador tiene que aprobarla. Cuando lo haga, la app se abre sola; no tienes que hacer nada más.</p></details>
+    <details class="faq"><summary>¿Cómo agrego a un compañero en el chat?</summary><p>Chat del equipo → «Compañeros» → busca su nombre → «Agregar». Cuando acepte tu solicitud, ya pueden escribirse. También puedes armar grupos con tus compañeros.</p></details>
+    <details class="faq"><summary>¿Quién puede ver mis mensajes?</summary><p>Tus compañeros de cada conversación. Los chats son para el trabajo y la administración puede revisarlos.</p></details>
+    <details class="faq"><summary>¿Por qué no veo el Editor del mapa?</summary><p>Solo lo usan Autoservicio, Inventario y el administrador. Si tu cargo está mal, pídele al administrador que lo cambie.</p></details>
+    <details class="faq"><summary>¿De dónde sale la tasa del dólar?</summary><p>Es la tasa oficial del BCV del día. Se actualiza sola con internet; sin conexión se usa la última guardada, y también puedes escribirla a mano.</p></details>
+    <details class="faq"><summary>¿Funciona sin internet?</summary><p>Las calculadoras y el mapa guardado sí. El chat, las notificaciones y los cambios del mapa necesitan internet.</p></details>
+    <details class="faq"><summary>¿Por qué no me llegan avisos con la app cerrada?</summary><p>Por ahora las notificaciones llegan con Cose Coro abierta: la campanita y el número rojo te muestran lo nuevo al entrar.</p></details>
+    <details class="faq"><summary>La app se ve vieja o no carga</summary><p>Ciérrala y ábrela de nuevo, o recarga la página. Si sigue igual, repórtalo aquí abajo con lo que ves.</p></details>
+    <details class="faq"><summary>¿Cómo cambio mi imagen de perfil?</summary><p>Toca tu inicial arriba a la derecha → «Editar perfil» → «Imagen de perfil» y elige un ícono.</p></details>
+  </section>
+  <section class="card">
+    <div class="card-title">Reportar un fallo o enviar una idea</div>
+    <p class="smap-note" id="spNoCuenta" style="margin:0;">Entra con tu cuenta para enviar reportes.</p>
+    <form class="pf-form" id="spForm" novalidate hidden>
+      <div class="select-field"><label for="spTipo">Qué quieres enviar</label>
+        <select id="spTipo" class="hist-search"><option value="fallo">Un fallo (algo no funciona)</option><option value="sugerencia">Una idea o sugerencia</option><option value="pregunta">Una pregunta</option></select></div>
+      <div><label for="spTexto">Cuéntanos qué pasó</label><textarea id="spTexto" class="hist-search" rows="4" maxlength="2000" placeholder="Qué hacías, qué esperabas y qué pasó"></textarea></div>
+      <p class="smap-note" style="margin:0;">Se envía también la versión de la app y el tipo de teléfono, para encontrar el fallo más rápido.</p>
+      <p class="pf-msg" id="spMsg"></p>
+      <button class="btn primary" type="submit" id="spSend">Enviar</button>
+    </form>
+  </section>
+  <section class="card" id="spMiosCard" hidden>
+    <div class="card-title">Mis reportes</div>
+    <div id="spMios"></div>
+  </section>
+  <section class="card" id="spAdminCard" hidden>
+    <div class="card-title"><span>Reportes del equipo</span><span id="spAdminCount"></span></div>
+    <select id="spFiltro" class="hist-search" aria-label="Filtrar reportes" style="margin-bottom:8px;"><option value="abiertos">Abiertos</option><option value="nuevo">Nuevos</option><option value="resuelto">Resueltos</option><option value="todos">Todos</option></select>
+    <div id="spAdmin"></div>
+  </section>
+</div>
+
 <div class="screen" id="screen-monitor" hidden>
   <div class="backbar">
     <button class="backbtn" data-back-dash>
@@ -1864,7 +1973,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 25 · 30 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 26 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -1881,7 +1990,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -1903,7 +2012,9 @@
     conv: "Chat del equipo",
     grupo: "Nuevo grupo",
     editor: "Editor del mapa",
-    monitor: "Estado del sistema"
+    monitor: "Estado del sistema",
+    avisos: "Notificaciones",
+    soporte: "Ayuda y soporte"
   };
 
   function showScreen(name, pushHash){
@@ -4647,6 +4758,7 @@
     var on = compas().filter(isOnline).length;
     $("chatTileSub").textContent = on ? (on === 1 ? "1 compañero en línea" : on + " compañeros en línea") : "Mensajes con tus compañeros de trabajo";
     $("chatBtn").setAttribute("aria-label", "Chat del equipo" + (nUnread + nReq ? " (" + (nUnread + nReq) + " nuevos)" : ""));
+    if (window.coseAvisos) window.coseAvisos.refresh();
   }
 
   function paintChatList(){
@@ -5071,7 +5183,6 @@
     }
     X = ctx;
     firstConex = true; firstChats = true; perfilesLoaded = false; syncing = "";
-    $("chatBtn").hidden = false;
     $("chatTile").hidden = false;
     $("pfIconCard").hidden = false;
     $("supTab").hidden = X.uid !== SUPERVISOR;
@@ -5206,6 +5317,16 @@
   window.coseChat = {
     start: start,
     stop: stop,
+    // para la campanita: chats con mensajes nuevos y solicitudes recibidas
+    summary: function(){
+      if (!X) return { chats:[], requests:[] };
+      return {
+        chats: sortedChats().filter(unread).map(function(id){ var c = chats[id]; return { id:id, title:chatTitle(id, c), last:(c.type === "grupo" ? c.lastFromName + ": " : "") + (c.lastText || ""), at:ms(c.lastAt) }; }),
+        requests: Object.keys(conex).filter(function(k){ return conex[k].status === "pendiente" && conex[k].to === uid(); }).map(function(k){ return { name:conex[k].fromName }; })
+      };
+    },
+    openChat: function(id){ if (X && chats[id]) openConv(id); },
+    openCompas: function(){ if (X){ show("chat"); tabTo("compas"); } },
     onlineCount: function(){ return Object.keys(estado).filter(function(u){ return estado[u] && estado[u].on === true; }).length; },
     paintAv: function(node){ if (X && ICON_BY[myIcon]) paintAv(node); else { node.classList.remove("has-ic"); node.style.removeProperty("--c"); } },
     avatar: avatar
@@ -5716,6 +5837,259 @@
 
 <script>
 // ============================================================================
+// NOTIFICACIONES (campanita) Y SOPORTE (signo de interrogación).
+// Campanita: junta en un solo lugar los mensajes nuevos del chat, las
+// solicitudes de compañero, los avisos del administrador (sistema y
+// actualizaciones, en avisos/) y las respuestas a tus reportes. El
+// administrador escribe desde aquí avisos para todos.
+// Soporte: preguntas frecuentes y reporte de fallos o sugerencias
+// (reportes/); el administrador los ve todos, cambia el estado y responde.
+// Hasta dónde viste los avisos se guarda en lecturas/{uid}.av.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
+  function when(t){
+    if (!t) return "";
+    var d = new Date(t), today = new Date();
+    return d.toDateString() === today.toDateString() ? d.toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" })
+      : d.toLocaleDateString("es-VE", { day:"numeric", month:"short" });
+  }
+  var X = null, unsubs = [], avisos = [], mine = [], all = [], seenAv = 0, first = true, admin = false;
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function version(){ return ($("appVersion") && $("appVersion").textContent) || ""; }
+
+  // --- campanita ---------------------------------------------------------------
+  function chatSum(){ return window.coseChat && window.coseChat.summary ? window.coseChat.summary() : { chats:[], requests:[] }; }
+  function newAvisos(){ return avisos.filter(function(a){ return ms(a.at) > seenAv; }); }
+  function newReplies(){ return mine.filter(function(r){ return r.respuesta && ms(r.respondidoAt) > seenAv; }); }
+  function count(){
+    var c = chatSum();
+    return c.chats.length + c.requests.length + newAvisos().length + newReplies().length + (admin ? all.filter(function(r){ return r.estado === "nuevo"; }).length : 0);
+  }
+  function paintBadge(){
+    if (!X) return;
+    var n = count();
+    $("bellBadge").hidden = !n;
+    $("bellBadge").textContent = n > 9 ? "9+" : String(n);
+    $("bellBtn").setAttribute("aria-label", "Notificaciones" + (n ? " (" + n + " nuevas)" : ""));
+    if (current() === "avisos") paintBell();
+  }
+  function item(box, kind, title, sub, time, isNew, onClick){
+    var b = el(onClick ? "button" : "div", "nt-item" + (isNew ? " new" : ""));
+    if (onClick){ b.type = "button"; b.addEventListener("click", onClick); }
+    b.appendChild(el("span", "nt-kind " + kind, { chat:"Chat", comp:"Compañero", sistema:"Sistema", actualizacion:"Actualización", soporte:"Soporte" }[kind]));
+    var t = el("div", "txt");
+    var m = el("div", "m"); m.appendChild(el("span", "", title)); if (time) m.appendChild(el("time", "", time)); t.appendChild(m);
+    if (sub) t.appendChild(el("div", "s", sub));
+    b.appendChild(t);
+    box.appendChild(b);
+  }
+  function paintBell(){
+    var box = $("ntList");
+    box.innerHTML = "";
+    var c = chatSum(), n = 0;
+    c.requests.forEach(function(r){ n++; item(box, "comp", r.name + " quiere ser tu compañero", "Toca para aceptar o rechazar", "", true, function(){ window.coseChat.openCompas(); }); });
+    c.chats.forEach(function(ch){ n++; item(box, "chat", ch.title, ch.last, when(ch.at), true, function(){ window.coseChat.openChat(ch.id); }); });
+    if (admin) all.filter(function(r){ return r.estado === "nuevo"; }).forEach(function(r){ n++; item(box, "soporte", "Nuevo reporte de " + r.nombre, r.texto, when(ms(r.at)), true, function(){ openSoporte("admin"); }); });
+    newReplies().forEach(function(r){ n++; item(box, "soporte", "Respondieron tu reporte", r.respuesta, when(ms(r.respondidoAt)), true, function(){ openSoporte("mios"); }); });
+    avisos.forEach(function(a){
+      var isNew = ms(a.at) > seenAv;
+      if (isNew) n++;
+      var b = item(box, a.tipo, a.titulo, a.texto, when(ms(a.at)), isNew, null);
+    });
+    if (!box.childNodes.length) box.appendChild(el("div", "c-empty", "No tienes notificaciones."));
+    // lista de avisos para borrar (administrador)
+    var adm = $("ntAdminList");
+    adm.innerHTML = "";
+    if (admin){
+      avisos.forEach(function(a){
+        var r = el("div", "adm-row");
+        var t = el("div", "txt"); t.appendChild(el("div", "m", a.titulo)); t.appendChild(el("div", "s", (a.tipo === "sistema" ? "Sistema" : "Actualización") + " · " + when(ms(a.at))));
+        r.appendChild(t);
+        var armed = null, del = el("button", "hist-copybtn", "Borrar"); del.type = "button";
+        del.addEventListener("click", function(){
+          if (!armed){ del.textContent = "¿Seguro?"; armed = setTimeout(function(){ armed = null; del.textContent = "Borrar"; }, 3000); return; }
+          clearTimeout(armed);
+          X.F.deleteDoc(X.F.doc(X.db, "avisos", a.id)).catch(function(){ X.toast("No se pudo borrar el aviso."); });
+        });
+        var bb = el("div", "btns"); bb.appendChild(del); r.appendChild(bb);
+        adm.appendChild(r);
+      });
+      if (!avisos.length) adm.appendChild(el("div", "c-empty", "Todavía no has enviado avisos."));
+    }
+  }
+  function markSeen(){
+    if (!X) return;
+    var newest = Math.max(0, Math.max.apply(null, avisos.map(function(a){ return ms(a.at); }).concat(mine.map(function(r){ return ms(r.respondidoAt); }))));
+    if (newest <= seenAv) return;
+    seenAv = newest;
+    X.F.setDoc(X.F.doc(X.db, "lecturas", X.uid), { av:X.F.serverTimestamp() }, { merge:true }).catch(function(){});
+  }
+  function openBell(){
+    if (!X) return;
+    window.coseApp.showScreen("avisos");
+    paintBell();
+    // al salir de la pantalla quedan como vistos
+    setTimeout(markSeen, 1500);
+  }
+  function sendAviso(e){
+    e.preventDefault();
+    var titulo = $("avTitulo").value.trim().replace(/\s+/g, " ").slice(0, 80), texto = $("avTexto").value.trim().slice(0, 1000), msg = $("avMsg");
+    msg.className = "pf-msg err";
+    if (!titulo){ msg.textContent = "Escribe un título."; return; }
+    if (!texto){ msg.textContent = "Escribe el mensaje."; return; }
+    $("avSend").disabled = true; msg.className = "pf-msg"; msg.textContent = "Enviando…";
+    X.F.addDoc(X.F.collection(X.db, "avisos"), { titulo:titulo, texto:texto, tipo:$("avTipo").value, by:X.uid, byName:X.me.name, at:X.F.serverTimestamp() })
+      .then(function(){ $("avTitulo").value = ""; $("avTexto").value = ""; msg.className = "pf-msg ok"; msg.textContent = "✓ Enviado. Todos lo ven en su campanita."; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
+      .then(function(){ $("avSend").disabled = false; });
+  }
+
+  // --- soporte -----------------------------------------------------------------
+  var ESTADO = { nuevo:"Recibido", revisando:"En revisión", resuelto:"Resuelto" };
+  var TIPO = { fallo:"Fallo", sugerencia:"Sugerencia", pregunta:"Pregunta" };
+  var lastScreen = "home";
+  function openSoporte(tab){
+    var cur = current();
+    if (cur !== "soporte") lastScreen = cur;
+    window.coseApp.showScreen("soporte");
+    $("spForm").hidden = !X;
+    $("spNoCuenta").hidden = !!X;
+    $("spMiosCard").hidden = !X;
+    $("spAdminCard").hidden = !(X && admin);
+    paintSoporte();
+    if (tab === "mios") setTimeout(function(){ $("spMiosCard").scrollIntoView({ block:"start" }); }, 50);
+    if (tab === "admin") setTimeout(function(){ $("spAdminCard").scrollIntoView({ block:"start" }); }, 50);
+    if (tab === "mios" || tab === "admin") setTimeout(markSeen, 1500);
+  }
+  function repRow(box, r, adminView){
+    var w = el("div", "sp-rep");
+    var h = el("div", "sp-rh");
+    h.appendChild(el("span", "nt-kind soporte", TIPO[r.tipo] || r.tipo));
+    h.appendChild(el("span", "sp-st " + r.estado, ESTADO[r.estado] || r.estado));
+    h.appendChild(el("time", "", when(ms(r.at))));
+    w.appendChild(h);
+    if (adminView) w.appendChild(el("div", "sp-who", r.nombre + " · " + r.version + " · pantalla: " + (r.pantalla || "—")));
+    w.appendChild(el("div", "sp-tx", r.texto));
+    if (adminView) w.appendChild(el("div", "sp-eq", r.equipo || ""));
+    if (r.respuesta){ var a = el("div", "sp-ans"); a.appendChild(el("strong", "", "Respuesta: ")); a.appendChild(document.createTextNode(r.respuesta)); w.appendChild(a); }
+    if (adminView){
+      var f = el("form", "sp-adm");
+      var sel = el("select", "hist-search"); sel.setAttribute("aria-label", "Estado del reporte");
+      Object.keys(ESTADO).forEach(function(k){ var o = el("option", "", ESTADO[k]); o.value = k; sel.appendChild(o); });
+      sel.value = r.estado;
+      var ta = el("textarea", "hist-search"); ta.rows = 2; ta.maxLength = 1000; ta.placeholder = "Respuesta para " + r.nombre.split(" ")[0] + " (opcional)"; ta.value = r.respuesta || "";
+      ta.setAttribute("aria-label", "Respuesta");
+      var b = el("button", "btn primary", "Guardar"); b.type = "submit";
+      f.appendChild(sel); f.appendChild(ta); f.appendChild(b);
+      f.addEventListener("submit", function(e){
+        e.preventDefault();
+        var data = { estado:sel.value }, resp = ta.value.trim().slice(0, 1000);
+        if (resp !== (r.respuesta || "")){ data.respuesta = resp; data.respondidoAt = X.F.serverTimestamp(); }
+        b.disabled = true;
+        X.F.updateDoc(X.F.doc(X.db, "reportes", r.id), data)
+          .then(function(){ X.toast("Reporte actualizado ✓"); }, function(){ X.toast("No se pudo guardar el reporte."); })
+          .then(function(){ b.disabled = false; });
+      });
+      w.appendChild(f);
+    }
+    box.appendChild(w);
+  }
+  function paintSoporte(){
+    if (current() !== "soporte") return;
+    var box = $("spMios"); box.innerHTML = "";
+    mine.forEach(function(r){ repRow(box, r, false); });
+    if (!mine.length) box.appendChild(el("div", "c-empty", "Todavía no has enviado reportes."));
+    if (admin){
+      var a = $("spAdmin"); a.innerHTML = "";
+      var f = $("spFiltro").value;
+      var list = all.filter(function(r){ return f === "todos" || r.estado === f || (f === "abiertos" && r.estado !== "resuelto"); });
+      list.forEach(function(r){ repRow(a, r, true); });
+      if (!list.length) a.appendChild(el("div", "c-empty", "No hay reportes en esta lista."));
+      $("spAdminCount").textContent = all.filter(function(r){ return r.estado === "nuevo"; }).length + " nuevos";
+    }
+  }
+  function sendReporte(e){
+    e.preventDefault();
+    var texto = $("spTexto").value.trim(), msg = $("spMsg");
+    msg.className = "pf-msg err";
+    if (texto.length < 5){ msg.textContent = "Cuéntanos un poco más (al menos 5 letras)."; return; }
+    $("spSend").disabled = true; msg.className = "pf-msg"; msg.textContent = "Enviando…";
+    X.F.addDoc(X.F.collection(X.db, "reportes"), {
+      uid:X.uid, nombre:X.me.name, tipo:$("spTipo").value, texto:texto.slice(0, 2000), version:version().slice(0, 60),
+      pantalla:String(lastScreen).slice(0, 40), equipo:(navigator.userAgent + " · " + screen.width + "x" + screen.height).slice(0, 300),
+      estado:"nuevo", at:X.F.serverTimestamp()
+    }).then(function(){ $("spTexto").value = ""; msg.className = "pf-msg ok"; msg.textContent = "✓ Enviado. Te avisamos en la campanita cuando haya respuesta."; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
+      .then(function(){ $("spSend").disabled = false; });
+  }
+
+  // --- arrancar / apagar ---------------------------------------------------------
+  function start(ctx){
+    var wasAdmin = admin;
+    admin = ctx.me && ctx.me.role === "admin";
+    if (X){ X.me = ctx.me; if (admin !== wasAdmin){ stop(); } else return; }
+    X = ctx; first = true;
+    $("bellBtn").hidden = false;
+    $("avAdminCard").hidden = !admin;
+    var F = X.F, db = X.db;
+    unsubs.push(F.onSnapshot(F.query(F.collection(db, "avisos"), F.orderBy("at", "desc"), F.limit(30)), function(snap){
+      var before = avisos.map(function(a){ return a.id; });
+      avisos = [];
+      snap.forEach(function(d){ var a = d.data({ serverTimestamps:"estimate" }); a.id = d.id; avisos.push(a); });
+      if (!first) avisos.forEach(function(a){ if (before.indexOf(a.id) === -1 && ms(a.at) > seenAv && a.by !== X.uid) X.toast((a.tipo === "sistema" ? "🔔 Aviso: " : "✨ Novedad: ") + a.titulo); });
+      first = false;
+      paintBadge();
+    }, function(){}));
+    unsubs.push(F.onSnapshot(F.query(F.collection(db, "reportes"), F.where("uid", "==", X.uid)), function(snap){
+      mine = [];
+      snap.forEach(function(d){ var r = d.data({ serverTimestamps:"estimate" }); r.id = d.id; mine.push(r); });
+      mine.sort(function(a, b){ return ms(b.at) - ms(a.at); });
+      paintBadge(); paintSoporte();
+    }, function(){}));
+    if (admin) unsubs.push(F.onSnapshot(F.query(F.collection(db, "reportes"), F.orderBy("at", "desc"), F.limit(100)), function(snap){
+      all = [];
+      snap.forEach(function(d){ var r = d.data({ serverTimestamps:"estimate" }); r.id = d.id; all.push(r); });
+      paintBadge(); paintSoporte();
+    }, function(){}));
+    unsubs.push(F.onSnapshot(F.doc(db, "lecturas", X.uid), function(s){
+      var v = s.exists() && s.data({ serverTimestamps:"estimate" }).av;
+      seenAv = Math.max(seenAv, ms(v));
+      paintBadge();
+    }, function(){}));
+  }
+  function stop(){
+    unsubs.forEach(function(u){ try{ u(); }catch(e){} });
+    unsubs = []; X = null; avisos = []; mine = []; all = []; seenAv = 0;
+    $("bellBtn").hidden = true;
+    if (current() === "avisos") window.coseApp.showScreen("home");
+  }
+
+  // --- eventos ---------------------------------------------------------------
+  $("bellBtn").addEventListener("click", function(e){ e.stopPropagation(); openBell(); });
+  $("helpBtn").addEventListener("click", function(e){ e.stopPropagation(); openSoporte(); });
+  $("avForm").addEventListener("submit", function(e){ if (X && admin) sendAviso(e); else e.preventDefault(); });
+  $("spForm").addEventListener("submit", function(e){ if (X) sendReporte(e); else e.preventDefault(); });
+  $("spFiltro").addEventListener("change", paintSoporte);
+  $("spBack").addEventListener("click", function(){ window.coseApp.showScreen(lastScreen && lastScreen !== "soporte" ? lastScreen : "home"); });
+  // al salir de la pantalla de notificaciones (solo si estaba abierta) quedan como vistas
+  var avOpen = false;
+  new MutationObserver(function(){
+    var open = !$("screen-avisos").hidden;
+    if (avOpen && !open && X) markSeen();
+    avOpen = open;
+  }).observe($("screen-avisos"), { attributes:true, attributeFilter:["hidden"] });
+  if ((location.hash || "").slice(1) === "avisos") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
+
+  window.coseAvisos = { start:start, stop:stop, refresh:paintBadge };
+})();
+</script>
+
+<script>
+// ============================================================================
 // MODO NUBE (Firebase): cuentas de trabajadores + mapa compartido en vivo.
 // Mientras FIREBASE_CONFIG sea null, Cose Coro funciona en modo local
 // (como el archivo de WhatsApp y el artifact) y este bloque no hace nada.
@@ -5977,6 +6351,7 @@
       if (window.coseChat) window.coseChat.stop();
       if (window.coseEditor) window.coseEditor.stop();
       if (window.coseMonitor) window.coseMonitor.stop();
+      if (window.coseAvisos) window.coseAvisos.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -5985,6 +6360,7 @@
       var admin = me.role === "admin";
       if (window.coseChat) window.coseChat.start({ app:app, db:db, F:F, FB:FB, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseEditor) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
+      if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
