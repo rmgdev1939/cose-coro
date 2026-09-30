@@ -807,6 +807,64 @@
   .sp-adm{display:flex; flex-direction:column; gap:6px; margin:4px 0 0;}
   .sp-adm button{align-self:flex-start;}
 
+  /* --- Fotos y perfil público --------------------------------------------- */
+  .av.av-foto{overflow:hidden; padding:0; background:var(--surface-2);}
+  .av.av-foto img{width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;}
+  .av.av-foto .pres{z-index:1;}
+  .av.av-xl{width:96px; height:96px; font-size:2rem;}
+  .profile-chip.has-foto, .acct-av.has-foto{overflow:hidden; padding:0;}
+  .profile-chip.has-foto img, .acct-av.has-foto img{width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;}
+  .pf-foto{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+  .pf-foto-btns{display:flex; flex-direction:column; gap:8px; flex:1; min-width:0;}
+  .pf-foto-btns label.btn{display:inline-block; text-align:center; cursor:pointer; font-family:"Public Sans"; font-weight:600; font-size:0.86rem; border-radius:9px; padding:9px 14px; background:var(--accent); color:var(--accent-ink); border:1px solid var(--accent);}
+  .pp-card{display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding-block:24px;}
+  .pp-name{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.3rem; margin-top:6px; overflow-wrap:anywhere;}
+  .pp-sub{font-size:0.86rem; color:var(--ink-soft);}
+  .pp-sub.on{color:#2E9E45; font-weight:600;}
+  .pp-med{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:8px;}
+  .pp-med .medal{font-size:0.78rem; font-weight:700; padding:4px 10px; border-radius:14px; background:var(--est-bg); color:var(--est-fg);}
+  .pp-actions{display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; margin-top:12px;}
+
+  /* --- Capacitación ------------------------------------------------------- */
+  .tool-tile.tile-capac{border-left-color:var(--est-fg);}
+  .cap-head{display:flex; flex-direction:column; gap:6px;}
+  .cap-head-t{font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft);}
+  .cap-head-n{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.6rem;}
+  .cap-track{height:10px; border-radius:5px; background:var(--surface-2); overflow:hidden;}
+  .cap-fill{height:100%; width:0; border-radius:5px; background:var(--est-fg); transition:width .3s;}
+  .cap-item, .cap-row{display:flex; align-items:center; gap:12px; width:100%; padding:11px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; color:inherit; text-align:left; cursor:pointer;}
+  .cap-item:last-child, .cap-row:last-child{border-bottom:none;}
+  .cap-item .txt, .cap-row .txt{flex:1; min-width:0;}
+  .cap-item .m, .cap-row .m{font-weight:600; font-size:0.9rem; color:var(--ink);}
+  .cap-item .s, .cap-row .s{font-size:0.76rem; color:var(--ink-soft);}
+  .cap-medal{width:32px; text-align:center; font-size:1.4rem; color:var(--ink-soft); flex:none;}
+  .cap-row.me{background:var(--accent-soft); border-radius:10px; padding-inline:8px;}
+  .cap-pos{width:28px; text-align:center; font-weight:700; font-size:1rem; flex:none;}
+  .cap-count{flex:none; font-weight:600; font-size:0.86rem;}
+  .lec-body{display:flex; flex-direction:column; gap:14px;}
+  .lec-card{display:flex; flex-direction:column; gap:8px; min-height:220px;}
+  .lec-n{font-size:0.72rem; color:var(--ink-soft);}
+  .lec-h{font-family:"Baloo 2", system-ui, sans-serif; font-weight:700; font-size:1.2rem; margin:0;}
+  .lec-p{margin:0; font-size:1rem; line-height:1.6; color:var(--ink);}
+  .lec-nav{display:flex; gap:10px; justify-content:flex-end;}
+  .lec-quiz{display:flex; flex-direction:column; gap:12px; margin:0;}
+  .lec-q{border:1px solid var(--line); margin:0; display:flex; flex-direction:column; gap:6px;}
+  .lec-q legend{font-weight:700; font-size:0.95rem; padding:0 4px; color:var(--ink);}
+  .lec-op{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); cursor:pointer; font-size:0.92rem; color:var(--ink);}
+  .lec-op input{width:20px; height:20px; accent-color:var(--accent2); flex:none;}
+  .lec-op.good{border-color:var(--accent2); background:var(--ok-bg);}
+  .lec-op.bad{border-color:#E5534B; background:color-mix(in srgb, #E5534B 14%, var(--surface));}
+  .lec-res{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;}
+  .lec-res.pass{border-color:var(--accent2);}
+  .lec-big{font-size:3rem; line-height:1;}
+
+  /* --- Consejos para Coro y calculadoras nuevas ---------------------------- */
+  .tip-coro{border:1px solid var(--accent); background:var(--accent-soft); border-radius:12px; padding:10px 14px; display:flex; flex-direction:column; gap:4px;}
+  .tip-coro .tip-t{font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--est-fg);}
+  .tip-coro p{margin:0; font-size:0.86rem; line-height:1.5; color:var(--ink);}
+  .tool-tile.tile-techo{border-left-color:var(--brand-brown);}
+  .tool-tile.tile-tanque{border-left-color:var(--brand-blue);}
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -1035,7 +1093,15 @@
   </section>
   <section class="card" id="pfIconCard" hidden>
     <div class="card-title">Imagen de perfil</div>
-    <p class="smap-note" style="margin:0 0 10px;">Elige tu ícono. Lo ven tus compañeros en el chat.</p>
+    <p class="smap-note" style="margin:0 0 10px;">Pon una foto tuya o elige un ícono. Lo ven tus compañeros.</p>
+    <div class="pf-foto">
+      <span id="pfFotoPrev"></span>
+      <div class="pf-foto-btns">
+        <label class="btn primary" for="pfFotoIn">Subir foto de la galería</label>
+        <input type="file" id="pfFotoIn" accept="image/*" hidden>
+        <button class="btn" id="pfFotoQuitar" type="button" hidden>Quitar foto y usar ícono</button>
+      </div>
+    </div>
     <div class="ic-grid" id="pfIcons"></div>
     <p class="pf-msg" id="pfIconMsg"></p>
   </section>
@@ -1069,6 +1135,8 @@
     <button class="seg-tab" data-histtool="bloques">Bloques</button>
     <button class="seg-tab" data-histtool="piso">Piso</button>
     <button class="seg-tab" data-histtool="concreto">Concreto</button>
+    <button class="seg-tab" data-histtool="techo">Techos</button>
+    <button class="seg-tab" data-histtool="tanque">Tanques</button>
     <button class="seg-tab" data-histtool="proyecto">Proyectos</button>
   </div>
   <section class="card">
@@ -1145,6 +1213,15 @@
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
 
+    <button class="tool-tile tile-capac" id="capTile" type="button" hidden>
+      <span class="tool-icon" style="color:var(--est-fg)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="6"/><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7"/><path d="m12 12.5.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Capacitación</span>
+        <span class="tool-sub" id="capTileSub">Lecciones cortas con medallas</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
     <button class="tool-tile tile-chat" id="chatTile" type="button" hidden>
       <span class="tool-icon" style="color:var(--brand-green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span>
       <span class="tool-text">
@@ -1216,6 +1293,8 @@
   </div>
   <p class="dash-greet">Calcular materiales</p>
   <p class="lede" style="margin-top:-8px;">Elige qué va a construir el cliente. Cada calculadora da la lista de materiales al instante, lista para pasársela.</p>
+  <aside class="tip-coro"><span class="tip-t">Consejo para Coro · salitre</span><p>Cerca de la costa todo se oxida más rápido: ofrece siempre <strong>fondo anticorrosivo</strong>, tornillería <strong>galvanizada o inoxidable</strong>, sellador e <strong>impermeabilizante</strong>. Protege la obra del cliente y sube la venta.</p></aside>
+
   <div class="home-list">
     <button class="tool-tile tile-cieloraso" data-target="cieloraso">
       <span class="tool-icon" style="color:var(--brand-orange)">
@@ -1271,6 +1350,23 @@
     </span>
     <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
+
+    <button class="tool-tile tile-techo" data-target="techo">
+      <span class="tool-icon" style="color:var(--brand-brown)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 12 4l10 8"/><path d="M5 10v9h14v-9"/><path d="M8 13l4-3 4 3"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Techos</span>
+        <span class="tool-sub">Láminas de zinc o acerolit, tornillos y cumbrera</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="tool-tile tile-tanque" data-target="tanque">
+      <span class="tool-icon" style="color:var(--brand-blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5"/><path d="M5 11c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Tanques de agua</span>
+        <span class="tool-sub">Litros según personas y días de reserva</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </div>
 </div>
 
@@ -1395,6 +1491,8 @@
   </div>
 
   <p class="lede">Pintura, impermeabilizante, fondo anticorrosivo y techos asfálticos — elige el tipo de producto, la marca y calcula cuánto llevar según la superficie.</p>
+  <aside class="tip-coro"><span class="tip-t">Consejo para Coro · salitre</span><p>El aire salino de Coro oxida el metal y levanta la pintura rápido. En rejas y portones: quitar el óxido, <strong>fondo anticorrosivo</strong> y luego esmalte. En fachadas, lavar con agua dulce, <strong>sellador</strong> y pintura para exteriores. En platabandas, <strong>impermeabilizante</strong>.</p></aside>
+
 
   <div class="seg-tabs" id="catTabs" role="tablist">
     <button class="seg-tab active" data-cat="pintura">Pintura</button>
@@ -1512,6 +1610,8 @@
   </div>
 
   <p class="lede">Calcula cuántos <strong>bloques</strong>, sacos de <strong>cemento</strong> y m³ de <strong>arena</strong> lleva una pared, con la opción de sumar el friso de una o las dos caras.</p>
+  <aside class="tip-coro"><span class="tip-t">Consejo para Coro · salitre</span><p>Para paredes exteriores, usar arena lavada (la arena de playa trae sal y daña el friso y la cabilla). Después del friso, <strong>sellador</strong> y pintura para exteriores.</p></aside>
+
 
   <section class="card">
     <div class="card-title">Espesor del bloque</div>
@@ -1679,6 +1779,8 @@
     </button>
   </div>
   <p class="lede">Calcula los sacos de <strong>cemento</strong> y los m³ de <strong>arena</strong> y <strong>piedra picada</strong> para vaciar una losa, un piso o varias columnas y vigas, con la cabilla si la necesitas.</p>
+  <aside class="tip-coro"><span class="tip-t">Consejo para Coro · salitre</span><p>La sal oxida la cabilla y revienta el concreto por dentro. Arena y agua sin sal, buen recubrimiento de concreto sobre la cabilla y <strong>curar</strong> (mantener húmedo) varios días. Con el sol de Coro, si no se cura, se agrieta.</p></aside>
+
 
   <section class="card">
     <div class="card-title">Qué se va a vaciar</div>
@@ -1733,6 +1835,135 @@
   </section>
 
   <p class="diagram-caption" style="text-align:center;" id="cFootnote"></p>
+</div>
+
+<div class="screen" id="screen-techo" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back-calc>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Calculadoras
+    </button>
+  </div>
+  <p class="lede">Calcula cuántas <strong>láminas de techo</strong>, <strong>tornillos</strong> y metros de <strong>cumbrera</strong> lleva un techo de una o dos aguas. Ajusta la medida de la lámina a la que tenga la tienda.</p>
+
+  <aside class="tip-coro"><span class="tip-t">Consejo para Coro · salitre</span><p>En Coro el salitre come los tornillos: usa <strong>tornillos autoperforantes con arandela de goma</strong> galvanizados, y en láminas de zinc revisa y pinta los bordes cortados. En techos de platabanda, <strong>impermeabilizante</strong>.</p></aside>
+
+  <section class="card">
+    <div class="card-title">Forma del techo</div>
+    <div class="seg-tabs" id="tAguasTabs" role="tablist">
+      <button class="seg-tab active" data-aguas="1" type="button">Una agua</button>
+      <button class="seg-tab" data-aguas="2" type="button">Dos aguas</button>
+    </div>
+    <div class="dims" style="margin-top:12px;">
+      <div class="field">
+        <label for="tCaida">Largo de cada caída</label>
+        <div class="inputwrap">
+          <input type="number" id="tCaida" inputmode="decimal" min="0.1" step="0.1" value="4">
+          <span class="unit">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tAncho">Ancho del techo</label>
+        <div class="inputwrap">
+          <input type="number" id="tAncho" inputmode="decimal" min="0.1" step="0.1" value="6">
+          <span class="unit">m</span>
+        </div>
+      </div>
+    </div>
+    <p class="smap-note" style="margin:8px 0 0;">La caída es el lado por donde corre el agua. En dos aguas, mide una sola caída.</p>
+  </section>
+  <section class="card">
+    <div class="card-title">Lámina</div>
+    <div class="dims">
+      <div class="field">
+        <label for="tLargoLam">Largo de la lámina</label>
+        <div class="inputwrap">
+          <input type="number" id="tLargoLam" inputmode="decimal" min="0.1" step="0.01" value="3.66">
+          <span class="unit">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tAnchoUtil">Ancho útil (ya solapado)</label>
+        <div class="inputwrap">
+          <input type="number" id="tAnchoUtil" inputmode="decimal" min="0.1" step="0.01" value="0.80">
+          <span class="unit">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tSolape">Solape entre láminas a lo largo</label>
+        <div class="inputwrap">
+          <input type="number" id="tSolape" inputmode="decimal" min="0" step="0.01" value="0.20">
+          <span class="unit">m</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tTornLam">Tornillos por lámina</label>
+        <div class="inputwrap">
+          <input type="number" id="tTornLam" inputmode="decimal" min="1" step="1" value="8">
+          <span class="unit">und</span>
+        </div>
+      </div>
+    </div>
+    <div class="merma-row">
+      <div class="headrow"><label for="tMerma">Desperdicio / cortes</label><span class="pct mono" id="tMermaOut">5%</span></div>
+      <input type="range" id="tMerma" min="0" max="15" step="1" value="5">
+    </div>
+  </section>
+  <section aria-label="Resultados"><div class="results-grid" id="tResultsGrid"></div></section>
+  <section class="card list-card">
+    <div class="card-title">Lista para el cliente</div>
+    <pre id="tListText" class="mono"></pre>
+    <div class="actions">
+      <button class="btn primary" id="tCopyBtn" type="button">Copiar lista</button>
+      <button class="btn" id="tResetBtn" type="button">Restablecer</button>
+    </div>
+  </section>
+  <p class="diagram-caption" style="text-align:center;">Filas = ancho ÷ ancho útil; láminas por fila según el largo de la caída con el solape. La medida de lámina por defecto (3,66 × 0,80 m útil) es solo una referencia: cámbiala por la del producto.</p>
+</div>
+
+<div class="screen" id="screen-tanque" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back-calc>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Calculadoras
+    </button>
+  </div>
+  <p class="lede">Calcula cuántos <strong>litros de reserva</strong> necesita una casa o negocio según las personas y los días sin agua, y qué <strong>tanque</strong> le conviene.</p>
+  <aside class="tip-coro"><span class="tip-t">Consejo</span><p>Tanque a la sombra y con tapa bien cerrada, con <strong>flotante</strong>, <strong>llave de paso</strong> y conexiones con <strong>teflón</strong>. Si va a subir el agua a otro nivel, necesita <strong>bomba</strong>.</p></aside>
+  <section class="card">
+    <div class="card-title">Uso</div>
+    <div class="dims">
+      <div class="field">
+        <label for="qPersonas">Personas</label>
+        <div class="inputwrap">
+          <input type="number" id="qPersonas" inputmode="decimal" min="1" step="1" value="4">
+          <span class="unit">pers.</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="qDias">Días de reserva</label>
+        <div class="inputwrap">
+          <input type="number" id="qDias" inputmode="decimal" min="1" step="1" value="3">
+          <span class="unit">días</span>
+        </div>
+      </div>
+    </div>
+    <div class="merma-row">
+      <div class="headrow"><label for="qConsumo">Consumo por persona al día</label><span class="pct mono" id="qConsumoOut">120 L</span></div>
+      <input type="range" id="qConsumo" min="50" max="250" step="10" value="120">
+    </div>
+    <p class="smap-note" style="margin:6px 0 0;">Ahorrando se gastan unos 80–100 L por persona al día; con uso normal, 120–200 L.</p>
+  </section>
+  <section aria-label="Resultados"><div class="results-grid" id="qResultsGrid"></div></section>
+  <section class="card list-card">
+    <div class="card-title">Lista para el cliente</div>
+    <pre id="qListText" class="mono"></pre>
+    <div class="actions">
+      <button class="btn primary" id="qCopyBtn" type="button">Copiar lista</button>
+      <button class="btn" id="qResetBtn" type="button">Restablecer</button>
+    </div>
+  </section>
+  <p class="diagram-caption" style="text-align:center;">Tamaños de tanque de referencia: 500, 1.000, 1.500, 2.000, 2.500 y 5.000 L. Confirma en la tienda los que hay disponibles.</p>
 </div>
 
 <div class="screen" id="screen-proyecto" hidden>
@@ -1884,6 +2115,56 @@
   </div>
 </div>
 
+<div class="screen" id="screen-capac" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Capacitación</p>
+  <section class="card cap-head">
+    <div class="cap-head-t">Mis medallas</div>
+    <div class="cap-head-n mono" id="capMine">0 de 7</div>
+    <div class="cap-track"><div class="cap-fill" id="capBar"></div></div>
+    <p class="smap-note" style="margin:0;">Cada lección son unos 3 minutos. Con 2 de 3 respuestas buenas ganas la medalla.</p>
+  </section>
+  <div class="seg-tabs" id="capTabs" role="tablist">
+    <button class="seg-tab active" data-cap="cursos" type="button">Lecciones</button>
+    <button class="seg-tab" data-cap="tabla" type="button">Tabla de posiciones</button>
+  </div>
+  <section class="card"><div id="capList"></div><div id="capBoard" hidden></div></section>
+</div>
+
+<div class="screen" id="screen-leccion" hidden>
+  <div class="backbar">
+    <button class="backbtn" id="lecBack" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Capacitación
+    </button>
+  </div>
+  <p class="dash-greet" id="lecTitle"></p>
+  <div class="cap-track"><div class="cap-fill" id="lecProg"></div></div>
+  <div id="lecBody" class="lec-body"></div>
+</div>
+
+<div class="screen" id="screen-perfilpub" hidden>
+  <div class="backbar">
+    <button class="backbtn" id="ppBack" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Volver
+    </button>
+  </div>
+  <section class="card pp-card">
+    <span id="ppAv"></span>
+    <div class="pp-name" id="ppName"></div>
+    <div class="pp-sub" id="ppCargo"></div>
+    <div class="pp-sub" id="ppSeen"></div>
+    <div class="pp-med" id="ppMed"></div>
+    <div class="pp-actions" id="ppActions"></div>
+  </section>
+</div>
+
 <div class="screen" id="screen-chat" hidden>
   <div class="backbar">
     <button class="backbtn" data-back>
@@ -1973,7 +2254,7 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 26 · 30 sep 2026</span>
+  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 27 · 30 sep 2026</span>
 </footer>
 
 </main>
@@ -1990,7 +2271,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -2014,7 +2295,12 @@
     editor: "Editor del mapa",
     monitor: "Estado del sistema",
     avisos: "Notificaciones",
-    soporte: "Ayuda y soporte"
+    soporte: "Ayuda y soporte",
+    perfilpub: "Perfil",
+    capac: "Capacitación",
+    leccion: "Capacitación",
+    techo: "Techos · láminas y tornillos",
+    tanque: "Tanques de agua"
   };
 
   function showScreen(name, pushHash){
@@ -2050,8 +2336,8 @@
   // --- per-device profile (no server: just a name kept on this phone) ------
   var PROFILE_KEY = "coseimpa_profile_name";
   var ACTIVITY_KEY = "coseimpa_activity_log";
-  var TOOL_LABELS = { cieloraso:"Cielo Raso", recubrimientos:"Recubrimientos", bloques:"Bloques y Cemento", piso:"Piso y Cerámica", concreto:"Concreto", proyecto:"Proyecto" };
-  var TOOL_COLORS = { cieloraso:"var(--brand-orange)", recubrimientos:"var(--brand-blue)", bloques:"var(--brand-green)", piso:"var(--brand-brown)", concreto:"var(--ink-soft)", proyecto:"var(--accent2)" };
+  var TOOL_LABELS = { cieloraso:"Cielo Raso", recubrimientos:"Recubrimientos", bloques:"Bloques y Cemento", piso:"Piso y Cerámica", concreto:"Concreto", techo:"Techos", tanque:"Tanques de agua", proyecto:"Proyecto" };
+  var TOOL_COLORS = { cieloraso:"var(--brand-orange)", recubrimientos:"var(--brand-blue)", bloques:"var(--brand-green)", piso:"var(--brand-brown)", concreto:"var(--ink-soft)", techo:"var(--brand-brown)", tanque:"var(--brand-blue)", proyecto:"var(--accent2)" };
 
   function getProfileName(){
     try{ return localStorage.getItem(PROFILE_KEY) || ""; }catch(e){ return ""; }
@@ -4425,6 +4711,8 @@
       tag(c.emailVerified() ? "Correo confirmado" : "Correo sin confirmar", c.emailVerified() ? "ok" : "est");
       tag(me.status === "verificado" ? "Acceso aprobado" : "En revisión", me.status === "verificado" ? "ok" : "est");
       if (me.role === "admin") tag("Administrador");
+      var pm = window.coseChat && window.coseChat.people()[window.coseChat.me()];
+      if (pm) tag("🏅 " + (+(pm.medallas || 0)) + ((+(pm.medallas || 0)) === 1 ? " medalla" : " medallas"));
       if (me.createdAt && me.createdAt.toDate) tag("Desde el " + me.createdAt.toDate().toLocaleDateString("es-VE"));
     } else {
       tag("Perfil guardado en este teléfono");
@@ -4503,6 +4791,119 @@
 
 <script>
 // ============================================================================
+// CALCULADORAS: TECHOS (láminas, tornillos, cumbrera) y TANQUES DE AGUA.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var n2 = function(n){ return n.toLocaleString("es-VE", { minimumFractionDigits:2, maximumFractionDigits:2 }); };
+  var n0 = function(n){ return Math.round(n).toLocaleString("es-VE"); };
+  function num(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : NaN; }
+  function results(gridId, list){
+    var g = $(gridId); g.innerHTML = "";
+    list.forEach(function(r){
+      var d = document.createElement("div"); d.className = "result " + r.cls;
+      var a = document.createElement("span"); a.className = "rlabel"; a.textContent = r.title;
+      var b = document.createElement("span"); b.className = "rmain mono"; b.textContent = r.main + " ";
+      var u = document.createElement("span"); u.className = "unit"; u.textContent = r.unit; b.appendChild(u);
+      var c = document.createElement("span"); c.className = "rsub"; c.textContent = r.sub;
+      d.appendChild(a); d.appendChild(b); d.appendChild(c); g.appendChild(d);
+    });
+  }
+  function copyList(btn, text, tool, summary){
+    if (window.coseLogActivity) window.coseLogActivity(tool, summary, text);
+    var done = function(ok){ var old = btn.textContent; btn.textContent = ok ? "Copiado ✓" : "No se pudo copiar"; setTimeout(function(){ btn.textContent = old; }, 1600); };
+    try{ navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); }); }
+    catch(e){
+      try{ var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); done(true); }
+      catch(e2){ done(false); }
+    }
+  }
+
+  // --- Techos ---------------------------------------------------------------
+  var aguas = 1, tSummary = "";
+  function renderTecho(){
+    var caida = num("tCaida"), ancho = num("tAncho"), L = num("tLargoLam"), W = num("tAnchoUtil"), sol = num("tSolape"), tpl = num("tTornLam"), merma = num("tMerma") / 100;
+    $("tMermaOut").textContent = Math.round(merma * 100) + "%";
+    if (!(caida > 0 && ancho > 0 && L > 0 && W > 0 && sol >= 0 && sol < L && tpl >= 1)) return;
+    var filas = Math.ceil(ancho / W - 1e-9);
+    var porFila = caida <= L ? 1 : 1 + Math.ceil((caida - L) / (L - sol) - 1e-9);
+    var laminas = Math.ceil(filas * porFila * aguas * (1 + merma));
+    var tornillos = Math.ceil(laminas * tpl);
+    var area = caida * ancho * aguas;
+    var list = [
+      { cls:"result-principal", title:"Láminas", main:n0(laminas), unit:"und", sub:filas + " fila(s) × " + porFila + " por caída" + (aguas === 2 ? " × 2 aguas" : "") },
+      { cls:"result-secundario", title:"Tornillos con arandela", main:n0(tornillos), unit:"und", sub:tpl + " por lámina" },
+      { cls:"result-angulo", title:"Área de techo", main:n2(area), unit:"m²", sub:(aguas === 2 ? "Dos aguas" : "Una agua") }
+    ];
+    var lines = [
+      "COSEIMPA — Lista de materiales",
+      "Techo " + (aguas === 2 ? "a dos aguas" : "a una agua") + ": caída " + n2(caida) + " m × ancho " + n2(ancho) + " m (" + n2(area) + " m²)",
+      "Lámina " + n2(L) + " m, ancho útil " + n2(W) + " m",
+      "--------------------------------",
+      n0(laminas) + "  lámina(s) de techo",
+      n0(tornillos) + "  tornillo(s) autoperforante(s) con arandela"
+    ];
+    if (aguas === 2){
+      var cumbrera = Math.ceil(ancho * (1 + merma) * 10 - 1e-9) / 10;
+      list.push({ cls:"result-principal", title:"Cumbrera", main:n2(cumbrera), unit:"m", sub:"a lo largo del ancho" });
+      lines.push(n2(cumbrera) + "  m de cumbrera");
+    }
+    results("tResultsGrid", list);
+    $("tListText").textContent = lines.join("\n");
+    tSummary = n2(caida) + "×" + n2(ancho) + " m · " + (aguas === 2 ? "2 aguas" : "1 agua") + " · " + n0(laminas) + " láminas";
+  }
+  document.querySelectorAll("#tAguasTabs .seg-tab").forEach(function(b){
+    b.addEventListener("click", function(){
+      aguas = +b.dataset.aguas;
+      document.querySelectorAll("#tAguasTabs .seg-tab").forEach(function(x){ x.classList.toggle("active", x === b); });
+      renderTecho();
+    });
+  });
+  ["tCaida", "tAncho", "tLargoLam", "tAnchoUtil", "tSolape", "tTornLam", "tMerma"].forEach(function(id){ $(id).addEventListener("input", renderTecho); });
+  $("tCopyBtn").addEventListener("click", function(){ copyList($("tCopyBtn"), $("tListText").textContent, "techo", tSummary); });
+  $("tResetBtn").addEventListener("click", function(){
+    $("tCaida").value = 4; $("tAncho").value = 6; $("tLargoLam").value = 3.66; $("tAnchoUtil").value = 0.8; $("tSolape").value = 0.2; $("tTornLam").value = 8; $("tMerma").value = 5;
+    document.querySelector('#tAguasTabs [data-aguas="1"]').click();
+  });
+  renderTecho();
+
+  // --- Tanques ----------------------------------------------------------------
+  var SIZES = [500, 1000, 1500, 2000, 2500, 5000], qSummary = "";
+  function renderTanque(){
+    var p = num("qPersonas"), d = num("qDias"), c = num("qConsumo");
+    $("qConsumoOut").textContent = c + " L";
+    if (!(p >= 1 && d >= 1 && c > 0)) return;
+    var litros = p * d * c;
+    var uno = SIZES.filter(function(sz){ return sz >= litros; })[0];
+    var n1000 = Math.ceil(litros / 1000);
+    var reco = uno ? "1 tanque de " + n0(uno) + " L" : n0(Math.ceil(litros / 5000)) + " tanques de 5.000 L";
+    var list = [
+      { cls:"result-principal", title:"Reserva necesaria", main:n0(litros), unit:"L", sub:p + " pers. × " + d + " días × " + c + " L" },
+      { cls:"result-secundario", title:"Recomendado", main:uno ? n0(uno) : n0(Math.ceil(litros / 5000)), unit:uno ? "L (1 tanque)" : "tanques de 5.000 L", sub:uno ? "El tamaño común que alcanza" : "Más de 5.000 L" },
+      { cls:"result-angulo", title:"O con tanques de 1.000 L", main:n0(n1000), unit:"und", sub:"Útil si no cabe uno grande" }
+    ];
+    results("qResultsGrid", list);
+    $("qListText").textContent = [
+      "COSEIMPA — Reserva de agua",
+      p + " persona(s) · " + d + " día(s) · " + c + " L por persona al día",
+      "Reserva: " + n0(litros) + " litros",
+      "--------------------------------",
+      "Opción 1: " + reco,
+      "Opción 2: " + n1000 + " tanque(s) de 1.000 L",
+      "Accesorios: flotante, llave de paso, adaptadores y teflón"
+    ].join("\n");
+    qSummary = p + " pers. · " + d + " días · " + n0(litros) + " L";
+  }
+  ["qPersonas", "qDias", "qConsumo"].forEach(function(id){ $(id).addEventListener("input", renderTanque); });
+  $("qCopyBtn").addEventListener("click", function(){ copyList($("qCopyBtn"), $("qListText").textContent, "tanque", qSummary); });
+  $("qResetBtn").addEventListener("click", function(){ $("qPersonas").value = 4; $("qDias").value = 3; $("qConsumo").value = 120; renderTanque(); });
+  renderTanque();
+})();
+</script>
+
+<script>
+// ============================================================================
 // CHAT DEL EQUIPO: compañeros (uno envía la solicitud y el otro la acepta),
 // mensajes en vivo, grupos, quién está en línea e ícono de perfil.
 // Solo funciona con la nube: lo arranca el bloque MODO NUBE cuando la cuenta
@@ -4545,11 +4946,14 @@
   var GROUP_D = '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18.5 14a6.5 6.5 0 0 1 3 6"/>';
   function svg(d){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; }
 
-  // Avatar: ícono elegido (o la inicial) + punto verde si está en línea.
+  // Foto de perfil: imagen pequeña (JPEG en base64) guardada en perfiles/{uid}.foto
+  function isFoto(v){ return typeof v === "string" && v.indexOf("data:image/jpeg;base64,") === 0; }
+  // Avatar: foto, ícono elegido o la inicial, + punto verde si está en línea.
   function avatar(icon, name, size, online){
     var w = el("span", "av" + (size ? " av-" + size : ""));
     var ic = ICON_BY[icon];
-    if (ic){ w.classList.add("av-ic"); w.style.setProperty("--c", ic.c); w.innerHTML = svg(ic.d); }
+    if (isFoto(icon)){ w.classList.add("av-foto"); var im = el("img"); im.src = icon; im.alt = ""; w.appendChild(im); }
+    else if (ic){ w.classList.add("av-ic"); w.style.setProperty("--c", ic.c); w.innerHTML = svg(ic.d); }
     else w.textContent = (String(name || "?").trim().charAt(0) || "?").toUpperCase();
     if (online != null){ var p = el("span", "pres" + (online ? " on" : "")); w.appendChild(p); }
     w.setAttribute("aria-hidden", "true");
@@ -4568,7 +4972,7 @@
   var perfiles = {}, perfilesLoaded = false;
   var conex = {}, chats = {}, lect = {}, estado = {};
   var firstConex = true, firstChats = true;
-  var myIcon = "", syncing = "";
+  var myIcon = "", myFoto = "", syncing = "", pubUid = null;
   var openChat = null, newDirectWith = null, msgUnsub = null, msgList = [];
   var D = null, rtdb = null, presRef = null, rtUnsubs = [];
   var tab = "chats";
@@ -4594,7 +4998,11 @@
     if (c) return c.from === u ? c.fromName : c.toName;
     return "Compañero";
   }
-  function iconOf(u){ return u === uid() ? myIcon : (perfiles[u] && perfiles[u].icon) || ""; }
+  function iconOf(u){
+    if (u === uid()) return myFoto || myIcon;
+    var p = perfiles[u] || {};
+    return (isFoto(p.foto) && p.foto) || p.icon || "";
+  }
   function isOnline(u){ return !!(estado[u] && estado[u].on === true); }
   function isCompa(u){ var c = conex[pid(uid(), u)]; return !!(c && c.status === "aceptada"); }
   function compas(){
@@ -4645,16 +5053,18 @@
   function syncPerfil(){
     if (!X || !perfilesLoaded) return;
     var p = perfiles[uid()] || {};
-    var want = { name:X.me.name, cargo:(X.me.cargo || "").slice(0, 40), icon:myIcon || "" };
-    var key = want.name + "|" + want.cargo + "|" + want.icon;
-    if (p.name === want.name && (p.cargo || "") === want.cargo && (p.icon || "") === want.icon) return;
+    var want = { name:X.me.name, cargo:(X.me.cargo || "").slice(0, 40), icon:myIcon || "", foto:myFoto || "" };
+    var key = want.name + "|" + want.cargo + "|" + want.icon + "|" + want.foto.length;
+    if (p.name === want.name && (p.cargo || "") === want.cargo && (p.icon || "") === want.icon && (p.foto || "") === want.foto) return;
     if (syncing === key) return;
     syncing = key;
-    F().setDoc(F().doc(X.db, "perfiles", uid()), { name:want.name, cargo:want.cargo, icon:want.icon, updatedAt:F().serverTimestamp() })
-      .catch(function(){ syncing = ""; });
+    // merge: las medallas (capacitación) viven en el mismo documento
+    F().setDoc(F().doc(X.db, "perfiles", uid()), { name:want.name, cargo:want.cargo, icon:want.icon, foto:want.foto, updatedAt:F().serverTimestamp() }, { merge:true })
+      .catch(function(){ syncing = ""; $("pfIconMsg").textContent = "No se pudo guardar. Revisa tu internet."; $("pfIconMsg").className = "pf-msg err"; });
   }
   function setIcon(id){
     myIcon = id;
+    myFoto = "";
     syncPerfil();
     $("pfIconMsg").textContent = "✓ Guardado. Tus compañeros ya lo ven.";
     $("pfIconMsg").className = "pf-msg ok";
@@ -4674,11 +5084,46 @@
         box.appendChild(b);
       });
     }
-    box.querySelectorAll(".ic-opt").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.icon === myIcon)); });
+    box.querySelectorAll(".ic-opt").forEach(function(b){ b.setAttribute("aria-pressed", String(!myFoto && b.dataset.icon === myIcon)); });
+    var prev = $("pfFotoPrev");
+    prev.innerHTML = "";
+    prev.appendChild(avatar(myFoto || myIcon, X ? X.me.name : "", "xl"));
+    $("pfFotoQuitar").hidden = !myFoto;
+  }
+  // Foto desde la galería: se recorta cuadrada y se achica a 160 px (JPEG),
+  // así pesa unos pocos KB y cabe en el perfil sin servicio de archivos.
+  function setFotoFromFile(file){
+    var msg = $("pfIconMsg");
+    if (!file || !/^image\//.test(file.type)){ msg.textContent = "Elige una imagen."; msg.className = "pf-msg err"; return; }
+    msg.textContent = "Preparando la foto…"; msg.className = "pf-msg";
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var side = Math.min(img.naturalWidth, img.naturalHeight), S = 160;
+      var c = document.createElement("canvas"); c.width = S; c.height = S;
+      var g = c.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0, 0, S, S);
+      g.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, S, S);
+      URL.revokeObjectURL(url);
+      var q = 0.8, data = c.toDataURL("image/jpeg", q);
+      while (data.length > 30000 && q > 0.3){ q -= 0.1; data = c.toDataURL("image/jpeg", q); }
+      if (data.length > 30000){ msg.textContent = "La foto es muy pesada, prueba con otra."; msg.className = "pf-msg err"; return; }
+      myFoto = data;
+      syncPerfil();
+      msg.textContent = "✓ Foto guardada. Tus compañeros ya la ven."; msg.className = "pf-msg ok";
+      repaintChip(); renderPicker(); paintAll();
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); msg.textContent = "No se pudo leer esa imagen."; msg.className = "pf-msg err"; };
+    img.src = url;
   }
 
   // Pinta el ícono en el botón de perfil y en la tarjeta de la cuenta.
   function paintAv(node){
+    if (X && myFoto){
+      node.classList.remove("has-ic"); node.classList.add("has-foto"); node.style.removeProperty("--c");
+      node.innerHTML = ""; var im = el("img"); im.src = myFoto; im.alt = ""; node.appendChild(im);
+      return;
+    }
+    node.classList.remove("has-foto");
     var ic = X && ICON_BY[myIcon];
     node.classList.toggle("has-ic", !!ic);
     if (!ic){ node.style.removeProperty("--c"); return; }
@@ -4687,8 +5132,8 @@
   }
   function repaintChip(){
     var chip = $("profileChip"), dot = chip.querySelector(".dotbadge");
-    if (!X || !ICON_BY[myIcon]){
-      chip.classList.remove("has-ic");
+    if (!X || (!ICON_BY[myIcon] && !myFoto)){
+      chip.classList.remove("has-ic"); chip.classList.remove("has-foto");
       chip.style.removeProperty("--c");
       if (X) chip.textContent = (String(X.me.name).trim().charAt(0) || "?").toUpperCase();
     } else paintAv(chip);
@@ -4840,7 +5285,7 @@
     cs.forEach(function(o){
       list.appendChild(row({ av: avatar(iconOf(o), nameOf(o), "", isOnline(o)), title: nameOf(o),
         sub: ((perfiles[o] && perfiles[o].cargo) ? perfiles[o].cargo + " · " : "") + seen(o), subOn: isOnline(o),
-        onClick: function(){ openDirect(o); },
+        onClick: function(){ openProfile(o); },
         buttons: [ twoTap("Quitar", "¿Seguro?", function(){ dropConexion(pid(me, o), nameOf(o) + " ya no es tu compañero."); }) ] }));
     });
     paintFind();
@@ -4863,9 +5308,42 @@
     }
     people.slice(0, 40).forEach(function(u){
       var p = perfiles[u];
-      box.appendChild(row({ av: avatar(p.icon, p.name), title: p.name, sub: p.cargo || "Sin cargo",
+      box.appendChild(row({ av: avatar(iconOf(u), p.name), title: p.name, sub: p.cargo || "Sin cargo",
+        onClick: function(){ openProfile(u); },
         buttons: [ { text:"Agregar", primary:true, fn:function(btn){ sendRequest(u, btn); } } ] }));
     });
+  }
+
+  // --- perfil público de un compañero ---------------------------------------------
+  var ppFrom = "chat";
+  function openProfile(u){
+    if (!X) return;
+    var cur = current();
+    if (cur !== "perfilpub") ppFrom = cur;
+    pubUid = u;
+    show("perfilpub");
+    paintProfile();
+  }
+  function paintProfile(){
+    if (!X || !pubUid || current() !== "perfilpub") return;
+    var u = pubUid, p = perfiles[u] || {}, me = uid();
+    var av = $("ppAv"); av.innerHTML = "";
+    av.appendChild(avatar(iconOf(u), nameOf(u), "xl", u === me ? null : isOnline(u)));
+    $("ppName").textContent = nameOf(u) + (u === me ? " (tú)" : "");
+    $("ppCargo").textContent = p.cargo || (u === me ? X.me.cargo : "") || "Sin cargo";
+    $("ppSeen").textContent = u === me ? "" : seen(u);
+    $("ppSeen").className = "pp-sub" + (isOnline(u) ? " on" : "");
+    var med = $("ppMed"); med.innerHTML = "";
+    var n = +(p.medallas || 0);
+    med.appendChild(el("span", "medal", "🏅 " + n + (n === 1 ? " medalla" : " medallas") + " de capacitación"));
+    var act = $("ppActions"); act.innerHTML = "";
+    function btn(text, primary, fn){ var b = el("button", "btn" + (primary ? " primary" : ""), text); b.type = "button"; b.addEventListener("click", fn); act.appendChild(b); return b; }
+    if (u === me){ btn("Editar mi perfil", true, function(){ window.coseProfile.open(); }); return; }
+    var c = conex[pid(me, u)];
+    if (c && c.status === "aceptada") btn("Enviar mensaje", true, function(){ openDirect(u); });
+    else if (c && c.to === me) btn("Aceptar solicitud de compañero", true, function(){ acceptRequest(pid(me, u)); });
+    else if (c) btn("Solicitud enviada · esperando", false, function(){}).disabled = true;
+    else if (perfiles[u]) btn("Agregar como compañero", true, function(b){ sendRequest(u, this); });
   }
 
   // --- supervisión (solo Rafael) ---------------------------------------------
@@ -4993,7 +5471,8 @@
     box.innerHTML = ""; add.innerHTML = "";
     c.members.slice().sort(function(a, b){ return norm(nameOf(a)).localeCompare(norm(nameOf(b))); }).forEach(function(u){
       box.appendChild(row({ av: avatar(iconOf(u), nameOf(u), "sm", u === uid() ? null : isOnline(u)),
-        title: u === uid() ? nameOf(u) + " (tú)" : nameOf(u), sub: u === uid() ? "" : seen(u), subOn: u !== uid() && isOnline(u) }));
+        title: u === uid() ? nameOf(u) + " (tú)" : nameOf(u), sub: u === uid() ? "" : seen(u), subOn: u !== uid() && isOnline(u),
+        onClick: function(){ openProfile(u); } }));
     });
     var cand = compas().filter(function(u){ return c.members.indexOf(u) === -1; });
     if (!cand.length) add.appendChild(el("div", "c-empty", "Todos tus compañeros ya están en el grupo."));
@@ -5137,6 +5616,7 @@
     if (cur === "chat"){ if (tab === "chats") paintChatList(); else if (tab === "sup") paintSup(); else paintCompas(); }
     if (cur === "conv") paintConvHead();
     if (cur === "perfil") renderPicker();
+    if (cur === "perfilpub") paintProfile();
   }
 
   // --- en línea (Realtime Database) -------------------------------------------
@@ -5194,9 +5674,10 @@
       snap.forEach(function(d){ perfiles[d.id] = d.data(); });
       // el ícono guardado se toma de la nube (no de la copia del teléfono),
       // para no borrarlo al entrar desde un teléfono nuevo
-      if (!perfilesLoaded && !snap.metadata.fromCache){ perfilesLoaded = true; myIcon = (perfiles[me] && perfiles[me].icon) || ""; repaintChip(); }
+      if (!perfilesLoaded && !snap.metadata.fromCache){ perfilesLoaded = true; myIcon = (perfiles[me] && perfiles[me].icon) || ""; myFoto = (perfiles[me] && isFoto(perfiles[me].foto) && perfiles[me].foto) || ""; repaintChip(); }
       syncPerfil();
       paintAll();
+      if (window.coseCapac) window.coseCapac.refresh();
     }, function(){}));
     unsubs.push(f.onSnapshot(f.query(f.collection(db, "conexiones"), f.where("members", "array-contains", me)), function(snap){
       conex = {};
@@ -5236,7 +5717,7 @@
     unsubs = [];
     X = null;
     perfiles = {}; conex = {}; chats = {}; lect = {}; estado = {};
-    myIcon = ""; openChat = null; newDirectWith = null;
+    myIcon = ""; myFoto = ""; openChat = null; newDirectWith = null;
     $("chatBtn").hidden = true;
     $("chatTile").hidden = true;
     $("pfIconCard").hidden = true;
@@ -5267,6 +5748,14 @@
   $("chatTile").addEventListener("click", openChatHome);
   document.querySelectorAll("#chatTabs .seg-tab").forEach(function(b){ b.addEventListener("click", function(){ tabTo(b.dataset.ctab); }); });
   $("chatFind").addEventListener("input", function(){ if (X) paintFind(); });
+  $("pfFotoIn").addEventListener("change", function(){ if (X && this.files && this.files[0]) setFotoFromFile(this.files[0]); this.value = ""; });
+  $("pfFotoQuitar").addEventListener("click", function(){
+    if (!X) return;
+    myFoto = ""; syncPerfil(); repaintChip(); renderPicker(); paintAll();
+    $("pfIconMsg").textContent = "✓ Foto quitada: se usa tu ícono."; $("pfIconMsg").className = "pf-msg ok";
+  });
+  $("ppBack").addEventListener("click", function(){ show(ppFrom && ppFrom !== "perfilpub" ? ppFrom : "chat"); });
+  $("convAv").addEventListener("click", function(){ var c = chatData(openChat); if (X && !supMode && (!c || c.type !== "grupo")) openProfile(c ? otherOf(c.members) : newDirectWith); });
   $("chatNewGroup").addEventListener("click", function(){ if (X) openNewGroup(); });
   $("grpBack").addEventListener("click", function(){ show("chat"); tabTo("chats"); });
   $("grpForm").addEventListener("submit", function(e){ if (X) createGroup(e); else e.preventDefault(); });
@@ -5327,8 +5816,13 @@
     },
     openChat: function(id){ if (X && chats[id]) openConv(id); },
     openCompas: function(){ if (X){ show("chat"); tabTo("compas"); } },
+    openProfile: openProfile,
+    people: function(){ return X ? perfiles : {}; },
+    iconOf: function(u){ return X ? iconOf(u) : ""; },
+    me: function(){ return X ? uid() : null; },
+    avatarFor: function(u){ return avatar(iconOf(u), nameOf(u), "sm"); },
     onlineCount: function(){ return Object.keys(estado).filter(function(u){ return estado[u] && estado[u].on === true; }).length; },
-    paintAv: function(node){ if (X && ICON_BY[myIcon]) paintAv(node); else { node.classList.remove("has-ic"); node.style.removeProperty("--c"); } },
+    paintAv: function(node){ if (X && (ICON_BY[myIcon] || myFoto)) paintAv(node); else { node.classList.remove("has-ic"); node.classList.remove("has-foto"); node.style.removeProperty("--c"); } },
     avatar: avatar
   };
 })();
@@ -6090,6 +6584,259 @@
 
 <script>
 // ============================================================================
+// CAPACITACIÓN: lecciones cortas (3-4 tarjetas + 3 preguntas). Con 2 de 3
+// respuestas buenas se gana la medalla. Las medallas se guardan en
+// capacitaciones/{uid} y el total en perfiles/{uid}.medallas, que ven todos
+// (perfil de cada compañero y tabla de posiciones).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  var CURSOS = [
+    { id:"atencion", titulo:"Atender al cliente en la ferretería", min:3, pasos:[
+      ["Primero, la obra", "Saluda y pregunta para qué trabajo es. «¿Qué va a hacer?» dice más que «¿qué busca?»: con eso sabes qué medida, qué cantidad y qué le falta."],
+      ["Véndele el trabajo completo", "Pintura lleva fondo, rodillo, brocha y lija. Cemento lleva arena y cabilla. Una llave de paso lleva teflón. Ofrecer lo que completa el trabajo le evita otro viaje y sube la venta."],
+      ["Usa Cose Coro", "Las calculadoras te dan cantidades exactas en segundos y el mapa te dice el pasillo. Compartir la lista por WhatsApp evita errores al despachar."],
+      ["Cierra bien", "Repite cantidades y medidas, confirma el precio en dólares y en bolívares a tasa BCV y dile dónde retira. Un cliente bien atendido vuelve."]
+    ], preguntas:[
+      ["¿Qué conviene preguntar primero?", ["¿Cuánto quiere gastar?", "¿Para qué trabajo lo necesita?", "¿Tiene prisa?"], 1],
+      ["Un cliente compra pintura para una pared. ¿Qué le ofreces?", ["Nada más, ya tiene lo que pidió", "Fondo, rodillo y lija", "Cemento"], 1],
+      ["Antes de despachar, lo mejor es…", ["Confirmar cantidades, medidas y precio", "Cobrar rápido sin repetir", "Mandarlo a buscar al patio solo"], 0]
+    ]},
+    { id:"salitre", titulo:"El salitre de Coro: cómo proteger", min:3, pasos:[
+      ["¿Qué hace el salitre?", "El aire de la costa trae sal. La sal con la humedad acelera el óxido del metal y daña pintura, techos y concreto mucho más rápido que tierra adentro."],
+      ["Metal: quitar óxido y proteger", "Rejas, portones y estructuras: se lija o cepilla el óxido, se aplica fondo anticorrosivo y encima esmalte. Pintar sobre óxido suelto no dura."],
+      ["Mejor materiales que aguanten", "En exteriores, tornillería y clavos galvanizados o de acero inoxidable. En techos, tornillos con arandela y revisar filtraciones a tiempo."],
+      ["Paredes y techos", "Lavar con agua dulce, sellar y usar pintura para exteriores. En techos y platabandas, impermeabilizante: el salitre y el sol de Coro castigan fuerte."]
+    ], preguntas:[
+      ["Antes de pintar una reja oxidada hay que…", ["Pintar directo encima", "Quitar el óxido y aplicar fondo anticorrosivo", "Mojarla con agua salada"], 1],
+      ["Para tornillería en exteriores cerca de la costa conviene…", ["Galvanizada o de acero inoxidable", "La más barata sin tratamiento", "Tornillos de madera"], 0],
+      ["¿Qué recomiendas para una platabanda que filtra?", ["Impermeabilizante", "Pintura de caucho interior", "Nada"], 0]
+    ]},
+    { id:"cemento", titulo:"Cemento, arena y concreto básico", min:3, pasos:[
+      ["El saco", "El saco de cemento es de 42,5 kg. Se guarda en un lugar seco, sobre paletas y no pegado al piso ni a la pared: la humedad lo endurece."],
+      ["Concreto y mortero", "Concreto = cemento + arena + piedra + agua (losas, columnas, vigas). Mortero = cemento + arena + agua (pegar bloques y frisar). Las calculadoras dan las cantidades."],
+      ["El agua justa", "Echar agua de más hace la mezcla más fácil de trabajar pero deja el concreto débil y con grietas. Agua solo la necesaria."],
+      ["Curado", "El concreto necesita mantenerse húmedo varios días (idealmente una semana) para ganar resistencia. Con el sol de Coro, si no se cura, se agrieta."]
+    ], preguntas:[
+      ["¿Cuánto pesa el saco de cemento?", ["25 kg", "42,5 kg", "60 kg"], 1],
+      ["Si al concreto se le echa agua de más…", ["Queda más fuerte", "Queda más débil", "No pasa nada"], 1],
+      ["¿Qué lleva el concreto que no lleva el mortero?", ["Piedra", "Cemento", "Agua"], 0]
+    ]},
+    { id:"pintura", titulo:"Pinturas: cuál recomendar", min:3, pasos:[
+      ["Caucho (base agua)", "Para paredes de interior y exterior. Se diluye y se limpia con agua. Para exteriores en Coro, mejor una de exteriores o con protección."],
+      ["Esmalte (base solvente)", "Para metal y madera: más duro y brillante. Se diluye con el solvente que indique el envase. Sobre metal, siempre con fondo anticorrosivo."],
+      ["Fondo y sellador", "Preparan la superficie para que la pintura agarre y rinda más. Una pared nueva o con salitre sin fondo se pela."],
+      ["Dos manos", "Casi siempre se necesitan dos manos. La calculadora de Recubrimientos te da los galones según los metros y las manos."]
+    ], preguntas:[
+      ["¿Qué pintura para una reja de metal?", ["Caucho de interior", "Esmalte con fondo anticorrosivo", "Solo sellador"], 1],
+      ["El caucho se limpia con…", ["Agua", "Gasolina", "Aceite"], 0],
+      ["¿Para qué sirve el fondo o sellador?", ["Para que la pintura agarre y rinda", "Para cambiar el color", "No sirve"], 0]
+    ]},
+    { id:"electricidad", titulo:"Electricidad básica para vender bien", min:3, pasos:[
+      ["El calibre del cable", "En cables AWG, número más bajo = cable más grueso. Un cable 10 es más grueso que un 12, y el 12 más que el 14."],
+      ["Usos comunes", "Como referencia: calibre 12 para tomacorrientes y 14 para iluminación en casas. Aires acondicionados y equipos grandes van en su propio circuito: que lo confirme un electricista."],
+      ["El breaker cuida el cable", "El breaker debe corresponder al calibre del cable. Uno más grande que lo que aguanta el cable es un riesgo de incendio."],
+      ["Extensiones y regletas", "No conectar equipos de mucho consumo (aire, cocina, secador) en extensiones delgadas ni encadenar regletas."]
+    ], preguntas:[
+      ["¿Cuál cable es más grueso?", ["Calibre 14", "Calibre 10", "Son iguales"], 1],
+      ["Un aire acondicionado debería ir…", ["En una regleta", "En su propio circuito", "En una extensión larga"], 1],
+      ["Un breaker más grande que lo que aguanta el cable…", ["Es más seguro", "Es un riesgo de incendio", "Ahorra luz"], 1]
+    ]},
+    { id:"plomeria", titulo:"Plomería: tubos y conexiones", min:3, pasos:[
+      ["Presión y sanitaria", "La tubería de presión es para agua potable; la sanitaria es para aguas servidas y drenaje. No son intercambiables: pregunta siempre para qué es."],
+      ["Pegar PVC", "Cortar derecho, limpiar, aplicar limpiador y pegamento en las dos partes, unir y dejar secar lo que indica el envase antes de meter agua."],
+      ["Roscas", "En uniones de rosca, cinta teflón enrollada en el sentido de la rosca para que no gotee."],
+      ["Agua caliente", "Para agua caliente no sirve el PVC normal: se usa tubería para agua caliente, como la de polifusión (termofusión)."]
+    ], preguntas:[
+      ["¿Qué se pone en una rosca para que no gotee?", ["Cinta teflón", "Pintura", "Silicón de vidrio"], 0],
+      ["Para aguas servidas se usa tubería…", ["De presión", "Sanitaria", "Eléctrica"], 1],
+      ["Para agua caliente se recomienda…", ["PVC normal de presión", "Tubería para agua caliente (p. ej. polifusión)", "Manguera de jardín"], 1]
+    ]},
+    { id:"seguridad", titulo:"Seguridad en tienda y patio", min:3, pasos:[
+      ["Equipo de protección", "En patio y carga: botas de seguridad y guantes; casco donde haya material en altura. Es para ti: un accidente te saca de trabajar."],
+      ["Levantar sin lastimarse", "Dobla las rodillas, espalda recta, carga pegada al cuerpo y sube con las piernas. Lo muy pesado, entre dos o con carretilla."],
+      ["Pasillos y patio despejados", "Nada en el paso de clientes ni de vehículos. Un derrame se limpia o se señaliza de una vez."],
+      ["Vehículos de carga", "Al cargar camiones o moverse cerca de ellos, que el chofer te vea. Nunca te pongas detrás de un vehículo en retroceso."]
+    ], preguntas:[
+      ["¿Cómo se levanta un saco de cemento?", ["Doblando la espalda con las piernas rectas", "Doblando las rodillas con la espalda recta", "De un tirón"], 1],
+      ["En el patio es obligatorio usar…", ["Botas y guantes", "Sandalias", "Nada"], 0],
+      ["Si hay un derrame en un pasillo…", ["Se deja para después", "Se limpia o se señaliza de una vez", "Se tapa con cartón"], 1]
+    ]}
+  ];
+  var BY = {}; CURSOS.forEach(function(c){ BY[c.id] = c; });
+
+  var X = null, unsub = null, hechas = {}, curso = null, paso = 0, ctab = "cursos";
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function nMedallas(){ return Object.keys(hechas).filter(function(k){ return BY[k]; }).length; }
+
+  function paintTile(){
+    $("capTileSub").textContent = X ? nMedallas() + " de " + CURSOS.length + " medallas · lecciones de 3 minutos" : "Lecciones cortas con medallas";
+  }
+  function paintHome(){
+    if (current() !== "capac") return;
+    var n = nMedallas();
+    $("capMine").textContent = n + " de " + CURSOS.length;
+    $("capBar").style.width = (n / CURSOS.length * 100) + "%";
+    document.querySelectorAll("#capTabs .seg-tab").forEach(function(b){ b.classList.toggle("active", b.dataset.cap === ctab); });
+    $("capList").hidden = ctab !== "cursos";
+    $("capBoard").hidden = ctab !== "tabla";
+    var list = $("capList"); list.innerHTML = "";
+    CURSOS.forEach(function(c){
+      var done = hechas[c.id];
+      var b = el("button", "cap-item" + (done ? " done" : "")); b.type = "button";
+      b.appendChild(el("span", "cap-medal", done ? "🏅" : "○"));
+      var t = el("div", "txt");
+      t.appendChild(el("div", "m", c.titulo));
+      t.appendChild(el("div", "s", done ? "Medalla ganada · " + done.nota + " de " + c.preguntas.length + " · repásala cuando quieras" : c.min + " min · " + c.pasos.length + " tarjetas y " + c.preguntas.length + " preguntas"));
+      b.appendChild(t);
+      b.addEventListener("click", function(){ openCurso(c.id); });
+      list.appendChild(b);
+    });
+    paintBoard();
+  }
+  function paintBoard(){
+    var box = $("capBoard"); box.innerHTML = "";
+    var people = window.coseChat ? window.coseChat.people() : {}, me = window.coseChat && window.coseChat.me();
+    var ids = Object.keys(people).sort(function(a, b){
+      return (+(people[b].medallas || 0) - +(people[a].medallas || 0)) || String(people[a].name).localeCompare(String(people[b].name));
+    });
+    if (!ids.length){ box.appendChild(el("div", "c-empty", "Cargando la tabla…")); return; }
+    var pos = 0, last = -1;
+    ids.forEach(function(u, i){
+      var m = +(people[u].medallas || 0);
+      if (m !== last){ pos = i + 1; last = m; }
+      var r = el("button", "cap-row" + (u === me ? " me" : "")); r.type = "button";
+      r.appendChild(el("span", "cap-pos mono", pos <= 3 && m > 0 ? ["🥇", "🥈", "🥉"][pos - 1] : String(pos)));
+      var av = window.coseChat.avatarFor ? window.coseChat.avatarFor(u) : el("span");
+      r.appendChild(av);
+      var t = el("div", "txt"); t.appendChild(el("div", "m", people[u].name + (u === me ? " (tú)" : ""))); t.appendChild(el("div", "s", people[u].cargo || ""));
+      r.appendChild(t);
+      r.appendChild(el("span", "cap-count mono", "🏅 " + m));
+      r.addEventListener("click", function(){ window.coseChat.openProfile(u); });
+      box.appendChild(r);
+    });
+  }
+
+  // --- lección ---------------------------------------------------------------
+  function openCurso(id){
+    curso = BY[id]; paso = 0;
+    window.coseApp.showScreen("leccion");
+    paintLeccion();
+  }
+  function paintLeccion(){
+    var c = curso, box = $("lecBody");
+    box.innerHTML = "";
+    $("lecTitle").textContent = c.titulo;
+    var total = c.pasos.length + 1;
+    $("lecProg").style.width = (Math.min(paso + 1, total) / total * 100) + "%";
+    if (paso < c.pasos.length){
+      var card = el("section", "card lec-card");
+      card.appendChild(el("div", "lec-n mono", (paso + 1) + " / " + c.pasos.length));
+      card.appendChild(el("h3", "lec-h", c.pasos[paso][0]));
+      card.appendChild(el("p", "lec-p", c.pasos[paso][1]));
+      box.appendChild(card);
+      var nav = el("div", "lec-nav");
+      if (paso > 0){ var a = el("button", "btn", "Atrás"); a.type = "button"; a.addEventListener("click", function(){ paso--; paintLeccion(); }); nav.appendChild(a); }
+      var n = el("button", "btn primary", paso === c.pasos.length - 1 ? "Ir a las preguntas" : "Siguiente"); n.type = "button";
+      n.addEventListener("click", function(){ paso++; paintLeccion(); window.scrollTo(0, 0); });
+      nav.appendChild(n);
+      box.appendChild(nav);
+      return;
+    }
+    // preguntas
+    var f = el("form", "lec-quiz");
+    c.preguntas.forEach(function(q, i){
+      var fs = el("fieldset", "card lec-q");
+      fs.appendChild(el("legend", "", (i + 1) + ". " + q[0]));
+      q[1].forEach(function(op, j){
+        var l = el("label", "lec-op");
+        var r = el("input"); r.type = "radio"; r.name = "q" + i; r.value = j;
+        l.appendChild(r); l.appendChild(el("span", "", op));
+        fs.appendChild(l);
+      });
+      f.appendChild(fs);
+    });
+    var msg = el("p", "pf-msg");
+    var sub = el("button", "btn primary", "Revisar respuestas"); sub.type = "submit";
+    f.appendChild(msg); f.appendChild(sub);
+    f.addEventListener("submit", function(e){
+      e.preventDefault();
+      var ok = 0, all = true;
+      c.preguntas.forEach(function(q, i){
+        var ch = f.querySelector('input[name="q' + i + '"]:checked');
+        if (!ch){ all = false; return; }
+        var labels = f.querySelectorAll('input[name="q' + i + '"]');
+        labels.forEach(function(inp){
+          var lab = inp.parentNode;
+          lab.classList.toggle("good", +inp.value === q[2]);
+          lab.classList.toggle("bad", inp.checked && +inp.value !== q[2]);
+        });
+        if (+ch.value === q[2]) ok++;
+      });
+      if (!all){ msg.className = "pf-msg err"; msg.textContent = "Responde las " + c.preguntas.length + " preguntas."; return; }
+      f.querySelectorAll("input").forEach(function(i){ i.disabled = true; });
+      sub.hidden = true;
+      var pass = ok >= 2;
+      var res = el("section", "card lec-res " + (pass ? "pass" : "fail"));
+      res.appendChild(el("div", "lec-big", pass ? "🏅" : "💪"));
+      res.appendChild(el("div", "lec-h", pass ? "¡Ganaste la medalla!" : "Casi: te faltó poco"));
+      res.appendChild(el("p", "lec-p", ok + " de " + c.preguntas.length + " respuestas buenas." + (pass ? " Ya aparece en tu perfil y en la tabla." : " Repasa las tarjetas y vuelve a intentarlo.")));
+      var again = el("button", "btn", pass ? "Volver a las capacitaciones" : "Intentar otra vez"); again.type = "button";
+      again.addEventListener("click", function(){ if (pass) window.coseApp.showScreen("capac"); else { paso = 0; paintLeccion(); window.scrollTo(0, 0); } });
+      res.appendChild(again);
+      box.appendChild(res);
+      res.scrollIntoView({ block:"center" });
+      if (pass) save(c.id, ok);
+    });
+    box.appendChild(f);
+  }
+  function save(id, nota){
+    if (!X) return;
+    var prev = hechas[id];
+    if (prev && prev.nota >= nota) return;
+    hechas[id] = { nota:nota, at:Date.now() };
+    var F = X.F, b = F.writeBatch(X.db), h = {};
+    h[id] = { nota:nota, at:F.serverTimestamp() };
+    b.set(F.doc(X.db, "capacitaciones", X.uid), { hechas:h }, { merge:true });
+    b.set(F.doc(X.db, "perfiles", X.uid), { medallas:nMedallas(), updatedAt:F.serverTimestamp() }, { merge:true });
+    b.commit().then(function(){ X.toast("🏅 Medalla guardada: " + BY[id].titulo); }, function(){ X.toast("No se pudo guardar la medalla. Revisa tu internet."); });
+    paintTile();
+  }
+
+  function start(ctx){
+    if (X){ X.me = ctx.me; return; }
+    X = ctx;
+    $("capTile").hidden = false;
+    unsub = X.F.onSnapshot(X.F.doc(X.db, "capacitaciones", X.uid), function(s){
+      hechas = (s.exists() && s.data().hechas) || {};
+      paintTile(); paintHome();
+    }, function(){});
+    paintTile();
+  }
+  function stop(){
+    if (!X) return;
+    if (unsub){ try{ unsub(); }catch(e){} unsub = null; }
+    X = null; hechas = {};
+    $("capTile").hidden = true;
+    var cur = current();
+    if (cur === "capac" || cur === "leccion") window.coseApp.showScreen("home");
+  }
+  $("capTile").addEventListener("click", function(){ if (X){ window.coseApp.showScreen("capac"); paintHome(); } });
+  document.querySelectorAll("#capTabs .seg-tab").forEach(function(b){ b.addEventListener("click", function(){ ctab = b.dataset.cap; paintHome(); }); });
+  $("lecBack").addEventListener("click", function(){ window.coseApp.showScreen("capac"); paintHome(); });
+  new MutationObserver(function(){ if (!$("screen-capac").hidden) paintHome(); })
+    .observe($("screen-capac"), { attributes:true, attributeFilter:["hidden"] });
+  (function(){ var h = (location.hash || "").slice(1); if (h === "capac" || h === "leccion") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0); })();
+
+  window.coseCapac = { start:start, stop:stop, total:CURSOS.length, refresh:paintHome };
+})();
+</script>
+
+<script>
+// ============================================================================
 // MODO NUBE (Firebase): cuentas de trabajadores + mapa compartido en vivo.
 // Mientras FIREBASE_CONFIG sea null, Cose Coro funciona en modo local
 // (como el archivo de WhatsApp y el artifact) y este bloque no hace nada.
@@ -6352,6 +7099,7 @@
       if (window.coseEditor) window.coseEditor.stop();
       if (window.coseMonitor) window.coseMonitor.stop();
       if (window.coseAvisos) window.coseAvisos.stop();
+      if (window.coseCapac) window.coseCapac.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -6361,6 +7109,7 @@
       if (window.coseChat) window.coseChat.start({ app:app, db:db, F:F, FB:FB, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseEditor) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
+      if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();

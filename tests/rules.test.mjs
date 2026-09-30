@@ -247,6 +247,18 @@ await t("la admin responde", () => assertSucceeds(updateDoc(doc(A, "reportes", "
 await t("el empleado no cambia el estado", () => assertFails(updateDoc(doc(INV, "reportes", "r1"), { estado: "nuevo" })));
 await t("guardar hasta dónde vio los avisos", () => assertSucceeds(setDoc(doc(INV, "lecturas", "INV"), { av: serverTimestamp() }, { merge: true })));
 
+console.log("fotos, medallas y capacitación");
+const foto = "data:image/jpeg;base64," + "A".repeat(2000);
+await t("B pone una foto en su perfil", () => assertSucceeds(setDoc(doc(B, "perfiles", "B"), { foto, updatedAt: serverTimestamp() }, { merge: true })));
+await t("B no pone algo que no es una foto", () => assertFails(setDoc(doc(B, "perfiles", "B"), { foto: "<script>", updatedAt: serverTimestamp() }, { merge: true })));
+await t("B no pone una foto gigante", () => assertFails(setDoc(doc(B, "perfiles", "B"), { foto: "data:image/jpeg;base64," + "A".repeat(50000), updatedAt: serverTimestamp() }, { merge: true })));
+await t("B guarda sus medallas", () => assertSucceeds(setDoc(doc(B, "perfiles", "B"), { medallas: 3, updatedAt: serverTimestamp() }, { merge: true })));
+await t("medallas negativas no", () => assertFails(setDoc(doc(B, "perfiles", "B"), { medallas: -1, updatedAt: serverTimestamp() }, { merge: true })));
+await t("Inventario ve la foto y las medallas de B", () => assertSucceeds(getDoc(doc(INV, "perfiles", "B"))));
+await t("B guarda una lección aprobada", () => assertSucceeds(setDoc(doc(B, "capacitaciones", "B"), { hechas: { salitre: { nota: 3, at: serverTimestamp() } } }, { merge: true })));
+await t("C no escribe las lecciones de B", () => assertFails(setDoc(doc(C, "capacitaciones", "B"), { hechas: {} })));
+await t("la admin ve las lecciones de B", () => assertSucceeds(getDoc(doc(A, "capacitaciones", "B"))));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));

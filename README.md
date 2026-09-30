@@ -2,7 +2,7 @@
 
 App (PWA) para el personal de la sucursal Coro de Coseimpa: calculadoras de materiales, mapa de la tienda, tasa BCV, cuentas de trabajadores, chat del equipo y editor del mapa.
 
-- En vivo: https://cosecoro-coro.web.app
+- En vivo: https://cosecoro.web.app (también https://cosecoro-coro.web.app; las dos publican lo mismo)
 - Proyecto de Firebase: `cosecoro-coro` (plan Spark, gratis)
 
 ## Qué hay aquí

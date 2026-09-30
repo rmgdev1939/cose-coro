@@ -106,7 +106,12 @@ service cloud.firestore {
     match /perfiles/{uid} {
       allow read: if verified();
       allow create, update: if verified() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["name", "cargo", "icon", "updatedAt"])
+        && request.resource.data.keys().hasOnly(["name", "cargo", "icon", "foto", "medallas", "updatedAt"])
+        && (!("foto" in request.resource.data) || (request.resource.data.foto is string
+             && request.resource.data.foto.size() <= 40000
+             && (request.resource.data.foto == "" || request.resource.data.foto.matches("data:image/jpeg;base64,[A-Za-z0-9+/=]+"))))
+        && (!("medallas" in request.resource.data) || (request.resource.data.medallas is int
+             && request.resource.data.medallas >= 0 && request.resource.data.medallas <= 100))
         && request.resource.data.name == me().name
         && request.resource.data.cargo == me().get("cargo", "")
         && request.resource.data.icon is string && request.resource.data.icon.size() <= 20
@@ -223,6 +228,16 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(["c", "av"])
         && (!("c" in request.resource.data) || request.resource.data.c is map)
         && (!("av" in request.resource.data) || request.resource.data.av is timestamp);
+      allow delete: if false;
+    }
+
+    // Capacitación: las lecciones aprobadas de cada quien (el total de
+    // medallas se muestra en perfiles/{uid}.medallas).
+    match /capacitaciones/{uid} {
+      allow read: if verified() && (request.auth.uid == uid || admin());
+      allow create, update: if verified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["hechas"])
+        && request.resource.data.hechas is map;
       allow delete: if false;
     }
 
