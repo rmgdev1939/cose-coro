@@ -1,4 +1,4 @@
-const CACHE = "coseimpa-cosecoro-v31";
+const CACHE = "coseimpa-cosecoro-v32";
 const ASSETS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -30,15 +30,25 @@ self.addEventListener("fetch", (event) => {
   const isPage = event.request.mode === "navigate" ||
     (event.request.headers.get("accept") || "").includes("text/html");
   if (isPage) {
-    event.respondWith(
-      fetch(event.request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
-          return res;
-        })
-        .catch(() => caches.match(event.request).then((c) => c || caches.match("index.html")))
-    );
+    // Con internet lento no se espera más de 4 segundos: se abre la copia
+    // guardada y la versión nueva queda lista para la próxima vez. Solo se
+    // guardan respuestas buenas (una página de error no reemplaza la copia).
+    const saved = () => caches.match(event.request).then((c) => c || caches.match("index.html"));
+    const net = fetch(event.request).then((res) => {
+      if (res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+      }
+      return res;
+    });
+    event.waitUntil(net.catch(() => {}));
+    event.respondWith(new Promise((resolve) => {
+      let done = false;
+      const finish = (r) => { if (!done && r) { done = true; resolve(r); } };
+      const timer = setTimeout(() => { saved().then(finish); }, 4000);
+      net.then((res) => { clearTimeout(timer); finish(res); })
+        .catch(() => { clearTimeout(timer); saved().then((c) => { if (!done) { done = true; resolve(c || Response.error()); } }); });
+    }));
     return;
   }
   event.respondWith(

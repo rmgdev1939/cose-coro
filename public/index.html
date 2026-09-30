@@ -826,6 +826,12 @@
   .pp-sub{font-size:0.86rem; color:var(--ink-soft);}
   .pp-sub.on{color:#2E9E45; font-weight:600;}
   .pp-med{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:8px;}
+  .cap-link{display:block; margin:14px auto 4px; padding:8px 10px; background:none; border:none; font:inherit; font-size:0.78rem; color:var(--ink-soft); text-decoration:underline; text-underline-offset:3px; cursor:pointer;}
+  .medalla{display:inline-flex; align-items:center; gap:6px; vertical-align:middle;}
+  .medalla svg{width:30px; height:36px; flex:none;}
+  .medalla .ml{font-size:0.78rem; font-weight:600; color:var(--ink-soft);}
+  .pp-med .medalla svg{width:42px; height:50px;}
+  .acct-medal:empty{display:none;}
   .pp-med .medal{font-size:0.78rem; font-weight:700; padding:4px 10px; border-radius:14px; background:var(--est-bg); color:var(--est-fg);}
   .pp-actions{display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; margin-top:12px;}
 
@@ -1004,6 +1010,7 @@
     <div class="acct-head">
       <span class="acct-av" id="acctAv" aria-hidden="true">?</span>
       <div class="acct-txt"><div class="acct-name" id="acctName"></div><div class="acct-sub" id="acctSub"></div></div>
+      <span class="acct-medal" id="acctMedal"></span>
       <button class="dash-viewall" id="acctEdit" type="button">Editar perfil</button>
     </div>
     <div class="acct-meta" id="acctMeta"></div>
@@ -1227,7 +1234,7 @@
       <span class="tool-icon" style="color:var(--brand-orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h.01M16 18.5h.01"/></svg></span>
       <span class="tool-text">
         <span class="tool-title">Calcular materiales</span>
-        <span class="tool-sub">Cielo raso, pintura, bloques, cerámica, concreto, techos y tanques</span>
+        <span class="tool-sub">Cielo raso, pintura, bloques, concreto, techos y más</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -1270,15 +1277,6 @@
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
 
-    <button class="tool-tile tile-capac" id="capTile" type="button" hidden>
-      <span class="tool-icon" style="color:var(--est-fg)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="6"/><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7"/><path d="m12 12.5.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/></svg></span>
-      <span class="tool-text">
-        <span class="tool-title">Capacitación</span>
-        <span class="tool-sub" id="capTileSub">Lecciones cortas con medallas</span>
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-
     <button class="tool-tile tile-chat" id="chatTile" type="button" hidden>
       <span class="tool-icon" style="color:var(--brand-green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span>
       <span class="tool-text">
@@ -1289,6 +1287,8 @@
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
+
+  <button class="cap-link" id="capTile" type="button" hidden>Capacitación (opcional) · <span id="capTileSub">lecciones cortas</span></button>
 
 </div>
 
@@ -2414,7 +2414,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.0</span>
+    <span id="appVersion">CC/1.1</span>
   </div>
 </footer>
 
@@ -2431,6 +2431,23 @@
     v = String(v == null ? "" : v).replace(/\s/g, "");
     if (v.indexOf(",") !== -1) v = v.replace(/\./g, "").replace(",", ".");
     return parseFloat(v);
+  };
+
+  // Medalla de capacitación con el número en el centro (vacía si no tiene ninguna)
+  window.coseMedalla = function(n, conTexto){
+    var s = document.createElement("span");
+    n = Math.max(0, Math.min(Math.round(+n || 0), (window.coseCapac && window.coseCapac.total) || 7));
+    if (!n) return s;
+    var t = n + (n === 1 ? " medalla" : " medallas") + " de capacitación";
+    s.className = "medalla"; s.title = t;
+    s.setAttribute("role", "img"); s.setAttribute("aria-label", t);
+    s.innerHTML = '<svg viewBox="0 0 40 48" aria-hidden="true">' +
+      '<path d="M10 1h8l6 16h-8z" fill="var(--brand-blue)"/><path d="M30 1h-8l-6 16h8z" fill="var(--brand-green)"/>' +
+      '<circle cx="20" cy="31" r="15" fill="var(--accent)" stroke="var(--est-fg)" stroke-width="2"/>' +
+      '<circle cx="20" cy="31" r="11" fill="none" stroke="var(--accent-soft)" stroke-width="1.5"/>' +
+      '<text x="20" y="31" dy=".36em" text-anchor="middle" font-family="Baloo 2, system-ui, sans-serif" font-weight="800" font-size="16" fill="var(--accent-ink)">' + n + '</text></svg>' +
+      (conTexto ? '<span class="ml">' + (n === 1 ? "medalla" : "medallas") + '</span>' : "");
+    return s;
   };
 
   // --- navigation between the home menu and each tool "page" ---------------
@@ -3450,7 +3467,7 @@
   refreshProfileChip();
   var startScreen = getProfileName() ? ((location.hash || "#").slice(1) || "home") : "onboarding";
   // al recargar, las pantallas que necesitan prepararse abren el inicio
-  if (/^(dashboard|historial|reporte|perfil|perfilpub|conv|grupo|leccion|vehiculo|admin)$/.test(startScreen)) startScreen = "home";
+  if (/^(dashboard|historial|reporte|perfil|perfilpub|conv|grupo|leccion|vehiculo|admin)$/.test(startScreen)){ startScreen = "home"; try{ history.replaceState(null, "", "#"); }catch(e){} }
   navStack = [startScreen];
   showScreen(startScreen, false);
 
@@ -4919,13 +4936,14 @@
     $("acctSub").textContent = [cargo || "Sin área", me ? me.email : ""].filter(Boolean).join(" · ");
     var meta = $("acctMeta");
     meta.innerHTML = "";
+    $("acctMedal").innerHTML = "";
     function tag(t, cls){ var s = document.createElement("span"); s.textContent = t; if (cls) s.className = cls; meta.appendChild(s); }
     if (me){
       tag(c.emailVerified() ? "Correo confirmado" : "Correo sin confirmar", c.emailVerified() ? "ok" : "est");
       tag(me.status === "verificado" ? "Acceso aprobado" : "En revisión", me.status === "verificado" ? "ok" : "est");
       if (me.role === "admin") tag("Administrador");
       var pm = window.coseChat && window.coseChat.people()[window.coseChat.me()];
-      if (pm) tag("🏅 " + (+(pm.medallas || 0)) + ((+(pm.medallas || 0)) === 1 ? " medalla" : " medallas"));
+      if (pm && +(pm.medallas || 0) > 0) $("acctMedal").appendChild(window.coseMedalla(pm.medallas));
       if (me.createdAt && me.createdAt.toDate) tag("Desde el " + me.createdAt.toDate().toLocaleDateString("es-VE"));
     } else {
       tag("Perfil guardado en este teléfono");
@@ -5547,7 +5565,7 @@
     $("ppSeen").className = "pp-sub" + (isOnline(u) ? " on" : "");
     var med = $("ppMed"); med.innerHTML = "";
     var n = +(p.medallas || 0);
-    med.appendChild(el("span", "medal", "🏅 " + n + (n === 1 ? " medalla" : " medallas") + " de capacitación"));
+    if (n > 0) med.appendChild(window.coseMedalla(n, true));
     var act = $("ppActions"); act.innerHTML = "";
     function btn(text, primary, fn){ var b = el("button", "btn" + (primary ? " primary" : ""), text); b.type = "button"; b.addEventListener("click", fn); act.appendChild(b); return b; }
     if (u === me){ btn("Editar mi perfil", true, function(){ window.coseProfile.open(); }); return; }
@@ -5893,7 +5911,7 @@
       if (!perfilesLoaded && !snap.metadata.fromCache){ perfilesLoaded = true; myIcon = (perfiles[me] && perfiles[me].icon) || ""; myFoto = (perfiles[me] && isFoto(perfiles[me].foto) && perfiles[me].foto) || ""; repaintChip(); }
       syncPerfil();
       paintAll();
-      if (window.coseCapac) window.coseCapac.refresh();
+      if (window.coseCapac) window.coseCapac.refresh(perfilesLoaded && !snap.metadata.fromCache);
     }, function(){}));
     unsubs.push(f.onSnapshot(f.query(f.collection(db, "conexiones"), f.where("members", "array-contains", me)), function(snap){
       conex = {};
@@ -6884,12 +6902,12 @@
   ];
   var BY = {}; CURSOS.forEach(function(c){ BY[c.id] = c; });
 
-  var X = null, unsub = null, hechas = {}, curso = null, paso = 0, ctab = "cursos";
+  var X = null, unsub = null, hechas = {}, curso = null, paso = 0, ctab = "cursos", hechasOk = false, perfilesOk = false, resynced = -1;
   function current(){ return window.coseApp ? window.coseApp.current() : ""; }
   function nMedallas(){ return Object.keys(hechas).filter(function(k){ return BY[k]; }).length; }
 
   function paintTile(){
-    $("capTileSub").textContent = X ? nMedallas() + " de " + CURSOS.length + " medallas · lecciones de 3 minutos" : "Lecciones cortas con medallas";
+    $("capTileSub").textContent = X ? nMedallas() + " de " + CURSOS.length + " medallas" : "lecciones cortas";
   }
   function paintHome(){
     if (current() !== "capac") return;
@@ -6916,13 +6934,14 @@
   function paintBoard(){
     var box = $("capBoard"); box.innerHTML = "";
     var people = window.coseChat ? window.coseChat.people() : {}, me = window.coseChat && window.coseChat.me();
-    var ids = Object.keys(people).sort(function(a, b){
-      return (+(people[b].medallas || 0) - +(people[a].medallas || 0)) || String(people[a].name).localeCompare(String(people[b].name));
+    function medOf(u){ return Math.min(+(people[u].medallas || 0), CURSOS.length); }
+    var ids = Object.keys(people).filter(function(u){ return medOf(u) > 0; }).sort(function(a, b){
+      return (medOf(b) - medOf(a)) || String(people[a].name).localeCompare(String(people[b].name));
     });
-    if (!ids.length){ box.appendChild(el("div", "c-empty", "Cargando la tabla…")); return; }
+    if (!ids.length){ box.appendChild(el("div", "c-empty", Object.keys(people).length ? "Todavía nadie tiene medallas. ¡Haz la primera lección!" : "Cargando la tabla…")); return; }
     var pos = 0, last = -1;
     ids.forEach(function(u, i){
-      var m = +(people[u].medallas || 0);
+      var m = medOf(u);
       if (m !== last){ pos = i + 1; last = m; }
       var r = el("button", "cap-row" + (u === me ? " me" : "")); r.type = "button";
       r.appendChild(el("span", "cap-pos mono", pos <= 3 && m > 0 ? ["🥇", "🥈", "🥉"][pos - 1] : String(pos)));
@@ -7022,20 +7041,30 @@
     paintTile();
   }
 
+  // Si el total del perfil no coincide con las lecciones hechas (por ejemplo,
+  // después de quitar y devolver el acceso), se corrige una sola vez.
+  function resync(){
+    if (!X || !hechasOk || !perfilesOk || !window.coseChat) return;
+    var p = window.coseChat.people()[X.uid], n = nMedallas();
+    if (!p || +(p.medallas || 0) === n || resynced === n) return;
+    resynced = n;
+    X.F.setDoc(X.F.doc(X.db, "perfiles", X.uid), { medallas:n, updatedAt:X.F.serverTimestamp() }, { merge:true }).catch(function(){});
+  }
   function start(ctx){
     if (X){ X.me = ctx.me; return; }
     X = ctx;
     $("capTile").hidden = false;
     unsub = X.F.onSnapshot(X.F.doc(X.db, "capacitaciones", X.uid), function(s){
       hechas = (s.exists() && s.data().hechas) || {};
-      paintTile(); paintHome();
+      if (!s.metadata.fromCache) hechasOk = true;
+      paintTile(); paintHome(); resync();
     }, function(){});
     paintTile();
   }
   function stop(){
     if (!X) return;
     if (unsub){ try{ unsub(); }catch(e){} unsub = null; }
-    X = null; hechas = {};
+    X = null; hechas = {}; hechasOk = false; perfilesOk = false; resynced = -1;
     $("capTile").hidden = true;
     var cur = current();
     if (cur === "capac" || cur === "leccion") window.coseApp.showScreen("home");
@@ -7047,7 +7076,7 @@
     .observe($("screen-capac"), { attributes:true, attributeFilter:["hidden"] });
   (function(){ var h = (location.hash || "").slice(1); if (h === "capac" || h === "leccion") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0); })();
 
-  window.coseCapac = { start:start, stop:stop, total:CURSOS.length, refresh:paintHome };
+  window.coseCapac = { start:start, stop:stop, total:CURSOS.length, refresh:function(serverOk){ paintHome(); if (serverOk) perfilesOk = true; resync(); } };
 })();
 </script>
 
