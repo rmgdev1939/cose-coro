@@ -835,6 +835,7 @@
   .pp-sub{font-size:0.86rem; color:var(--ink-soft);}
   .pp-sub.on{color:#2E9E45; font-weight:600;}
   .pp-med{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:8px;}
+  .pp-med .medal.conn{background:color-mix(in srgb, var(--brand-blue) 14%, var(--surface)); color:var(--brand-blue);}
   .pp-med .medal{font-size:0.78rem; font-weight:700; padding:4px 10px; border-radius:14px; background:var(--est-bg); color:var(--est-fg);}
   .pp-actions{display:flex; flex-direction:column; gap:8px; width:100%; max-width:300px; margin-top:12px;}
 
@@ -2442,7 +2443,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.4</span>
+    <span id="appVersion">CC/1.5</span>
   </div>
 </footer>
 
@@ -4907,6 +4908,7 @@
       tag(me.status === "verificado" ? "Acceso aprobado" : "En revisión", me.status === "verificado" ? "ok" : "est");
       if (me.role === "admin") tag("Administrador");
       var pm = window.coseChat && window.coseChat.people()[window.coseChat.me()];
+      if (pm) tag("👥 " + (+(pm.companeros || 0)) + ((+(pm.companeros || 0)) === 1 ? " compañero" : " compañeros"));
       if (pm) tag("🏅 " + (+(pm.medallas || 0)) + ((+(pm.medallas || 0)) === 1 ? " medalla" : " medallas"));
       if (me.createdAt && me.createdAt.toDate) tag("Desde el " + me.createdAt.toDate().toLocaleDateString("es-VE"));
     } else {
@@ -5167,7 +5169,7 @@
   var perfiles = {}, perfilesLoaded = false;
   var conex = {}, chats = {}, lect = {}, estado = {};
   var firstConex = true, firstChats = true;
-  var myIcon = "", myFoto = "", syncing = "", pubUid = null;
+  var myIcon = "", myFoto = "", syncing = "", pubUid = null, conexLoaded = false;
   var openChat = null, newDirectWith = null, msgUnsub = null, msgList = [];
   var D = null, rtdb = null, presRef = null, rtUnsubs = [];
   var tab = "chats";
@@ -5265,13 +5267,13 @@
   function syncPerfil(){
     if (!X || !perfilesLoaded) return;
     var p = perfiles[uid()] || {};
-    var want = { name:X.me.name, cargo:(X.me.cargo || "").slice(0, 40), icon:myIcon || "", foto:myFoto || "" };
-    var key = want.name + "|" + want.cargo + "|" + want.icon + "|" + want.foto.length;
-    if (p.name === want.name && (p.cargo || "") === want.cargo && (p.icon || "") === want.icon && (p.foto || "") === want.foto) return;
+    var want = { name:X.me.name, cargo:(X.me.cargo || "").slice(0, 40), icon:myIcon || "", foto:myFoto || "", companeros:conexLoaded ? compas().length : (p.companeros || 0) };
+    var key = want.name + "|" + want.cargo + "|" + want.icon + "|" + want.foto.length + "|" + want.companeros;
+    if (p.name === want.name && (p.cargo || "") === want.cargo && (p.icon || "") === want.icon && (p.foto || "") === want.foto && (p.companeros || 0) === want.companeros) return;
     if (syncing === key) return;
     syncing = key;
     // merge: las medallas (capacitación) viven en el mismo documento
-    F().setDoc(F().doc(X.db, "perfiles", uid()), { name:want.name, cargo:want.cargo, icon:want.icon, foto:want.foto, updatedAt:F().serverTimestamp() }, { merge:true })
+    F().setDoc(F().doc(X.db, "perfiles", uid()), { name:want.name, cargo:want.cargo, icon:want.icon, foto:want.foto, companeros:want.companeros, updatedAt:F().serverTimestamp() }, { merge:true })
       .catch(function(){ syncing = ""; $("pfIconMsg").textContent = "No se pudo guardar. Revisa tu internet."; $("pfIconMsg").className = "pf-msg err"; });
   }
   function setIcon(id){
@@ -5546,7 +5548,9 @@
     $("ppSeen").className = "pp-sub" + (isOnline(u) ? " on" : "");
     var med = $("ppMed"); med.innerHTML = "";
     var n = +(p.medallas || 0);
-    med.appendChild(el("span", "medal", "🏅 " + n + (n === 1 ? " medalla" : " medallas") + " de capacitación"));
+    med.appendChild(el("span", "medal", "🏅 " + n + (n === 1 ? " medalla" : " medallas")));
+    var nc = u === me ? compas().length : +(p.companeros || 0);
+    med.appendChild(el("span", "medal conn", "👥 " + nc + (nc === 1 ? " compañero" : " compañeros")));
     var act = $("ppActions"); act.innerHTML = "";
     function btn(text, primary, fn){ var b = el("button", "btn" + (primary ? " primary" : ""), text); b.type = "button"; b.addEventListener("click", fn); act.appendChild(b); return b; }
     if (u === me){ btn("Editar mi perfil", true, function(){ window.coseProfile.open(); }); return; }
@@ -5924,7 +5928,7 @@
       return;
     }
     X = ctx;
-    firstConex = true; firstChats = true; perfilesLoaded = false; syncing = "";
+    firstConex = true; firstChats = true; perfilesLoaded = false; conexLoaded = false; syncing = "";
     $("chatTile").hidden = false;
     $("chatBtn").hidden = false;
     $("pfIconCard").hidden = false;
@@ -5945,6 +5949,8 @@
     unsubs.push(f.onSnapshot(f.query(f.collection(db, "conexiones"), f.where("members", "array-contains", me)), function(snap){
       conex = {};
       snap.forEach(function(d){ conex[d.id] = d.data(); });
+      if (!snap.metadata.fromCache) conexLoaded = true;
+      syncPerfil();
       notifyConex(snap);
       paintAll();
     }, function(){}));
