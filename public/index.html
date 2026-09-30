@@ -782,6 +782,12 @@
   #chatBtnBadge{position:absolute; top:-1px; right:-1px; width:11px; height:11px; min-width:0; padding:0; border-radius:50%; background:#E5534B; border:2px solid var(--surface); font-size:0; margin:0;}
   @media (max-width:400px){ header.top .brand{font-size:1.12rem;} header.top .mark{width:26px; height:26px;} }
   .chat-chip.bell-chip .badge{right:-10px;}
+  #helpBtn .hdot{position:absolute; top:-1px; right:-1px; width:11px; height:11px; border-radius:50%; background:#E5534B; border:2px solid var(--surface);}
+  .msg .tk{margin-left:4px; letter-spacing:-3px; font-weight:700; color:var(--ink-soft);}
+  .msg .tk.read{color:#34B7F1;}
+  .typing{color:#2E9E45; font-weight:600;}
+  @media (prefers-reduced-motion:no-preference){ .typing{animation:typBlink 1s ease-in-out infinite;} }
+  @keyframes typBlink{0%,100%{opacity:1;} 50%{opacity:.35;}}
   .nt-item{display:flex; align-items:flex-start; gap:10px; width:100%; padding:11px 0; margin:0; border:none; border-bottom:1px solid var(--line); background:none; font-family:inherit; color:inherit; text-align:left;}
   button.nt-item{cursor:pointer;}
   .nt-item:last-child{border-bottom:none;}
@@ -2436,7 +2442,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.2</span>
+    <span id="appVersion">CC/1.3</span>
   </div>
 </footer>
 
@@ -5229,8 +5235,25 @@
     var c = chats[id];
     return !!(c && c.lastAt && c.lastFrom && c.lastFrom !== uid() && ms(c.lastAt) > (lect[id] || 0) && !viewing(id));
   }
+  // palomitas: cada quien marca en el chat hasta cuándo recibió y leyó
+  var receiptSent = {};
+  function sendReceipt(id, leido){
+    var c = chats[id];
+    if (!c || !c.lastAt || c.lastFrom === uid()) return;
+    var t = ms(c.lastAt), me = uid();
+    var mine = function(f){ return ms(c[f] && c[f][me]); };
+    var need = mine("recibido") < t || (leido && mine("leido") < t);
+    var key = id + "|" + t + "|" + (leido ? "L" : "R");
+    if (!need || receiptSent[key]) return;
+    receiptSent[key] = 1;
+    var data = {};
+    data["recibido." + me] = F().serverTimestamp();
+    if (leido) data["leido." + me] = F().serverTimestamp();
+    F().updateDoc(F().doc(X.db, "chats", id), data).catch(function(){ delete receiptSent[key]; });
+  }
   function markRead(id){
     var c = chats[id];
+    sendReceipt(id, true);
     if (!c || !c.lastAt || ms(c.lastAt) <= (lect[id] || 0)) return;
     lect[id] = ms(c.lastAt);
     var data = { c:{} };
@@ -5605,7 +5628,17 @@
       var b = el("div", "msg" + (mine ? " mine" : "") + (lastFrom === m.from ? " cont" : ""));
       if (grp && !mine && lastFrom !== m.from) b.appendChild(el("span", "who", m.fromName));
       b.appendChild(document.createTextNode(m.text));
-      b.appendChild(el("span", "tm", m.pending ? "enviando…" : hhmm(t)));
+      var tm = el("span", "tm", m.pending ? "enviando…" : hhmm(t));
+      if (mine && !m.pending && c && !supMode){
+        // ✓ enviado · ✓✓ recibido · ✓✓ azul leído (en grupos: por todos)
+        var others = c.members.filter(function(u){ return u !== uid(); });
+        var all = function(f){ return others.length && others.every(function(u){ return ms(c[f] && c[f][u]) >= t; }); };
+        var leido = all("leido"), recib = leido || all("recibido");
+        var tk = el("span", "tk" + (leido ? " read" : ""), recib ? "✓✓" : "✓");
+        tk.setAttribute("aria-label", leido ? "Leído" : recib ? "Recibido" : "Enviado");
+        tm.appendChild(tk);
+      }
+      b.appendChild(tm);
       box.appendChild(b);
       lastFrom = m.from;
     });
@@ -5631,14 +5664,16 @@
       avBox.appendChild(groupAvatar("sm"));
       $("convTitle").textContent = c.name || "Grupo";
       var on = c.members.filter(function(u){ return u !== uid() && isOnline(u); }).length;
-      sub.textContent = c.members.length + " miembros" + (on ? " · " + on + " en línea" : "");
-      sub.className = "s";
+      var tn = typingNames();
+      sub.textContent = tn.length ? tn.join(", ") + (tn.length === 1 ? " está escribiendo…" : " están escribiendo…") : c.members.length + " miembros" + (on ? " · " + on + " en línea" : "");
+      sub.className = "s" + (tn.length ? " typing" : "");
     } else {
       var o = c ? otherOf(c.members) : newDirectWith;
       avBox.appendChild(avatar(iconOf(o), nameOf(o), "sm", isOnline(o)));
       $("convTitle").textContent = nameOf(o);
-      sub.textContent = seen(o);
-      sub.className = "s" + (isOnline(o) ? " on" : "");
+      var typing = typingNames().length > 0;
+      sub.textContent = typing ? "escribiendo…" : seen(o);
+      sub.className = "s" + (typing ? " typing" : isOnline(o) ? " on" : "");
     }
     // ¿se puede escribir?
     var can = true, why = "";
@@ -5686,6 +5721,7 @@
     $("convMsgs").innerHTML = "";
     $("convMsgs").appendChild(el("div", "c-empty", "Cargando…"));
     show("conv");
+    watchTyping(id);
     paintConvHead();
     listenMsgs(id);
     if (!supMode) markRead(id);
@@ -5719,6 +5755,7 @@
     var id = openChat, other = newDirectWith;
     $("convInput").value = "";
     autosize();
+    stopTyping();
     $("convNote").textContent = "";
     var ready = chats[id] ? Promise.resolve() : createDirect(id, other);
     ready.then(function(){
@@ -5730,6 +5767,43 @@
     }).catch(function(){
       if (openChat === id) $("convNote").textContent = "No se pudo enviar el mensaje. Revisa tu internet e inténtalo otra vez.";
     });
+  }
+  // "escribiendo…": Realtime Database escribiendo/{chat}/{uid} = hora
+  var typUnsub = null, typSeen = {}, typLast = 0, typTimer = null, typChat = null;
+  function typRef(id, u){ return D.ref(rtdb, "escribiendo/" + id + "/" + u); }
+  function iAmTyping(){
+    if (!D || !rtdb || !openChat || supMode || !chats[openChat]) return;
+    var now = Date.now();
+    if (now - typLast < 2500) return;
+    typLast = now;
+    var r = typRef(openChat, uid());
+    D.set(r, D.serverTimestamp()).catch(function(){});
+    D.onDisconnect(r).remove().catch(function(){});
+  }
+  function stopTyping(){
+    typLast = 0;
+    if (D && rtdb && typChat) D.remove(typRef(typChat, uid())).catch(function(){});
+  }
+  function watchTyping(id){
+    unwatchTyping();
+    if (!D || !rtdb || !id) return;
+    typChat = id; typSeen = {};
+    typUnsub = D.onValue(D.ref(rtdb, "escribiendo/" + id), function(s){
+      var v = s.val() || {}, now = Date.now();
+      Object.keys(typSeen).forEach(function(u){ if (!v[u]) delete typSeen[u]; });
+      Object.keys(v).forEach(function(u){ if (u !== uid()) typSeen[u] = now; });
+      paintConvHead();
+    }, function(){});
+    typTimer = setInterval(function(){ if (Object.keys(typSeen).length) paintConvHead(); }, 1500);
+  }
+  function unwatchTyping(){
+    stopTyping();
+    if (typUnsub){ try{ typUnsub(); }catch(e){} typUnsub = null; }
+    clearInterval(typTimer); typTimer = null; typSeen = {}; typChat = null;
+  }
+  function typingNames(){
+    var now = Date.now();
+    return Object.keys(typSeen).filter(function(u){ return now - typSeen[u] < 6000; }).map(function(u){ return nameOf(u).split(" ")[0]; });
   }
   function autosize(){
     var t = $("convInput");
@@ -5883,6 +5957,8 @@
       // chat directo nuevo: ya existe en la nube (lo creó el otro o terminó de crearse)
       if (openChat && chats[openChat] && newDirectWith && !pend[openChat]){ newDirectWith = null; if (!msgUnsub) listenMsgs(openChat); }
       notifyChats(snap);
+      Object.keys(chats).forEach(function(id){ sendReceipt(id, viewing(id)); });
+      if (current() === "conv" && openChat && msgList.length) paintMsgs(false);
       paintAll();
     }, function(){}));
     unsubs.push(f.onSnapshot(f.doc(db, "lecturas", me), function(snap){
@@ -5896,6 +5972,7 @@
   }
   function stop(){
     if (!X) return;
+    unwatchTyping();
     stopPresence();
     stopMsgs();
     stopSup();
@@ -5951,7 +6028,8 @@
   $("convBack").addEventListener("click", function(){ var back = supMode ? "sup" : "chats"; show("chat"); tabTo(back); });
   $("supFind").addEventListener("input", function(){ if (X) paintSup(); });
   $("convForm").addEventListener("submit", function(e){ e.preventDefault(); if (X) send(); });
-  $("convInput").addEventListener("input", autosize);
+  $("convInput").addEventListener("input", function(){ autosize(); if (X && this.value.trim()) iAmTyping(); else if (X) stopTyping(); });
+  $("convInput").addEventListener("blur", function(){ if (X) stopTyping(); });
   $("convInput").addEventListener("keydown", function(e){
     // Enter envía (en computadora); Shift+Enter hace un salto de línea
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing && window.matchMedia("(pointer:fine)").matches){ e.preventDefault(); if (X) send(); }
@@ -5979,6 +6057,7 @@
     document.querySelector("footer").hidden = visible;
     document.body.classList.toggle("in-conv", visible);
     if (visible) document.documentElement.style.setProperty("--hdr", $("homeLink").offsetHeight + "px");
+    if (!visible && X && typChat) unwatchTyping();
     if (!visible && X){ stopMsgs(); openChat = null; newDirectWith = null; supMode = false; $("convForm").hidden = false; paintBadges(); }
     if (visible && X && !openChat) show("chat");
   });
@@ -6548,16 +6627,19 @@
   function chatSum(){ return window.coseChat && window.coseChat.summary ? window.coseChat.summary() : { chats:[], requests:[] }; }
   function newAvisos(){ return avisos.filter(function(a){ return ms(a.at) > seenAv; }); }
   function newReplies(){ return mine.filter(function(r){ return r.respuesta && ms(r.respondidoAt) > seenAv; }); }
-  function count(){
-    var c = chatSum();
-    return c.chats.length + c.requests.length + newAvisos().length + newReplies().length + (admin ? all.filter(function(r){ return r.estado === "nuevo"; }).length : 0);
-  }
+  // la campanita es solo para avisos de la administración (sistema y
+  // actualizaciones) y respuestas a reportes; el chat tiene su propio botón
+  function count(){ return newAvisos().length + newReplies().length; }
   function paintBadge(){
     if (!X) return;
     var n = count();
     $("bellBadge").hidden = !n;
     $("bellBadge").textContent = n > 9 ? "9+" : String(n);
     $("bellBtn").setAttribute("aria-label", "Notificaciones" + (n ? " (" + n + " nuevas)" : ""));
+    // al administrador: punto rojo en ❓ si hay reportes nuevos
+    var nr = admin ? all.filter(function(r){ return r.estado === "nuevo"; }).length : 0, hb = $("helpBtn"), dot = hb.querySelector(".hdot");
+    if (nr && !dot){ dot = document.createElement("span"); dot.className = "hdot"; hb.appendChild(dot); }
+    if (!nr && dot) dot.remove();
     if (current() === "avisos") paintBell();
   }
   function item(box, kind, title, sub, time, isNew, onClick){
@@ -6573,10 +6655,7 @@
   function paintBell(){
     var box = $("ntList");
     box.innerHTML = "";
-    var c = chatSum(), n = 0;
-    c.requests.forEach(function(r){ n++; item(box, "comp", r.name + " quiere ser tu compañero", "Toca para aceptar o rechazar", "", true, function(){ window.coseChat.openCompas(); }); });
-    c.chats.forEach(function(ch){ n++; item(box, "chat", ch.title, ch.last, when(ch.at), true, function(){ window.coseChat.openChat(ch.id); }); });
-    if (admin) all.filter(function(r){ return r.estado === "nuevo"; }).forEach(function(r){ n++; item(box, "soporte", "Nuevo reporte de " + r.nombre, r.texto, when(ms(r.at)), true, function(){ openSoporte("admin"); }); });
+    var n = 0;
     newReplies().forEach(function(r){ n++; item(box, "soporte", "Respondieron tu reporte", r.respuesta, when(ms(r.respondidoAt)), true, function(){ openSoporte("mios"); }); });
     avisos.forEach(function(a){
       var isNew = ms(a.at) > seenAv;
