@@ -184,6 +184,15 @@ service cloud.firestore {
         && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 120
         && request.resource.data.lastAt == request.time;
 
+      // Palomitas: cada miembro marca solo lo suyo — hasta cuándo recibió
+      // (recibido) y leyó (leido) los mensajes del chat.
+      allow update: if verified() && request.auth.uid in resource.data.members
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["recibido", "leido"])
+        && request.resource.data.get("recibido", {}).diff(resource.data.get("recibido", {})).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.get("leido", {}).diff(resource.data.get("leido", {})).affectedKeys().hasOnly([request.auth.uid])
+        && (!(request.auth.uid in request.resource.data.get("recibido", {})) || request.resource.data.recibido[request.auth.uid] is timestamp)
+        && (!(request.auth.uid in request.resource.data.get("leido", {})) || request.resource.data.leido[request.auth.uid] is timestamp);
+
       // Grupo: cualquier miembro agrega a un compañero suyo (uno a la vez, al final).
       allow update: if verified() && resource.data.type == "grupo"
         && request.auth.uid in resource.data.members

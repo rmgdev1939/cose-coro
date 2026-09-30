@@ -298,6 +298,11 @@ await t("ventas no ve todos los faltantes", () => assertFails(getDocs(collection
 await t("compras lo marca pedido", () => assertSucceeds(updateDoc(doc(COM, "faltantes", "f1"), { estado: "pedido" })));
 await t("inventario no lo marca", () => assertFails(updateDoc(doc(INV, "faltantes", "f1"), { estado: "descartado" })));
 
+console.log("palomitas y escribiendo");
+await t("B marca recibido y leído en su grupo", () => assertSucceeds(updateDoc(doc(B, "chats", g1id), { "recibido.B": serverTimestamp(), "leido.B": serverTimestamp() })));
+await t("B no marca como leído a nombre de otro", () => assertFails(updateDoc(doc(B, "chats", g1id), { "leido.U1": serverTimestamp() })));
+await t("un ajeno no marca leído", () => assertFails(updateDoc(doc(INV, "chats", g1id), { "leido.INV": serverTimestamp() })));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));
@@ -307,6 +312,8 @@ await t("faltando la hora no", () => assertFails(set(ref(rt("B"), "estado/B"), {
 await t("C ve quién está en línea", () => assertSucceeds(rget(ref(rt("C"), "estado"))));
 await t("correo sin confirmar no ve", () => assertFails(rget(ref(rt("C", false), "estado"))));
 await t("sin sesión no ve", () => assertFails(rget(ref(env.unauthenticatedContext().database(), "estado"))));
+await t("B avisa que está escribiendo", () => assertSucceeds(set(ref(rt("B"), "escribiendo/chat1/B"), Date.now())));
+await t("B no escribe por otro", () => assertFails(set(ref(rt("B"), "escribiendo/chat1/C"), Date.now())));
 await t("nadie escribe fuera de estado", () => assertFails(set(ref(rt("B"), "otra/cosa"), 1)));
 
 console.log(`\n${pass} ok, ${fail} fallas`);

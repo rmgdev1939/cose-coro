@@ -5,9 +5,24 @@
       "$uid": {
         ".write": "auth != null && auth.uid == $uid",
         ".validate": "newData.hasChildren(['on', 't']) && newData.child('on').isBoolean() && newData.child('t').isNumber()",
-        "on": { ".validate": true },
-        "t": { ".validate": true },
-        "$other": { ".validate": false }
+        "on": {
+          ".validate": true
+        },
+        "t": {
+          ".validate": true
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "escribiendo": {
+      ".read": "auth != null && auth.token.email_verified == true",
+      "$chat": {
+        "$uid": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.isNumber()"
+        }
       }
     }
   }
