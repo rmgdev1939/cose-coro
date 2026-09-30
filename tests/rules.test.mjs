@@ -257,6 +257,7 @@ await t("B pone una foto en su perfil", () => assertSucceeds(setDoc(doc(B, "perf
 await t("B no pone algo que no es una foto", () => assertFails(setDoc(doc(B, "perfiles", "B"), { foto: "<script>", updatedAt: serverTimestamp() }, { merge: true })));
 await t("B no pone una foto gigante", () => assertFails(setDoc(doc(B, "perfiles", "B"), { foto: "data:image/jpeg;base64," + "A".repeat(50000), updatedAt: serverTimestamp() }, { merge: true })));
 await t("B guarda sus medallas", () => assertSucceeds(setDoc(doc(B, "perfiles", "B"), { medallas: 3, updatedAt: serverTimestamp() }, { merge: true })));
+await t("B guarda cuántos compañeros tiene", () => assertSucceeds(setDoc(doc(B, "perfiles", "B"), { companeros: 5, updatedAt: serverTimestamp() }, { merge: true })));
 await t("medallas negativas no", () => assertFails(setDoc(doc(B, "perfiles", "B"), { medallas: -1, updatedAt: serverTimestamp() }, { merge: true })));
 await t("Inventario ve la foto y las medallas de B", () => assertSucceeds(getDoc(doc(INV, "perfiles", "B"))));
 await t("B guarda una lección aprobada", () => assertSucceeds(setDoc(doc(B, "capacitaciones", "B"), { hechas: { salitre: { nota: 3, at: serverTimestamp() } } }, { merge: true })));
