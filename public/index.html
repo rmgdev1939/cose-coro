@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="es"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cose Coro</title>
@@ -79,8 +79,10 @@
 
   *{box-sizing:border-box;}
   html,body{background:var(--bg); margin:0;}
+  img{max-width:100%;}
   body{
     font-family:"Public Sans", system-ui, sans-serif;
+    font-size:14px;
     color:var(--ink);
     padding:0 16px;
     max-width:560px;
@@ -415,7 +417,7 @@
     transition:border-color .15s;
   }
   .field .inputwrap:focus-within{border-color:var(--accent);}
-  .field input[type=number]{
+  .field input[type=number], .field .inputwrap input{
     width:100%; border:none; background:transparent; outline:none; color:var(--ink);
     font-family:"IBM Plex Mono", monospace; font-size:1.5rem; font-weight:600; font-variant-numeric: tabular-nums;
     -moz-appearance:textfield;
@@ -904,6 +906,8 @@
     .result, .card{transition:transform .15s;}
   }
 </style>
+</head>
+<body>
 
 <div class="gate" id="cloudGate" hidden>
   <div class="gate-card">
@@ -1221,7 +1225,7 @@
       <span class="tool-icon" style="color:var(--brand-orange)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h.01M16 18.5h.01"/></svg></span>
       <span class="tool-text">
         <span class="tool-title">Calcular materiales</span>
-        <span class="tool-sub">Cielo raso, pintura, bloques, cerámica y concreto</span>
+        <span class="tool-sub">Cielo raso, pintura, bloques, cerámica, concreto, techos y tanques</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -1438,14 +1442,14 @@
       <div class="field">
         <label for="largo">Largo</label>
         <div class="inputwrap">
-          <input type="number" id="largo" inputmode="decimal" min="0.1" step="0.1" value="6">
+          <input type="text" autocomplete="off" id="largo" inputmode="decimal" min="0.1" step="0.1" value="6">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="ancho">Ancho</label>
         <div class="inputwrap">
-          <input type="number" id="ancho" inputmode="decimal" min="0.1" step="0.1" value="4">
+          <input type="text" autocomplete="off" id="ancho" inputmode="decimal" min="0.1" step="0.1" value="4">
           <span class="unit">m</span>
         </div>
       </div>
@@ -1585,14 +1589,14 @@
       <div class="field">
         <label for="rAncho">Ancho</label>
         <div class="inputwrap">
-          <input type="number" id="rAncho" inputmode="decimal" min="0.1" step="0.1" value="4">
+          <input type="text" autocomplete="off" id="rAncho" inputmode="decimal" min="0.1" step="0.1" value="4">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="rAlto">Alto</label>
         <div class="inputwrap">
-          <input type="number" id="rAlto" inputmode="decimal" min="0.1" step="0.1" value="2.6">
+          <input type="text" autocomplete="off" id="rAlto" inputmode="decimal" min="0.1" step="0.1" value="2.6">
           <span class="unit">m</span>
         </div>
       </div>
@@ -1679,14 +1683,14 @@
       <div class="field">
         <label for="bAncho">Ancho</label>
         <div class="inputwrap">
-          <input type="number" id="bAncho" inputmode="decimal" min="0.1" step="0.1" value="5">
+          <input type="text" autocomplete="off" id="bAncho" inputmode="decimal" min="0.1" step="0.1" value="5">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="bAlto">Alto</label>
         <div class="inputwrap">
-          <input type="number" id="bAlto" inputmode="decimal" min="0.1" step="0.1" value="2.6">
+          <input type="text" autocomplete="off" id="bAlto" inputmode="decimal" min="0.1" step="0.1" value="2.6">
           <span class="unit">m</span>
         </div>
       </div>
@@ -1739,7 +1743,7 @@
     </div>
   </section>
 
-  <p class="diagram-caption" style="text-align:center;">Bloque cara 40 × 20&nbsp;cm (12,5 und/m² teórico). Cemento y arena para pega: ~50 bloques por saco de 42,5&nbsp;kg y 0,11&nbsp;m³ de arena por saco — ajustado según espesor. Friso: ~10,5&nbsp;m² por saco a 1,5&nbsp;cm de espesor, mezcla 1:3.</p>
+  <p class="diagram-caption" style="text-align:center;">Bloque cara 40 × 20&nbsp;cm (12,5 und/m² teórico). Cemento y arena para pega: ~50 bloques por saco de 42,5&nbsp;kg y 0,11&nbsp;m³ de arena por saco — ajustado según espesor. Friso: ~6,5&nbsp;m² por saco a 1,5&nbsp;cm de espesor, mezcla 1:3.</p>
 
 </div>
 
@@ -1769,14 +1773,14 @@
       <div class="field">
         <label for="pAncho">Ancho</label>
         <div class="inputwrap">
-          <input type="number" id="pAncho" inputmode="decimal" min="0.1" step="0.1" value="4">
+          <input type="text" autocomplete="off" id="pAncho" inputmode="decimal" min="0.1" step="0.1" value="4">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="pLargo">Largo</label>
         <div class="inputwrap">
-          <input type="number" id="pLargo" inputmode="decimal" min="0.1" step="0.1" value="5">
+          <input type="text" autocomplete="off" id="pLargo" inputmode="decimal" min="0.1" step="0.1" value="5">
           <span class="unit">m</span>
         </div>
       </div>
@@ -1851,16 +1855,16 @@
   <section class="card">
     <div class="card-title">Medidas</div>
     <div class="dims" id="cLosaDims">
-      <div class="field"><label for="cLargo">Largo</label><div class="inputwrap"><input type="number" id="cLargo" inputmode="decimal" min="0.1" step="0.1" value="5"><span class="unit">m</span></div></div>
-      <div class="field"><label for="cAncho">Ancho</label><div class="inputwrap"><input type="number" id="cAncho" inputmode="decimal" min="0.1" step="0.1" value="4"><span class="unit">m</span></div></div>
-      <div class="field"><label for="cEsp">Espesor</label><div class="inputwrap"><input type="number" id="cEsp" inputmode="decimal" min="1" step="1" value="10"><span class="unit">cm</span></div></div>
+      <div class="field"><label for="cLargo">Largo</label><div class="inputwrap"><input type="text" autocomplete="off" id="cLargo" inputmode="decimal" min="0.1" step="0.1" value="5"><span class="unit">m</span></div></div>
+      <div class="field"><label for="cAncho">Ancho</label><div class="inputwrap"><input type="text" autocomplete="off" id="cAncho" inputmode="decimal" min="0.1" step="0.1" value="4"><span class="unit">m</span></div></div>
+      <div class="field"><label for="cEsp">Espesor</label><div class="inputwrap"><input type="text" autocomplete="off" id="cEsp" inputmode="decimal" min="1" step="1" value="10"><span class="unit">cm</span></div></div>
     </div>
     <div class="dims" id="cColDims" hidden>
-      <div class="field"><label for="cCant">Cantidad</label><div class="inputwrap"><input type="number" id="cCant" inputmode="numeric" min="1" step="1" value="4"><span class="unit">und</span></div></div>
-      <div class="field"><label for="cColLargo">Largo o alto</label><div class="inputwrap"><input type="number" id="cColLargo" inputmode="decimal" min="0.1" step="0.1" value="2.8"><span class="unit">m</span></div></div>
-      <div class="field"><label for="cSecA">Sección, lado A</label><div class="inputwrap"><input type="number" id="cSecA" inputmode="decimal" min="5" step="1" value="30"><span class="unit">cm</span></div></div>
-      <div class="field"><label for="cSecB">Sección, lado B</label><div class="inputwrap"><input type="number" id="cSecB" inputmode="decimal" min="5" step="1" value="30"><span class="unit">cm</span></div></div>
-      <div class="field"><label for="cCab">Cabillas por pieza</label><div class="inputwrap"><input type="number" id="cCab" inputmode="numeric" min="0" step="1" value="4"><span class="unit">und</span></div></div>
+      <div class="field"><label for="cCant">Cantidad</label><div class="inputwrap"><input type="text" autocomplete="off" id="cCant" inputmode="numeric" min="1" step="1" value="4"><span class="unit">und</span></div></div>
+      <div class="field"><label for="cColLargo">Largo o alto</label><div class="inputwrap"><input type="text" autocomplete="off" id="cColLargo" inputmode="decimal" min="0.1" step="0.1" value="2.8"><span class="unit">m</span></div></div>
+      <div class="field"><label for="cSecA">Sección, lado A</label><div class="inputwrap"><input type="text" autocomplete="off" id="cSecA" inputmode="decimal" min="5" step="1" value="30"><span class="unit">cm</span></div></div>
+      <div class="field"><label for="cSecB">Sección, lado B</label><div class="inputwrap"><input type="text" autocomplete="off" id="cSecB" inputmode="decimal" min="5" step="1" value="30"><span class="unit">cm</span></div></div>
+      <div class="field"><label for="cCab">Cabillas por pieza</label><div class="inputwrap"><input type="text" autocomplete="off" id="cCab" inputmode="numeric" min="0" step="1" value="4"><span class="unit">und</span></div></div>
     </div>
     <div class="area-readout">
       <span class="lbl">Volumen a vaciar</span>
@@ -1909,14 +1913,14 @@
       <div class="field">
         <label for="tCaida">Largo de cada caída</label>
         <div class="inputwrap">
-          <input type="number" id="tCaida" inputmode="decimal" min="0.1" step="0.1" value="4">
+          <input type="text" autocomplete="off" id="tCaida" inputmode="decimal" min="0.1" step="0.1" value="4">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="tAncho">Ancho del techo</label>
         <div class="inputwrap">
-          <input type="number" id="tAncho" inputmode="decimal" min="0.1" step="0.1" value="6">
+          <input type="text" autocomplete="off" id="tAncho" inputmode="decimal" min="0.1" step="0.1" value="6">
           <span class="unit">m</span>
         </div>
       </div>
@@ -1929,28 +1933,28 @@
       <div class="field">
         <label for="tLargoLam">Largo de la lámina</label>
         <div class="inputwrap">
-          <input type="number" id="tLargoLam" inputmode="decimal" min="0.1" step="0.01" value="3.66">
+          <input type="text" autocomplete="off" id="tLargoLam" inputmode="decimal" min="0.1" step="0.01" value="3.66">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="tAnchoUtil">Ancho útil (ya solapado)</label>
         <div class="inputwrap">
-          <input type="number" id="tAnchoUtil" inputmode="decimal" min="0.1" step="0.01" value="0.80">
+          <input type="text" autocomplete="off" id="tAnchoUtil" inputmode="decimal" min="0.1" step="0.01" value="0.80">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="tSolape">Solape entre láminas a lo largo</label>
         <div class="inputwrap">
-          <input type="number" id="tSolape" inputmode="decimal" min="0" step="0.01" value="0.20">
+          <input type="text" autocomplete="off" id="tSolape" inputmode="decimal" min="0" step="0.01" value="0.20">
           <span class="unit">m</span>
         </div>
       </div>
       <div class="field">
         <label for="tTornLam">Tornillos por lámina</label>
         <div class="inputwrap">
-          <input type="number" id="tTornLam" inputmode="decimal" min="1" step="1" value="8">
+          <input type="text" autocomplete="off" id="tTornLam" inputmode="decimal" min="1" step="1" value="8">
           <span class="unit">und</span>
         </div>
       </div>
@@ -1987,14 +1991,14 @@
       <div class="field">
         <label for="qPersonas">Personas</label>
         <div class="inputwrap">
-          <input type="number" id="qPersonas" inputmode="decimal" min="1" step="1" value="4">
+          <input type="text" autocomplete="off" id="qPersonas" inputmode="decimal" min="1" step="1" value="4">
           <span class="unit">pers.</span>
         </div>
       </div>
       <div class="field">
         <label for="qDias">Días de reserva</label>
         <div class="inputwrap">
-          <input type="number" id="qDias" inputmode="decimal" min="1" step="1" value="3">
+          <input type="text" autocomplete="off" id="qDias" inputmode="decimal" min="1" step="1" value="3">
           <span class="unit">días</span>
         </div>
       </div>
@@ -2086,7 +2090,7 @@
     <details class="faq"><summary>¿Funciona sin internet?</summary><p>Las calculadoras y el mapa guardado sí. El chat, las notificaciones y los cambios del mapa necesitan internet.</p></details>
     <details class="faq"><summary>¿Por qué no me llegan avisos con la app cerrada?</summary><p>Por ahora las notificaciones llegan con Cose Coro abierta: la campanita y el número rojo te muestran lo nuevo al entrar.</p></details>
     <details class="faq"><summary>La app se ve vieja o no carga</summary><p>Ciérrala y ábrela de nuevo, o recarga la página. Si sigue igual, repórtalo aquí abajo con lo que ves.</p></details>
-    <details class="faq"><summary>¿Cómo cambio mi imagen de perfil?</summary><p>Toca tu inicial arriba a la derecha → «Editar perfil» → «Imagen de perfil» y elige un ícono.</p></details>
+    <details class="faq"><summary>¿Cómo cambio mi imagen de perfil?</summary><p>Toca tu foto o tu inicial arriba a la derecha → «Editar perfil» → «Imagen de perfil»: sube una foto o elige un ícono.</p></details>
   </section>
   <section class="card">
     <div class="card-title">Reportar un fallo o enviar una idea</div>
@@ -2226,7 +2230,7 @@
       <div><label for="flModelo">Modelo</label><input type="text" id="flModelo" class="hist-search" maxlength="30" autocomplete="off" placeholder="Ej: Cargo 815"></div>
       <div><label for="flAnio">Año (opcional)</label><input type="number" id="flAnio" class="hist-search" inputmode="numeric" min="1950" max="2100" placeholder="Ej: 2012"></div>
       <div><label for="flColor">Color</label><input type="text" id="flColor" class="hist-search" maxlength="20" autocomplete="off" placeholder="Ej: Blanco"></div>
-      <div><label for="flKm">Kilometraje</label><input type="number" id="flKm" class="hist-search" inputmode="numeric" min="0" placeholder="Ej: 150000"></div>
+      <div><label for="flKm">Kilometraje</label><input type="text" autocomplete="off" id="flKm" class="hist-search" inputmode="numeric" min="0" placeholder="Ej: 150000"></div>
       <div class="select-field"><label for="flEstado">Estado</label><select id="flEstado" class="hist-search"><option value="operativo">Operativo</option><option value="taller">En taller</option><option value="fuera">Fuera de servicio</option></select></div>
       <div><label for="flNotas">Notas</label><textarea id="flNotas" class="hist-search" rows="3" maxlength="500" placeholder="Ej: cambio de aceite pendiente, caucho trasero gastado"></textarea></div>
       <p class="pf-msg" id="flMsg"></p>
@@ -2238,7 +2242,7 @@
     <form class="pf-form" id="rvForm" novalidate>
       <div class="rv-grid" id="rvPuntos"></div>
       <div class="dims">
-        <div><label for="rvKm">Kilometraje</label><input type="number" id="rvKm" class="hist-search" inputmode="numeric" min="0"></div>
+        <div><label for="rvKm">Kilometraje</label><input type="text" autocomplete="off" id="rvKm" class="hist-search" inputmode="numeric" min="0"></div>
         <div class="select-field"><label for="rvComb">Combustible</label><select id="rvComb" class="hist-search"><option value="lleno">Lleno</option><option value="3/4">3/4</option><option value="1/2" selected>1/2</option><option value="1/4">1/4</option><option value="vacio">Reserva</option></select></div>
       </div>
       <div><label for="rvNota">Nota (qué falla)</label><textarea id="rvNota" class="hist-search" rows="2" maxlength="300" placeholder="Ej: luz de cruce izquierda quemada"></textarea></div>
@@ -2253,7 +2257,7 @@
         <div><label for="mtFecha">Fecha</label><input type="date" id="mtFecha" class="hist-search"></div>
         <div class="select-field"><label for="mtTipo">Tipo</label><select id="mtTipo" class="hist-search"><option value="aceite">Aceite y filtros</option><option value="cauchos">Cauchos</option><option value="frenos">Frenos</option><option value="bateria">Batería</option><option value="electrico">Eléctrico</option><option value="motor">Motor</option><option value="otro">Otro</option></select></div>
       </div>
-      <div><label for="mtKm">Kilometraje</label><input type="number" id="mtKm" class="hist-search" inputmode="numeric" min="0"></div>
+      <div><label for="mtKm">Kilometraje</label><input type="text" autocomplete="off" id="mtKm" class="hist-search" inputmode="numeric" min="0"></div>
       <div><label for="mtDet">Qué se hizo</label><textarea id="mtDet" class="hist-search" rows="2" maxlength="500" placeholder="Ej: cambio de aceite 15W40 y filtro"></textarea></div>
       <p class="pf-msg" id="mtMsg"></p>
       <button class="btn primary" type="submit" id="mtSave">Registrar mantenimiento</button>
@@ -2416,6 +2420,13 @@
 
   var $ = function(id){ return document.getElementById(id); };
 
+  // Números escritos a la venezolana: "2,5" y "2.5" valen 2,5; "1.250,5" vale 1250,5.
+  window.leerNum = function(v){
+    v = String(v == null ? "" : v).replace(/\s/g, "");
+    if (v.indexOf(",") !== -1) v = v.replace(/\./g, "").replace(",", ".");
+    return parseFloat(v);
+  };
+
   // --- navigation between the home menu and each tool "page" ---------------
   var screens = {
     home: $("screen-home"), calculadoras: $("screen-calculadoras"), cieloraso: $("screen-cieloraso"), recubrimientos: $("screen-recubrimientos"),
@@ -2465,8 +2476,31 @@
     $("headerTag").textContent = headerTags[name] || headerTags.home;
     window.scrollTo(0, 0);
     if (pushHash !== false){
-      try{ history.replaceState(null, "", name === "home" ? "#" : "#" + name); }catch(e){}
+      // una entrada en el historial por pantalla: el botón Atrás del teléfono
+      // vuelve a la pantalla anterior en vez de cerrar la app
+      var h = name === "home" ? "" : "#" + name, n = navStack.length;
+      try{
+        if (n > 1 && navStack[n - 2] === name){ navStack.pop(); history.back(); }
+        else if (navStack[n - 1] !== name){ navStack.push(name); history.pushState(null, "", h || "#"); }
+        else history.replaceState(null, "", h || "#");
+      }catch(e){}
     }
+  }
+  var navStack = [];
+  // Al llegar a una pantalla por la dirección (botón Atrás), las que necesitan
+  // datos se preparan aquí o se cambian por una que sí se puede mostrar.
+  function openFromHash(name){
+    var n = navStack.length;
+    if (n > 1 && navStack[n - 2] === name) navStack.pop();
+    else if (navStack[n - 1] !== name) navStack.push(name);
+    if (name === "dashboard") renderDashboard();
+    else if (name === "historial") renderHistorial();
+    else if (name === "reporte") renderReporte();
+    else if (name === "conv" || name === "grupo") name = "chat";
+    else if (name === "leccion") name = "capac";
+    else if (name === "vehiculo") name = "flota";
+    else if (name === "perfil" || name === "perfilpub" || ((name === "admin" || name === "monitor") && $("dashAdminBtn").hidden)){ renderDashboard(); name = "dashboard"; }
+    showScreen(name, false);
   }
 
   document.querySelectorAll(".tool-tile[data-target]").forEach(function(tile){
@@ -2484,7 +2518,7 @@
   $("homeLink").addEventListener("click", function(){ showScreen("home"); });
 
   window.addEventListener("hashchange", function(){
-    showScreen((location.hash || "#").slice(1) || "home", false);
+    openFromHash((location.hash || "#").slice(1) || "home");
   });
 
   // --- per-device profile (no server: just a name kept on this phone) ------
@@ -3409,6 +3443,9 @@
 
   refreshProfileChip();
   var startScreen = getProfileName() ? ((location.hash || "#").slice(1) || "home") : "onboarding";
+  // al recargar, las pantallas que necesitan prepararse abren el inicio
+  if (/^(dashboard|historial|reporte|perfil|perfilpub|conv|grupo|leccion|vehiculo|admin)$/.test(startScreen)) startScreen = "home";
+  navStack = [startScreen];
   showScreen(startScreen, false);
 
   // --- Tasa BCV (dólar oficial): se guarda en caché y se refresca sola una
@@ -3463,6 +3500,7 @@
       .then(function(data){
         var rate = data && (data.promedio || data.venta || data.compra);
         if (!rate) throw new Error("no rate");
+        rate = Math.round(rate * 100) / 100; // la misma tasa que se muestra
         var cache = { rate: rate, fetchedAt: Date.now(), sourceDate: todayVE() };
         setBcvCache(cache);
         renderBcv(cache);
@@ -3482,6 +3520,12 @@
       fetchBcv(false);
     }
   })();
+  // si la app queda abierta de un día para otro, al volver a ella se busca la tasa del día
+  document.addEventListener("visibilitychange", function(){
+    if (document.hidden) return;
+    var c = getBcvCache();
+    if (!c || c.sourceDate !== todayVE()) fetchBcv(false);
+  });
 
   var lastSummary = "";
   var largoEl = $("largo"), anchoEl = $("ancho"), mermaEl = $("merma");
@@ -3495,8 +3539,8 @@
   var ceil = function(n){ return Math.ceil(Math.round(n * 1e6) / 1e6); };
 
   function calc(){
-    var L = parseFloat(largoEl.value);
-    var A = parseFloat(anchoEl.value);
+    var L = leerNum(largoEl.value);
+    var A = leerNum(anchoEl.value);
     var mermaPct = parseFloat(mermaEl.value);
     mermaOut.textContent = mermaPct + "%";
 
@@ -3512,13 +3556,14 @@
     var laminas = ceil((area * (1 + merma)) / 0.72);
 
     // Perfil principal: lineas cada 1.22m a lo ancho, cada una mide L
-    var lineasPrincipal = ceil(A / 1.22) + 1;
+    // las orillas llevan ángulo perimetral: el principal va solo en las líneas de adentro
+    var bahias = Math.max(ceil(A / 1.22), 1);
+    var lineasPrincipal = bahias - 1;
     var metrosPrincipalRaw = lineasPrincipal * L;
     var metrosPrincipal = metrosPrincipalRaw * (1 + merma);
     var tramosPrincipal = ceil(metrosPrincipal / 3.66);
 
     // Perfil secundario: entre cada par de principales, piezas cada 0.61m a lo largo
-    var bahias = Math.max(lineasPrincipal - 1, 0);
     var colsCount = Math.max(ceil(L / 0.61), 1);
     var piezasPorBahia = Math.max(colsCount - 1, 0);
     var piezasSecundarioRaw = bahias * piezasPorBahia;
@@ -3609,7 +3654,7 @@
 
     $("topViewWrap").innerHTML = buildTopView(r);
     $("renderDims").textContent = fmt2(r.L) + " × " + fmt2(r.A) + " m";
-    $("renderCaption").textContent = "Vista aproximada a escala: " + fmt0(r.rows) + " fila(s) de principal × " + fmt0(r.cols) + " columna(s) de secundario — " + fmt0(r.laminas) + " celdas de lámina en total. El recorte final de las orillas se ajusta en obra.";
+    $("renderCaption").textContent = "Vista aproximada a escala: " + fmt0(r.rows) + " fila(s) de principal × " + fmt0(r.cols) + " columna(s) de secundario. Se usan " + fmt0(r.laminas) + " láminas en total, con la merma. El recorte final de las orillas se ajusta en obra.";
 
     var list =
       "COSEIMPA — Lista de materiales\n" +
@@ -3658,6 +3703,7 @@
   });
 
   // dismissible install tip (per-viewer convenience only)
+  if ((window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone) $("installTip").hidden = true;
   try{
     if (localStorage.getItem("coseimpa_install_tip_dismissed") === "1"){
       $("installTip").hidden = true;
@@ -3886,8 +3932,8 @@
   }
 
   function render(){
-    var w = parseFloat($("rAncho").value);
-    var h = parseFloat($("rAlto").value);
+    var w = leerNum($("rAncho").value);
+    var h = leerNum($("rAlto").value);
     var mermaPct = parseFloat($("rMerma").value);
     $("rMermaOut").textContent = mermaPct + "%";
     if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0) return;
@@ -4033,7 +4079,7 @@
   };
   var BLOCKS_PER_M2 = 12.5;
   var ARENA_M3_PER_SACO_PEGA = 0.11;
-  var FRISO_M2_PER_SACO = 10.5;     // 1.5cm, mezcla 1:3
+  var FRISO_M2_PER_SACO = 6.5;      // 1.5cm, mezcla 1:3 (unos 10,5 sacos por m³ de mortero)
   var FRISO_ARENA_M3_PER_SACO = 0.085;
 
   var state = { espesor: 10, caras: 1 };
@@ -4078,6 +4124,8 @@
     svg += '<clipPath id="' + clipId + '"><rect x="' + padL + '" y="' + padT + '" width="' + drawW.toFixed(2) + '" height="' + drawH.toFixed(2) + '"/></clipPath>';
     svg += '<g clip-path="url(#' + clipId + ')">';
     var rows = Math.ceil(drawH / blockH) + 1;
+    // paredes muy grandes: solo el contorno (miles de bloques dibujados traban el teléfono)
+    if (rows * (Math.ceil(drawW / blockW) + 3) > 900) rows = 0;
     for (var r = 0; r < rows; r++){
       var y = padT + drawH - (r + 1) * blockH;
       var offset = (r % 2 === 1) ? -blockW / 2 : 0;
@@ -4100,8 +4148,8 @@
   }
 
   function render(){
-    var w = parseFloat($("bAncho").value);
-    var h = parseFloat($("bAlto").value);
+    var w = leerNum($("bAncho").value);
+    var h = leerNum($("bAlto").value);
     var mermaPct = parseFloat($("bMerma").value);
     $("bMermaOut").textContent = mermaPct + "%";
     if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0) return;
@@ -4137,7 +4185,7 @@
       var areaFriso = area * state.caras;
       var sacosFriso = ceil((areaFriso * (1 + merma)) / FRISO_M2_PER_SACO);
       var arenaFriso = sacosFriso * FRISO_ARENA_M3_PER_SACO;
-      results.push({ cls:"result-principal", title:"Cemento (friso)", main:fmt0(sacosFriso), unit:"saco(s)", sub:(state.caras === 1 ? "1 cara" : "2 caras") + " · 10,5 m²/saco" });
+      results.push({ cls:"result-principal", title:"Cemento (friso)", main:fmt0(sacosFriso), unit:"saco(s)", sub:(state.caras === 1 ? "1 cara" : "2 caras") + " · 6,5 m²/saco" });
       results.push({ cls:"result-secundario", title:"Arena (friso)", main:fmt1(arenaFriso), unit:"m³", sub:"1,5 cm de espesor, mezcla 1:3" });
       listLines.push(fmt0(sacosFriso) + "  saco(s) de cemento (friso, " + (state.caras === 1 ? "1 cara" : "2 caras") + ")");
       listLines.push(fmt1(arenaFriso) + "  m³ de arena (friso)");
@@ -4275,8 +4323,8 @@
   }
 
   function render(){
-    var w = parseFloat($("pAncho").value);
-    var h = parseFloat($("pLargo").value);
+    var w = leerNum($("pAncho").value);
+    var h = leerNum($("pLargo").value);
     var mermaPct = parseFloat($("pMerma").value);
     $("pMermaOut").textContent = mermaPct + "%";
     if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0) return;
@@ -4386,7 +4434,7 @@
   var SACO_KG = 42.5, BARRA_M = 6, ANCLAJE_M = 0.30;
   var state = { tipo:"losa" };
   var lastSummary = "";
-  var num = function(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : NaN; };
+  var num = function(id){ var v = leerNum($(id).value); return isFinite(v) ? v : NaN; };
 
   function setTipo(t){
     state.tipo = t;
@@ -4413,7 +4461,11 @@
       if (!(n > 0 && lg > 0 && a > 0 && b > 0)){ $("cVolOut").textContent = "—"; return; }
       vol = n * lg * (a / 100) * (b / 100);
       desc = fmt0(n) + " pieza(s) de " + fmt0(a) + " x " + fmt0(b) + " cm, " + fmt2(lg) + " m de largo";
-      if (cab) barras = ceil(n * cab * (lg + ANCLAJE_M) / BARRA_M);
+      if (cab){
+        // cada cabilla de 6 m da piezas enteras: de una pieza de 3,10 m sale solo una por barra
+        var pieza = lg + ANCLAJE_M, porBarra = Math.floor(BARRA_M / pieza);
+        barras = porBarra >= 1 ? ceil(n * cab / porBarra) : ceil(n * cab * pieza / BARRA_M);
+      }
     }
     var volM = vol * (1 + mermaPct / 100);
     var sacos = ceil(volM * m.cementoKg / SACO_KG);
@@ -4691,7 +4743,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var KEY = "cosecoro_proyecto";
   var SEP = "--------------------------------";
-  var TOOL = { listText:"Cielo raso", rListText:"Recubrimientos", bListText:"Bloques y cemento", pListText:"Piso y cerámica", cListText:"Concreto" };
+  var TOOL = { listText:"Cielo raso", rListText:"Recubrimientos", bListText:"Bloques y cemento", pListText:"Piso y cerámica", cListText:"Concreto", tListText:"Techos", qListText:"Tanques de agua" };
   var usd = function(n){ return "$" + n.toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:2}); };
   var bs = function(n){ return "Bs " + n.toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:2}); };
   function load(){ try{ var v = JSON.parse(localStorage.getItem(KEY) || "null"); return v && Array.isArray(v.items) ? v : { client:"", items:[] }; }catch(e){ return { client:"", items:[] }; } }
@@ -4704,7 +4756,7 @@
     return t.replace(/^Cliente: .*\n/, "")
       .replace(/\nTotal en bolívares: .*/, "").replace(/\n\(tasa BCV .*\)/, "")
       .replace(/\nPrecios sujetos a cambio y a disponibilidad\./, "")
-      .replace(/^COSEIMPA — Lista de materiales[^\n]*\n/, "").trim();
+      .replace(/^COSEIMPA — [^\n]*\n/, "").trim();
   }
   function totalOf(t){
     var m = /\nTotal: \$([\d.,]+)/.exec(t);
@@ -4953,7 +5005,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var n2 = function(n){ return n.toLocaleString("es-VE", { minimumFractionDigits:2, maximumFractionDigits:2 }); };
   var n0 = function(n){ return Math.round(n).toLocaleString("es-VE"); };
-  function num(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : NaN; }
+  function num(id){ var v = leerNum($(id).value); return isFinite(v) ? v : NaN; }
   function results(gridId, list){
     var g = $(gridId); g.innerHTML = "";
     list.forEach(function(r){
@@ -5377,7 +5429,7 @@
       if (c.lastText){
         var pre = c.lastFrom === uid() ? "Tú: " : grp ? (String(c.lastFromName || "").split(" ")[0] + ": ") : "";
         sub = pre + c.lastText;
-      } else sub = grp ? c.members.length + " miembros" : seen(who);
+      } else sub = grp ? miembros(c.members.length) + "" : seen(who);
       box.appendChild(row({
         av: grp ? groupAvatar() : avatar(iconOf(who), nameOf(who), "", isOnline(who)),
         title: chatTitle(id, c),
@@ -5529,7 +5581,7 @@
         av: grp ? groupAvatar() : avatar(iconOf(c.members[0]), nameOf(c.members[0])),
         title: supTitle(c),
         time: whenShort(ms(c.lastAt)),
-        sub: c.lastText ? (c.lastFromName || "") + ": " + c.lastText : (grp ? c.members.length + " miembros · sin mensajes" : "Sin mensajes"),
+        sub: c.lastText ? (c.lastFromName || "") + ": " + c.lastText : (grp ? miembros(c.members.length) + " · sin mensajes" : "Sin mensajes"),
         onClick: function(){ openConv(id, true); }
       }));
     });
@@ -5588,7 +5640,7 @@
     if (supMode){
       avBox.appendChild(grp ? groupAvatar("sm") : avatar(iconOf(c.members[0]), nameOf(c.members[0]), "sm"));
       $("convTitle").textContent = supTitle(c);
-      sub.textContent = "Supervisión · solo lectura" + (grp ? " · " + c.members.length + " miembros" : "");
+      sub.textContent = "Supervisión · solo lectura" + (grp ? " · " + miembros(c.members.length) + "" : "");
       sub.className = "s";
       $("convNote").textContent = grp ? "Miembros: " + c.members.map(nameOf).join(", ") + "." : "";
       return;
@@ -5597,7 +5649,7 @@
       avBox.appendChild(groupAvatar("sm"));
       $("convTitle").textContent = c.name || "Grupo";
       var on = c.members.filter(function(u){ return u !== uid() && isOnline(u); }).length;
-      sub.textContent = c.members.length + " miembros" + (on ? " · " + on + " en línea" : "");
+      sub.textContent = miembros(c.members.length) + "" + (on ? " · " + on + " en línea" : "");
       sub.className = "s";
     } else {
       var o = c ? otherOf(c.members) : newDirectWith;
@@ -5672,6 +5724,7 @@
     paintConvHead();
     paintMsgs(false);
   }
+  function miembros(n){ return n + (n === 1 ? " miembro" : " miembros"); }
   function createDirect(id, other){
     var me = uid();
     return F().setDoc(F().doc(X.db, "chats", id), {
@@ -5686,14 +5739,17 @@
     $("convInput").value = "";
     autosize();
     $("convNote").textContent = "";
-    var ready = chats[id] ? Promise.resolve() : createDirect(id, other);
-    ready.then(function(){
-      if (openChat === id && !msgUnsub) listenMsgs(id);
+    // el chat nuevo se crea sin esperar al servidor: sin internet, el mensaje
+    // queda en la cola del teléfono detrás de él y sale solo al volver la conexión
+    if (chats[id]){ if (openChat === id && !msgUnsub) listenMsgs(id); }
+    else createDirect(id, other).then(function(){ if (openChat === id && !msgUnsub) listenMsgs(id); });
+    if (!navigator.onLine) $("convNote").textContent = "Sin conexión: el mensaje se enviará solo cuando vuelva el internet.";
+    (function(){
       var b = F().writeBatch(X.db);
       b.set(F().doc(F().collection(X.db, "chats", id, "mensajes")), { from:uid(), fromName:X.me.name, text:text, at:F().serverTimestamp() });
       b.update(F().doc(X.db, "chats", id), { lastText:text.slice(0, 120), lastAt:F().serverTimestamp(), lastFrom:uid(), lastFromName:X.me.name });
       return b.commit();
-    }).catch(function(){
+    })().catch(function(){
       if (openChat === id) $("convNote").textContent = "No se pudo enviar el mensaje. Revisa tu internet e inténtalo otra vez.";
     });
   }
@@ -7111,7 +7167,7 @@
     e.preventDefault();
     var v = list.filter(function(x){ return x.id === curV; })[0], msg = $("rvMsg"), F = X.F;
     if (!v) return;
-    var kmv = parseInt($("rvKm").value || "0", 10);
+    var kmv = parseInt(String($("rvKm").value).replace(/\D/g, "") || "0", 10);
     if (!(kmv >= 0)){ msg.className = "pf-msg err"; msg.textContent = "Revisa el kilometraje."; return; }
     var p = {}, fallas = 0;
     PUNTOS.forEach(function(x){ var ok = puntos[x[0]] !== false; p[x[0]] = ok; if (!ok) fallas++; });
@@ -7126,7 +7182,7 @@
     e.preventDefault();
     var v = list.filter(function(x){ return x.id === curV; })[0], msg = $("mtMsg"), F = X.F;
     if (!v) return;
-    var f = $("mtFecha").value, kmv = parseInt($("mtKm").value || "0", 10);
+    var f = $("mtFecha").value, kmv = parseInt(String($("mtKm").value).replace(/\D/g, "") || "0", 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f)){ msg.className = "pf-msg err"; msg.textContent = "Elige la fecha."; return; }
     if (!(kmv >= 0)){ msg.className = "pf-msg err"; msg.textContent = "Revisa el kilometraje."; return; }
     $("mtSave").disabled = true;
@@ -7142,7 +7198,7 @@
     function bad(t){ msg.className = "pf-msg err"; msg.textContent = t; }
     var placa = $("flPlaca").value.trim().toUpperCase().replace(/\s+/g, "").slice(0, 12);
     var anio = $("flAnio").value ? parseInt($("flAnio").value, 10) : null;
-    var kmv = parseInt($("flKm").value || "0", 10);
+    var kmv = parseInt(String($("flKm").value).replace(/\D/g, "") || "0", 10);
     if (placa.length < 2) return bad("Escribe la placa.");
     if (anio !== null && !(anio >= 1950 && anio <= 2100)) return bad("Revisa el año.");
     if (!(kmv >= 0)) return bad("Revisa el kilometraje.");
@@ -7577,6 +7633,7 @@
       var creating = false;
       unsubMe = F.onSnapshot(ref, function(snap){
         if (!snap.exists()){
+          if (snap.metadata.fromCache) return; // sin internet: esperar a que el servidor confirme
           if (creating) return;
           creating = true;
           var reg = registering || {};
@@ -7602,6 +7659,10 @@
       if (!unlocked) return;
       unlocked = false;
       stopAll();
+      // que quien entre después en este teléfono no vea listas ni cifras del administrador
+      ["admPending", "admUsers", "admLog", "monBody"].forEach(function(id){ var e = $(id); if (e) e.innerHTML = ""; });
+      var curScr = window.coseApp && window.coseApp.current();
+      if (curScr === "admin" || curScr === "monitor") window.coseApp.showScreen("home");
       $("mapEditCard").hidden = true;
       $("dashAdminBtn").hidden = true;
       $("dashSwitchBtn").hidden = false;
@@ -7911,7 +7972,7 @@
           cargoArmed = null;
           var list = cargosNow().filter(function(k){ return k !== c; });
           if (!list.length){ $("admCargoMsg").textContent = "Deja al menos un cargo en la lista."; renderCargos(); return; }
-          saveCargos(list, "✓ Quitado: " + c + ". Quien ya lo tenga lo conserva hasta que cambie su perfil.");
+          saveCargos(list, "✓ Quitado: " + c + ". Quien ya la tenga la conserva hasta que le cambies el área.");
         });
         chip.appendChild(t); chip.appendChild(x);
         box.appendChild(chip);
