@@ -506,6 +506,8 @@
     padding-block:6px calc(24px + env(safe-area-inset-bottom,0px));
   }
   footer .company{color:var(--ink-soft); font-weight:600;}
+  footer .ft{display:flex; align-items:center; justify-content:center; gap:8px; color:var(--ink-soft); opacity:0.6; font-weight:600;}
+  footer .ft-mark{width:18px; height:18px;}
 
   /* --- Modo nube: acceso, edición del mapa, administración ------------- */
   .gate{position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:flex-start; justify-content:center; padding:48px 20px 20px; overflow:auto;}
@@ -2405,7 +2407,11 @@
 </div>
 
 <footer>
-  <span class="company">Coseimpa Coro, C.A.</span> · Av. Intercomunal Coro–La Vela, Edif. Coseimpa, Sector Sabana Larga, Coro, Edo. Falcón · uso exclusivo sucursal Coro<br><span id="appVersion">Versión 29 · 30 sep 2026</span>
+  <div class="ft">
+    <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
+    <span>CoseCoro</span>
+    <span id="appVersion">CC/1.0</span>
+  </div>
 </footer>
 
 </main>
