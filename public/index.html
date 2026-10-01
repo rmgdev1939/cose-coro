@@ -932,6 +932,106 @@
   .menu-row.danger{color:#C2403A;}
   .fl-notas{font-size:0.8rem; color:var(--ink); background:var(--surface-2); border-radius:8px; padding:6px 9px; white-space:pre-wrap; overflow-wrap:anywhere;}
 
+
+  /* =========================================================================
+     VERSIÓN WEB (computadora, 1024 px o más): menú lateral fijo, contenido a
+     lo ancho en dos columnas, chat en dos paneles y pequeñas animaciones.
+     En el teléfono no cambia nada.
+     ========================================================================= */
+  .side-nav{display:none;}
+  @media (prefers-reduced-motion:no-preference){
+    .screen{animation:scrIn .22s ease-out;}
+    @keyframes scrIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+    .tool-tile, button.btn, .menu-row, .c-main, .fl-item, .cap-item{transition:transform .15s, box-shadow .15s, background-color .15s, border-color .15s;}
+  }
+  @media (hover:hover){
+    .tool-tile:hover{transform:translateY(-2px); box-shadow:0 8px 22px var(--shadow);}
+    button.btn:hover{filter:brightness(1.04);}
+    .menu-row:hover, .fl-item:hover, .cap-item:hover{background:var(--surface-2);}
+    button.c-main:hover .nm{color:var(--brand-blue);}
+  }
+  @media (min-width:1024px){
+    body{max-width:none; margin:0; padding:0 36px 0 calc(248px + 36px);}
+    main{max-width:1240px; margin:0 auto; padding-block:26px 48px;}
+    header.top{margin:0 -36px; padding:14px 36px; flex-direction:row; justify-content:flex-start; min-height:64px; cursor:default;}
+    header.top .brandrow{display:none;}
+    header.top .tag{font-family:"Baloo 2", system-ui, sans-serif; font-weight:700; font-size:1.25rem; letter-spacing:0; color:var(--ink);}
+    #helpBtn{left:auto; right:142px; top:16px;}
+    #chatBtn{right:102px; top:16px;}
+    .chat-chip.bell-chip{right:62px; top:16px;}
+    .profile-chip{right:22px; top:16px;}
+
+    #installTip{display:none!important;}
+    .side-nav{display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; width:248px; z-index:20;
+      background:var(--surface); border-right:1px solid var(--line); padding:18px 14px; gap:4px; overflow-y:auto;}
+    .side-brand{display:flex; align-items:center; gap:10px; padding:4px 10px 18px; font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.35rem; cursor:pointer; background:none; border:none; color:var(--ink); text-align:left;}
+    .side-brand svg{width:34px; height:34px;}
+    .side-brand .b1{color:var(--brand-blue);} .side-brand .b2{color:var(--brand-orange);}
+    .side-brand small{display:block; font-family:"Public Sans", system-ui, sans-serif; font-weight:500; font-size:0.7rem; color:var(--ink-soft);}
+    .side-sec{font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); padding:14px 12px 4px;}
+    .side-item{display:flex; align-items:center; gap:12px; width:100%; padding:10px 12px; border:none; border-radius:10px; background:none;
+      font-family:inherit; font-size:0.9rem; font-weight:600; color:var(--ink-soft); text-align:left; cursor:pointer; position:relative;}
+    .side-item svg{width:20px; height:20px; flex:none;}
+    .side-item:hover{background:var(--surface-2); color:var(--ink);}
+    .side-item.on{background:var(--accent-soft); color:var(--ink);}
+    .side-item.on::before{content:""; position:absolute; left:-14px; top:8px; bottom:8px; width:4px; border-radius:0 4px 4px 0; background:var(--accent);}
+    .side-item .side-badge{margin-left:auto; min-width:20px; padding:1px 6px; border-radius:10px; background:#E5534B; color:#fff; font-size:0.7rem; font-weight:700; text-align:center;}
+    .side-item .side-dot{margin-left:auto; width:9px; height:9px; border-radius:50%; background:#E5534B;}
+    .side-foot{margin-top:auto; padding:14px 12px 0; font-size:0.66rem; color:var(--ink-soft); opacity:.6;}
+
+    /* pantallas de contenido: dos columnas que se llenan de arriba abajo */
+    #screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque,
+    #screen-dashboard, #screen-monitor, #screen-admin, #screen-faltantes, #screen-soporte, #screen-perfil, #screen-avisos,
+    #screen-flota, #screen-vehiculo, #screen-reporte, #screen-historial, #screen-capac, #screen-ajustes, #screen-proyecto{
+      display:block; column-count:2; column-gap:24px;
+    }
+    :is(#screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque,
+    #screen-dashboard, #screen-monitor, #screen-admin, #screen-faltantes, #screen-soporte, #screen-perfil, #screen-avisos,
+    #screen-flota, #screen-vehiculo, #screen-reporte, #screen-historial, #screen-capac, #screen-ajustes, #screen-proyecto) > *{
+      break-inside:avoid; margin:0 0 20px; display:block;
+    }
+    :is(#screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque,
+    #screen-dashboard, #screen-monitor, #screen-admin, #screen-faltantes, #screen-soporte, #screen-perfil, #screen-avisos,
+    #screen-flota, #screen-vehiculo, #screen-reporte, #screen-historial, #screen-capac, #screen-ajustes, #screen-proyecto)
+      > :is(.backbar, .lede, .dash-greet, .tip-coro, .seg-tabs, .dash-stats, .fl-stats, .mon-body, .hist-search){column-span:all;}
+    :is(#screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque) > .tip-coro,
+    #screen-dashboard > .dash-stats, #screen-flota > .fl-stats, #screen-capac > .seg-tabs{display:flex;}
+    #screen-dashboard > .dash-stats, #screen-flota > .fl-stats{display:grid;}
+    .mon-grid{grid-template-columns:repeat(4, 1fr);}
+    .mon-tiles{grid-template-columns:repeat(6, 1fr);}
+    .lede{max-width:80ch;}
+
+    /* inicio: herramientas en cuadrícula */
+    #screen-home{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start;}
+    #screen-home > *{grid-column:1 / -1;}
+    #screen-home > .bcv-card{grid-column:1;}
+    #screen-home > .home-search-lbl{display:none;}
+    #screen-home > .home-search{grid-column:2; align-self:stretch;}
+    #screen-home .home-list{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px;}
+    #screen-home .tool-tile{min-height:92px;}
+    #screen-calculadoras .home-list{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px;}
+
+    /* mapa: lista a la izquierda, plano grande a la derecha */
+    #screen-mapa{display:grid; grid-template-columns:minmax(320px, 400px) minmax(0,1fr); gap:20px; align-items:start;}
+    #screen-mapa > *{grid-column:1;}
+    #screen-mapa > #storeMapCard{grid-column:2; grid-row:1 / span 12; position:sticky; top:84px;}
+    #screen-mapa .smap-scroll{max-height:calc(100vh - 210px);}
+
+    /* chat en dos paneles: conversaciones a la izquierda, la abierta a la derecha */
+    body[data-scr="chat"] main, body[data-scr="conv"] main{display:grid; grid-template-columns:380px minmax(0,1fr); gap:24px; align-items:start;}
+    body[data-scr="conv"] #screen-chat[hidden]{display:flex!important; position:sticky; top:84px; max-height:calc(100vh - 100px); overflow-y:auto;}
+    body[data-scr="chat"] main::after{content:"Elige una conversación para verla aquí"; align-self:stretch; min-height:60vh; display:flex; align-items:center; justify-content:center;
+      border:2px dashed var(--line); border-radius:16px; color:var(--ink-soft); font-weight:600;}
+    body[data-scr="chat"] main > footer, body[data-scr="conv"] main > footer{display:none;}
+    body.in-conv #screen-conv{min-height:calc(100vh - var(--hdr, 70px) - 30px);}
+    .conv-bar{margin:0;}
+
+    /* perfil público, lección y nuevo grupo: centrados */
+    #screen-perfilpub, #screen-leccion, #screen-grupo, #screen-onboarding{max-width:640px; margin:0 auto;}
+    .ed-sheet{left:248px;}
+    .ed-plan{max-width:1100px;}
+  }
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -990,6 +1090,7 @@
   </div>
 </div>
 
+<nav class="side-nav" id="sideNav" aria-label="Menú principal"></nav>
 <header class="top" id="homeLink" role="button" tabindex="0" aria-label="Ir al inicio de Cose Coro">
   <div class="brandrow">
     <svg class="mark" viewBox="0 0 40 40" fill="none">
@@ -7573,6 +7674,105 @@
       box.appendChild(b);
     }
   };
+})();
+</script>
+
+<script>
+// ============================================================================
+// MENÚ LATERAL (versión web): repite los accesos de la app y se muestra solo
+// en pantallas grandes. Cada opción toca el botón real de la app, así respeta
+// quién puede ver qué; se oculta y marca puntos rojos igual que el original.
+// También deja en <body data-scr="…"> la pantalla actual (para el CSS).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var nav = $("sideNav");
+  var I = {
+    home:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+    calc:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h.01M16 18.5h.01"/>',
+    mapa:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    editor:'<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
+    chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/>',
+    bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+    fa:'<path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/><path d="M4 6h16"/><path d="M9 11l6 6M15 11l-6 6"/>',
+    flota:'<path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+    capac:'<circle cx="12" cy="15" r="6"/><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7"/>',
+    dash:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>'
+  };
+  // [clave, texto, ícono, cómo abrir (pantalla o id del botón real), id del botón que decide si se ve, id de su aviso]
+  var ITEMS = [
+    ["home", "Inicio", "home", "screen:home"],
+    ["calc", "Calcular materiales", "calc", "screen:calculadoras"],
+    ["mapa", "Buscar en el mapa", "mapa", "screen:mapa"],
+    ["editor", "Editor del mapa", "editor", "editorTile", "editorTile"],
+    ["sec", "Equipo"],
+    ["chat", "Chat", "chat", "chatBtn", "chatBtn", "chatBtnBadge"],
+    ["bell", "Notificaciones", "bell", "bellBtn", "bellBtn", "bellBadge"],
+    ["fa", "Lo pidieron y no hay", "fa", "faTile", "faTile"],
+    ["flota", "Vehículos", "flota", "flTile", "flTile"],
+    ["capac", "Capacitación", "capac", "capTile", "capTile"],
+    ["sec", "Cuenta"],
+    ["dash", "Mi dashboard", "dash", "profileChip"],
+    ["help", "Ayuda y soporte", "help", "helpBtn", null, null, "hdot"]
+  ];
+  var ACTIVE = { home:"home", calculadoras:"calc", cieloraso:"calc", recubrimientos:"calc", bloques:"calc", piso:"calc", concreto:"calc", techo:"calc", tanque:"calc", proyecto:"calc",
+    mapa:"mapa", editor:"editor", chat:"chat", conv:"chat", grupo:"chat", perfilpub:"chat", avisos:"bell", faltantes:"fa", flota:"flota", vehiculo:"flota",
+    capac:"capac", leccion:"capac", dashboard:"dash", ajustes:"dash", perfil:"dash", monitor:"dash", admin:"dash", reporte:"dash", historial:"dash", soporte:"help" };
+  var els = {};
+  var brand = document.createElement("button");
+  brand.type = "button"; brand.className = "side-brand";
+  brand.innerHTML = '<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="var(--brand-orange)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="var(--brand-green)"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="var(--brand-blue)"/></svg><span><span class="b1">Cose</span><span class="b2">Coro</span><small>Sucursal Coro</small></span>';
+  brand.addEventListener("click", function(){ window.coseApp.showScreen("home"); });
+  nav.appendChild(brand);
+  ITEMS.forEach(function(it){
+    if (it[0] === "sec"){ var h = document.createElement("div"); h.className = "side-sec"; h.textContent = it[1]; nav.appendChild(h); els["sec" + it[1]] = h; return; }
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "side-item";
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + I[it[2]] + '</svg>';
+    b.appendChild(document.createTextNode(it[1]));
+    b.addEventListener("click", function(){
+      if (it[3].indexOf("screen:") === 0) window.coseApp.showScreen(it[3].slice(7));
+      else { var t = $(it[3]); if (t) t.click(); }
+    });
+    nav.appendChild(b);
+    els[it[0]] = { btn:b, it:it };
+  });
+  var foot = document.createElement("div"); foot.className = "side-foot"; foot.textContent = "CoseCoro · " + (($("appVersion") || {}).textContent || "");
+  nav.appendChild(foot);
+
+  function sync(){
+    ITEMS.forEach(function(it){
+      var e = els[it[0]]; if (!e) return;
+      if (it[4]){ var src = $(it[4]); e.btn.hidden = !src || src.hidden; }
+      var old = e.btn.querySelector(".side-badge, .side-dot"); if (old) old.remove();
+      var badge = it[5] && $(it[5]);
+      if (badge && !badge.hidden){
+        var sp = document.createElement("span");
+        var txt = (badge.textContent || "").trim();
+        sp.className = txt && it[5] !== "chatBtnBadge" ? "side-badge" : "side-dot";
+        if (sp.className === "side-badge") sp.textContent = txt;
+        e.btn.appendChild(sp);
+      }
+      if (it[6]){ var host = $(it[3]); if (host && host.querySelector("." + it[6])){ var d = document.createElement("span"); d.className = "side-dot"; e.btn.appendChild(d); } }
+    });
+    // la sección "Equipo" se ve si hay algo dentro
+    var team = ["chat", "bell", "fa", "flota", "capac"].some(function(k){ return els[k] && !els[k].btn.hidden; });
+    els["secEquipo"].hidden = !team;
+    var cur = window.coseApp ? window.coseApp.current() : "home";
+    document.body.setAttribute("data-scr", cur);
+    var on = ACTIVE[cur] || "";
+    Object.keys(els).forEach(function(k){ if (els[k].btn) els[k].btn.classList.toggle("on", k === on); });
+  }
+  var queued = false;
+  function later(){ if (queued) return; queued = true; requestAnimationFrame(function(){ queued = false; sync(); }); }
+  var mo = new MutationObserver(later);
+  document.querySelectorAll(".screen").forEach(function(sc){ mo.observe(sc, { attributes:true, attributeFilter:["hidden"] }); });
+  ["editorTile", "chatBtn", "bellBtn", "faTile", "flTile", "capTile", "chatBtnBadge", "bellBadge", "helpBtn"].forEach(function(id){
+    var n = $(id); if (n) mo.observe(n, { attributes:true, attributeFilter:["hidden"], childList:true, characterData:true, subtree:true });
+  });
+  sync();
 })();
 </script>
 
