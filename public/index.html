@@ -6683,7 +6683,7 @@
     return res;
   }
   var PATIO_CATS = ["maderas y carpinteria", "hierro productos procesados", "hierro productos siderurgicos",
-    "mallas cercas y alambrados", "cementos agregados y aditivos"].map(stem);
+    "mallas cercas y alambrados", "cementos agregados y aditivos", "bloques tabelones y tejas"].map(stem);
 
   function compute(){
     if (!cat || !dirty) return;
@@ -7468,8 +7468,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v45" → 45). Subir los dos juntos en cada versión.
-  var APP_BUILD = 45;
+  // sw.js ("coseimpa-cosecoro-v46" → 46). Subir los dos juntos en cada versión.
+  var APP_BUILD = 46;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
