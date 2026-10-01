@@ -776,6 +776,30 @@
   .mon-dot{width:10px; height:10px; border-radius:50%; background:var(--accent2); flex:none; margin-top:5px;}
   .mon-ev.warn .mon-dot{background:var(--accent);} .mon-ev.crit .mon-dot{background:#E5534B;}
 
+  /* --- Personas: uso de la app (solo el administrador) -------------------- */
+  .uso-body{display:flex; flex-direction:column; gap:18px; margin-bottom:18px;}
+  .uso-body:empty{display:none;}
+  .uso-sub{font-size:0.74rem; font-weight:600; color:var(--ink-soft); text-transform:none; letter-spacing:0;}
+  .uso-trow{display:grid; grid-template-columns:20px 1fr auto; align-items:center; gap:10px; padding:6px 0;}
+  .uso-rank{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; color:var(--ink-soft); text-align:center;}
+  .uso-tname{font-size:0.86rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .uso-tbar{height:7px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:4px;}
+  .uso-tbar i{display:block; height:100%; border-radius:4px; background:var(--accent2);}
+  .uso-tmin{font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:0.78rem; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .uso-filt{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;}
+  .uso-filt button{font:inherit; font-size:0.76rem; font-weight:700; padding:5px 11px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); cursor:pointer;}
+  .uso-filt button.on{background:var(--ink); border-color:var(--ink); color:var(--surface);}
+  .uso-p{display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .uso-p:last-child{border-bottom:none;}
+  .uso-p .who{flex:1; min-width:0;}
+  .uso-p .nm{font-weight:700; font-size:0.9rem; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .uso-p .meta{font-size:0.74rem; color:var(--ink-soft); line-height:1.45;}
+  .uso-st{font-size:0.74rem; font-weight:700; color:var(--ink-soft); white-space:nowrap; text-align:right;}
+  .uso-st.on{color:var(--accent2);}
+  .uso-st.old{color:#E5534B;}
+  .uso-tag{display:inline-block; font-size:0.64rem; font-weight:700; padding:1px 7px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); margin-left:5px; vertical-align:1px;}
+  .uso-tag.warn{background:var(--est-bg); color:var(--ink);}
+
   /* --- Campanita y soporte ------------------------------------------------ */
   .chat-chip.bell-chip{left:auto; right:50px;}
   #chatBtn{left:auto; right:88px;}
@@ -2294,6 +2318,7 @@
     <details class="faq"><summary>Mi cuenta dice «en revisión»</summary><p>El administrador tiene que aprobarla. Cuando lo haga, la app se abre sola; no tienes que hacer nada más.</p></details>
     <details class="faq"><summary>¿Cómo agrego a un compañero en el chat?</summary><p>Chat del equipo → «Compañeros» → busca su nombre → «Agregar». Cuando acepte tu solicitud, ya pueden escribirse. También puedes armar grupos con tus compañeros.</p></details>
     <details class="faq"><summary>¿Quién puede ver mis mensajes?</summary><p>Tus compañeros de cada conversación. Los chats son para el trabajo y la administración puede revisarlos.</p></details>
+    <details class="faq"><summary>¿La app mide mi uso?</summary><p>Sí, para mejorarla. La administración ve cuándo usaste Cose Coro por última vez, cuántas veces la abres, los minutos de uso por día, desde qué tipo de aparato (por ejemplo iPhone o Android), si la tienes instalada y su versión. No ve tu ubicación ni nada fuera de la app.</p></details>
     <details class="faq"><summary>¿Por qué no veo el Editor del mapa?</summary><p>Solo lo usan Autoservicio, Inventario y el administrador. Si tu área está mal, pídele al administrador que lo cambie.</p></details>
     <details class="faq"><summary>¿De dónde sale la tasa del dólar?</summary><p>Es la tasa oficial del BCV del día. Se actualiza sola con internet; sin conexión se usa la última guardada, y también puedes escribirla a mano.</p></details>
     <details class="faq"><summary>¿Funciona sin internet?</summary><p>Las calculadoras y el mapa guardado sí. El chat, las notificaciones y los cambios del mapa necesitan internet.</p></details>
@@ -2332,7 +2357,8 @@
     </button>
   </div>
   <p class="dash-greet">Estado del sistema</p>
-  <p class="lede" style="margin-top:-8px;">Consumo del plan gratis de Firebase, medido cada hora, y la evaluación del día. Solo lo ve el administrador.</p>
+  <p class="lede" style="margin-top:-8px;">Quién usa la app y cómo, en vivo; y el consumo del plan gratis de Firebase, medido cada hora. Solo lo ve el administrador.</p>
+  <div id="usoBody" class="uso-body"></div>
   <div id="monBody" class="mon-body"></div>
 </div>
 
@@ -6497,6 +6523,7 @@
     avatarFor: function(u){ return avatar(iconOf(u), nameOf(u), "sm"); },
     refreshPresence: function(){ if (X) setPres(!document.hidden); },
     onlineCount: function(){ return Object.keys(estado).filter(function(u){ return estado[u] && estado[u].on === true; }).length; },
+    isOnline: function(u){ return X ? isOnline(u) : false; },
     paintAv: function(node){ if (X && (ICON_BY[myIcon] || myFoto)) paintAv(node); else { node.classList.remove("has-ic"); node.classList.remove("has-foto"); node.style.removeProperty("--c"); } },
     avatar: avatar
   };
@@ -6836,6 +6863,305 @@
   })();
 
   window.coseEditor = { start:start, stop:stop, setZones:setZones, canEdit:canEdit };
+})();
+</script>
+
+<script>
+// ============================================================================
+// USO DE LA APP (window.coseUso): cada persona guarda un resumen pequeño de su
+// uso en uso/{uid}: visto por última vez, veces que abre la app, inicios de
+// sesión, minutos por día, aparato, si está instalada y la versión. Gasta poco:
+// una escritura al abrir y luego una cada 5 minutos con la app a la vista.
+// El administrador lo ve en vivo en "Estado del sistema" → Personas.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var CADA = 5 * 60000;          // cada cuánto se guarda con la app a la vista
+  var NUEVA = 30 * 60000;        // volver tras 30 min fuera cuenta como otra entrada
+  var GUARDA_DIAS = 90;          // minutos por día que se conservan
+  var TZ = "America/Caracas";
+  var X = null, timer = null, visSince = 0, hiddenAt = 0, acum = 0, build = "", ingreso = false, podado = false;
+
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
+  function dia(t){
+    var d = t == null ? new Date() : new Date(t);
+    try { return new Intl.DateTimeFormat("en-CA", { timeZone:TZ, year:"numeric", month:"2-digit", day:"2-digit" }).format(d); }
+    catch(e){ return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  }
+  function ultimosDias(n){ var out = [], now = Date.now(); for (var i = 0; i < n; i++) out.push(dia(now - i * 86400000)); return out; }
+
+  function aparato(){
+    var ua = navigator.userAgent || "";
+    if (/iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "iPad";
+    if (/iPhone|iPod/.test(ua)) return "iPhone";
+    if (/Android/.test(ua)) return /Mobile/.test(ua) ? "Android" : "Tablet Android";
+    if (/Windows/.test(ua)) return "Windows";
+    if (/Macintosh|Mac OS X/.test(ua)) return "Mac";
+    if (/CrOS/.test(ua)) return "Chromebook";
+    if (/Linux/.test(ua)) return "Linux";
+    return "Otro";
+  }
+  function instalada(){
+    try { return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; }
+    catch(e){ return false; }
+  }
+  // la versión interna es la del caché del service worker (sw.js → CACHE)
+  function leerBuild(){
+    if (!window.caches || !window.caches.keys) return Promise.resolve();
+    return window.caches.keys().then(function(keys){
+      var n = 0;
+      keys.forEach(function(k){ var m = /^coseimpa-cosecoro-v(\d+)$/.exec(k); if (m) n = Math.max(n, +m[1]); });
+      if (n) build = "v" + n;
+    }, function(){});
+  }
+  function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + (build ? " · " + build : "")).slice(0, 24); }
+
+  // --- guardar mi uso ----------------------------------------------------------
+  function contar(){
+    if (!visSince) return;
+    var now = Date.now();
+    acum += Math.max(0, Math.min(CADA + 60000, now - visSince)); // si el equipo se durmió, no cuenta
+    visSince = document.hidden ? 0 : now;
+  }
+  function guardar(extra){
+    if (!X) return;
+    var F = X.F;
+    contar();
+    var d = { name:String(X.me.name || "").slice(0, 60), ultimaVez:F.serverTimestamp(),
+              aparato:aparato(), instalada:instalada(), version:version() };
+    var m = Math.floor(acum / 60000);
+    if (m > 0){ acum -= m * 60000; d.min = {}; d.min[dia()] = F.increment(m); }
+    if (extra) Object.keys(extra).forEach(function(k){
+      if (k === "min"){ d.min = d.min || {}; Object.keys(extra.min).forEach(function(x){ d.min[x] = extra.min[x]; }); }
+      else d[k] = extra[k];
+    });
+    F.setDoc(F.doc(X.db, "uso", X.uid), d, { merge:true }).catch(function(){ if (m > 0) acum += m * 60000; });
+  }
+  // borra los días viejos para que el resumen no crezca sin fin
+  function podar(){
+    if (podado || !X) return Promise.resolve(null);
+    podado = true;
+    var F = X.F, corte = dia(Date.now() - GUARDA_DIAS * 86400000);
+    return F.getDoc(F.doc(X.db, "uso", X.uid)).then(function(s){
+      var min = (s.exists() && s.data().min) || {}, del = {}, n = 0;
+      Object.keys(min).forEach(function(k){ if (k < corte){ del[k] = F.deleteField(); n++; } });
+      return n ? del : null;
+    }, function(){ return null; });
+  }
+  function onVis(){
+    if (!X) return;
+    var now = Date.now();
+    if (document.hidden){ guardar(); hiddenAt = now; visSince = 0; return; }
+    visSince = now;
+    if (hiddenAt && now - hiddenAt > NUEVA) guardar({ aperturas:X.F.increment(1) });
+    hiddenAt = 0;
+  }
+  function onHide(){ if (X && !document.hidden) guardar(); }
+  function tick(){ if (X && !document.hidden) guardar(); }
+
+  function start(ctx){
+    if (X && X.uid === ctx.uid){ X.me = ctx.me; vigilar(); return; }
+    if (X) stop();
+    X = ctx; acum = 0; podado = false;
+    visSince = document.hidden ? 0 : Date.now(); hiddenAt = document.hidden ? Date.now() : 0;
+    var extra = { aperturas:X.F.increment(1) };
+    if (ingreso){ extra.ingresos = X.F.increment(1); extra.ultimoIngreso = X.F.serverTimestamp(); ingreso = false; }
+    var mine = X;
+    Promise.all([leerBuild(), podar()]).then(function(r){
+      if (X !== mine) return;
+      if (r[1]) extra.min = r[1];
+      guardar(extra);
+    });
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", onHide);
+    timer = setInterval(tick, CADA);
+    vigilar();
+  }
+  function stop(){
+    if (!X) return;
+    if (!document.hidden) guardar();
+    document.removeEventListener("visibilitychange", onVis);
+    window.removeEventListener("pagehide", onHide);
+    clearInterval(timer); timer = null;
+    dejarDeVer();
+    X = null;
+  }
+
+  // --- vista del administrador: Personas -----------------------------------------
+  var uso = {}, unsubUso = null, pintaTimer = null, filtro = "todos";
+  function esAdmin(){ return !!(X && X.me && X.me.role === "admin"); }
+  function enMonitor(){ return !$("screen-monitor").hidden; }
+  function vigilar(){
+    if (esAdmin() && enMonitor()){
+      if (!unsubUso){
+        unsubUso = X.F.onSnapshot(X.F.collection(X.db, "uso"), function(snap){
+          uso = {};
+          snap.forEach(function(d){ uso[d.id] = d.data({ serverTimestamps:"estimate" }); });
+          pintar();
+        }, function(){ uso = {}; pintar(); });
+        pintaTimer = setInterval(pintar, 30000); // "hace X min" y "en línea"
+      }
+      pintar();
+    } else dejarDeVer();
+  }
+  function dejarDeVer(){
+    if (unsubUso){ try{ unsubUso(); }catch(e){} unsubUso = null; }
+    clearInterval(pintaTimer); pintaTimer = null;
+    uso = {};
+    var b = $("usoBody"); if (b) b.innerHTML = "";
+  }
+
+  function hace(t){
+    var m = Math.round((Date.now() - t) / 60000);
+    if (m < 2) return "activo ahora";
+    if (m < 60) return "hace " + m + " min";
+    if (m < 1440) return "hace " + Math.round(m / 60) + " h";
+    var d = Math.round(m / 1440);
+    return d === 1 ? "ayer" : "hace " + d + " días";
+  }
+  function fecha(t){
+    var d = new Date(t);
+    return d.toLocaleDateString("es-VE", { day:"numeric", month:"short" }) + ", " + d.toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" });
+  }
+  function minTxt(m){ m = Math.round(m || 0); return m < 60 ? m + " min" : Math.floor(m / 60) + " h " + (m % 60 ? (m % 60) + " min" : ""); }
+  function buildNum(v){ var m = /v(\d+)\s*$/.exec(v || ""); return m ? +m[1] : 0; }
+
+  function personas(){
+    var P = window.coseChat && window.coseChat.people ? window.coseChat.people() : {};
+    var ids = {}, hoy = dia(), semana = ultimosDias(7);
+    Object.keys(P).forEach(function(u){ ids[u] = 1; });
+    Object.keys(uso).forEach(function(u){ ids[u] = 1; });
+    return Object.keys(ids).map(function(u){
+      var d = uso[u] || null, p = P[u] || {}, min = (d && d.min) || {};
+      var sem = 0; semana.forEach(function(k){ sem += +min[k] || 0; });
+      var dias = 0; ultimosDias(30).forEach(function(k){ if (+min[k] > 0) dias++; });
+      return {
+        uid:u, d:d, name:p.name || (d && d.name) || "Sin nombre", cargo:p.cargo || "",
+        online:!!(window.coseChat && window.coseChat.isOnline && window.coseChat.isOnline(u)),
+        visto:d ? ms(d.ultimaVez) : 0, hoy:+min[hoy] || 0, semana:sem, dias30:dias
+      };
+    });
+  }
+
+  function pintar(){
+    var box = $("usoBody");
+    if (!box || !esAdmin() || !enMonitor()) return;
+    box.innerHTML = "";
+    var L = personas(), now = Date.now(), hoy = dia();
+    var conDatos = L.filter(function(p){ return p.d; });
+    var activo = function(p){ return p.online || (p.visto && now - p.visto < 6 * 60000); };
+    var enLinea = L.filter(activo).length;
+    var hoyN = conDatos.filter(function(p){ return dia(p.visto) === hoy; }).length;
+    var semN = conDatos.filter(function(p){ return now - p.visto < 7 * 86400000; }).length;
+    var inact = conDatos.filter(function(p){ return now - p.visto >= 7 * 86400000; }).length;
+    var minHoy = 0; conDatos.forEach(function(p){ minHoy += p.hoy; });
+    var inst = conDatos.filter(function(p){ return p.d.instalada; }).length;
+    var maxBuild = 0; conDatos.forEach(function(p){ maxBuild = Math.max(maxBuild, buildNum(p.d.version)); });
+
+    // cifras
+    var t = el("div", "mon-tiles");
+    function tile(n, label, warn){
+      var x = el("div", "dash-stat" + (warn ? " mon-warn" : ""));
+      x.appendChild(el("div", "n mono", String(n))); x.appendChild(el("div", "l", label)); return x;
+    }
+    t.appendChild(tile(enLinea, "en línea ahora"));
+    t.appendChild(tile(hoyN, "usaron la app hoy"));
+    t.appendChild(tile(semN, "activos en 7 días"));
+    t.appendChild(tile(inact, "sin entrar 7+ días", inact > 0));
+    t.appendChild(tile(minTxt(minHoy).trim(), "de uso hoy (todos)"));
+    t.appendChild(tile(conDatos.length ? inst + "/" + conDatos.length : "0", "con la app instalada"));
+    box.appendChild(t);
+
+    // top de la semana
+    var top = L.filter(function(p){ return p.semana > 0; }).sort(function(a, b){ return b.semana - a.semana; }).slice(0, 5);
+    var ct = el("section", "card");
+    var h = el("div", "card-title"); h.appendChild(el("span", null, "Top de la semana")); h.appendChild(el("span", "uso-sub", "minutos de uso, 7 días"));
+    ct.appendChild(h);
+    if (!top.length) ct.appendChild(el("p", "c-empty", "Todavía no hay minutos de uso medidos. Se llenará a medida que el equipo use la app."));
+    var maxS = top.length ? top[0].semana : 1;
+    top.forEach(function(p, i){
+      var r = el("div", "uso-trow");
+      r.appendChild(el("span", "uso-rank", String(i + 1)));
+      var mid = el("div"); mid.style.minWidth = "0";
+      mid.appendChild(el("div", "uso-tname", p.name + (p.cargo ? " · " + p.cargo : "")));
+      var bar = el("div", "uso-tbar"), fill = el("i"); fill.style.width = Math.max(4, p.semana / maxS * 100) + "%"; bar.appendChild(fill); mid.appendChild(bar);
+      r.appendChild(mid);
+      r.appendChild(el("span", "uso-tmin", minTxt(p.semana).trim()));
+      ct.appendChild(r);
+    });
+    box.appendChild(ct);
+
+    // lista de personas
+    var cp = el("section", "card");
+    var h2 = el("div", "card-title"); h2.appendChild(el("span", null, "Personas")); h2.appendChild(el("span", "uso-sub", L.length + " en total"));
+    cp.appendChild(h2);
+    var f = el("div", "uso-filt");
+    [["todos", "Todos"], ["linea", "En línea"], ["hoy", "Hoy"], ["inactivos", "Inactivos"]].forEach(function(o){
+      var b = el("button", filtro === o[0] ? "on" : "", o[1]); b.type = "button";
+      b.addEventListener("click", function(){ filtro = o[0]; pintar(); });
+      f.appendChild(b);
+    });
+    cp.appendChild(f);
+    var lista = L.filter(function(p){
+      if (filtro === "linea") return activo(p);
+      if (filtro === "hoy") return p.d && dia(p.visto) === hoy;
+      if (filtro === "inactivos") return !p.d || now - p.visto >= 7 * 86400000;
+      return true;
+    }).sort(function(a, b){
+      var aa = activo(a) ? 1 : 0, bb = activo(b) ? 1 : 0;
+      if (aa !== bb) return bb - aa;
+      if (!!a.d !== !!b.d) return a.d ? -1 : 1;
+      return b.visto - a.visto || a.name.localeCompare(b.name);
+    });
+    if (!lista.length) cp.appendChild(el("p", "c-empty", "Nadie en esta lista."));
+    lista.forEach(function(p){
+      var r = el("div", "uso-p");
+      if (window.coseChat && window.coseChat.avatarFor){
+        var av = window.coseChat.avatarFor(p.uid);
+        var pr = el("span", "pres" + (activo(p) ? " on" : "")); av.appendChild(pr);
+        r.appendChild(av);
+      }
+      var w = el("div", "who");
+      var nm = el("div", "nm", p.name);
+      if (p.d && maxBuild && buildNum(p.d.version) && buildNum(p.d.version) < maxBuild) nm.appendChild(el("span", "uso-tag warn", "versión vieja"));
+      w.appendChild(nm);
+      var meta = [];
+      if (p.cargo) meta.push(p.cargo);
+      if (p.d){
+        meta.push(p.d.aparato + (p.d.instalada ? " · app instalada" : " · navegador"));
+        w.appendChild(el("div", "meta", meta.join(" · ")));
+        var m2 = [];
+        m2.push("abrió " + (p.d.aperturas || 0) + (p.d.aperturas === 1 ? " vez" : " veces"));
+        m2.push(minTxt(p.hoy).trim() + " hoy");
+        m2.push(p.dias30 + (p.dias30 === 1 ? " día" : " días") + " activo en el mes");
+        w.appendChild(el("div", "meta", m2.join(" · ")));
+        if (p.d.ultimoIngreso) w.appendChild(el("div", "meta", "Último inicio de sesión: " + fecha(ms(p.d.ultimoIngreso)) + (p.d.ingresos ? " (" + p.d.ingresos + " en total)" : "")));
+      } else {
+        w.appendChild(el("div", "meta", (meta.length ? meta.join(" · ") + " · " : "") + "sin datos todavía (no ha abierto esta versión)"));
+      }
+      r.appendChild(w);
+      var st;
+      if (activo(p)) st = el("span", "uso-st on", "● en línea");
+      else if (p.d) st = el("span", "uso-st" + (now - p.visto >= 7 * 86400000 ? " old" : ""), hace(p.visto));
+      else st = el("span", "uso-st", "—");
+      if (p.d) st.title = "Visto por última vez: " + fecha(p.visto);
+      r.appendChild(st);
+      cp.appendChild(r);
+    });
+    box.appendChild(cp);
+  }
+
+  new MutationObserver(function(){ if (X) vigilar(); })
+    .observe($("screen-monitor"), { attributes:true, attributeFilter:["hidden"] });
+
+  window.coseUso = {
+    start:start, stop:stop,
+    // se llama justo antes de entrar con correo y clave (o al crear la cuenta)
+    marcarIngreso:function(){ ingreso = true; },
+    olvidarIngreso:function(){ ingreso = false; }
+  };
 })();
 </script>
 
@@ -8118,6 +8444,7 @@
       if (mode === "register" && pass !== $("gPass2").value){ err.textContent = "Las dos claves no coinciden."; return; }
       $("gSubmit").disabled = true;
       var p;
+      if (window.coseUso) window.coseUso.marcarIngreso();
       if (mode === "register"){
         registering = { name:name.slice(0, 60), cargo:cargo };
         p = AU.createUserWithEmailAndPassword(auth, email, pass).then(function(cred){
@@ -8127,7 +8454,7 @@
       } else {
         p = AU.signInWithEmailAndPassword(auth, email, pass);
       }
-      p.catch(function(e2){ registering = null; err.textContent = authError(e2); })
+      p.catch(function(e2){ registering = null; if (window.coseUso) window.coseUso.olvidarIngreso(); err.textContent = authError(e2); })
        .then(function(){ $("gSubmit").disabled = false; $("gPass").value = ""; $("gPass2").value = ""; });
     });
     $("gForgot").addEventListener("click", function(){
@@ -8237,7 +8564,7 @@
       unlocked = false;
       stopAll();
       // que quien entre después en este teléfono no vea listas ni cifras del administrador
-      ["admPending", "admUsers", "admLog", "monBody"].forEach(function(id){ var e = $(id); if (e) e.innerHTML = ""; });
+      ["admPending", "admUsers", "admLog", "monBody", "usoBody"].forEach(function(id){ var e = $(id); if (e) e.innerHTML = ""; });
       var curScr = window.coseApp && window.coseApp.current();
       if (curScr === "admin" || curScr === "monitor") window.coseApp.showScreen("home");
       $("mapEditCard").hidden = true;
@@ -8249,6 +8576,7 @@
       if (window.coseChat) window.coseChat.stop();
       if (window.coseEditor) window.coseEditor.stop();
       if (window.coseMonitor) window.coseMonitor.stop();
+      if (window.coseUso) window.coseUso.stop();
       if (window.coseAvisos) window.coseAvisos.stop();
       if (window.coseCapac) window.coseCapac.stop();
       if (window.coseFlota) window.coseFlota.stop();
@@ -8266,6 +8594,7 @@
       if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
+      if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:me });
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
         if (!admin && adminWatching) stopAdmin();

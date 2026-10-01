@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs, addDoc,
-         serverTimestamp, writeBatch, orderBy, limit, arrayUnion, arrayRemove } from "firebase/firestore";
+         serverTimestamp, writeBatch, orderBy, limit, arrayUnion, arrayRemove, increment } from "firebase/firestore";
 import { ref, set, get as rget } from "firebase/database";
 
 // Pruebas de las reglas de seguridad (Firestore + Realtime Database).
@@ -303,6 +303,22 @@ console.log("palomitas y escribiendo");
 await t("B marca recibido y leído en su grupo", () => assertSucceeds(updateDoc(doc(B, "chats", g1id), { "recibido.B": serverTimestamp(), "leido.B": serverTimestamp() })));
 await t("B no marca como leído a nombre de otro", () => assertFails(updateDoc(doc(B, "chats", g1id), { "leido.U1": serverTimestamp() })));
 await t("un ajeno no marca leído", () => assertFails(updateDoc(doc(INV, "chats", g1id), { "leido.INV": serverTimestamp() })));
+
+console.log("uso de la app");
+const usoB = (extra = {}) => Object.assign({ name: "Beto", ultimaVez: serverTimestamp(), aparato: "iPhone", instalada: true, version: "CC/1.0 · v43",
+  aperturas: increment(1), min: { "2026-10-01": increment(5) } }, extra);
+await t("B guarda su uso", () => assertSucceeds(setDoc(doc(B, "uso", "B"), usoB({ ingresos: increment(1), ultimoIngreso: serverTimestamp() }), { merge: true })));
+await t("B suma minutos otra vez", () => assertSucceeds(setDoc(doc(B, "uso", "B"), usoB(), { merge: true })));
+await t("B lee el suyo", () => assertSucceeds(getDoc(doc(B, "uso", "B"))));
+await t("B no escribe el de C", () => assertFails(setDoc(doc(B, "uso", "C"), usoB(), { merge: true })));
+await t("C no lee el de B", () => assertFails(getDoc(doc(C, "uso", "B"))));
+await t("C no ve la lista", () => assertFails(getDocs(collection(C, "uso"))));
+await t("el admin ve la lista", () => assertSucceeds(getDocs(collection(A, "uso"))));
+await t("sin hora del servidor no", () => assertFails(setDoc(doc(B, "uso", "B"), usoB({ ultimaVez: new Date(2020, 0, 1) }), { merge: true })));
+await t("sin campos extra", () => assertFails(setDoc(doc(B, "uso", "B"), usoB({ role: "admin" }), { merge: true })));
+await t("aparato muy largo no", () => assertFails(setDoc(doc(B, "uso", "B"), usoB({ aparato: "x".repeat(40) }), { merge: true })));
+await t("pendiente no guarda uso", () => assertFails(setDoc(doc(D, "uso", "D"), Object.assign(usoB(), { name: "Dani" }), { merge: true })));
+await t("nadie lo borra", () => assertFails(deleteDoc(doc(B, "uso", "B"))));
 
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();

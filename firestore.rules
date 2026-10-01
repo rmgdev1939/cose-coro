@@ -373,6 +373,25 @@ service cloud.firestore {
 
     // Estado del sistema (consumo del plan gratis): lo escribe el medidor de
     // tools/monitor.cjs con la cuenta del dueño; lo lee solo el administrador.
+    // Uso de la app: cada persona escribe solo el suyo (visto por última vez,
+    // entradas, minutos por día, aparato…). Lo lee el administrador; la
+    // persona lee el suyo solo para borrar días viejos. Nadie lo borra.
+    match /uso/{uid} {
+      allow read: if admin() || (verified() && request.auth.uid == uid);
+      allow create, update: if verified() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(["name", "ultimaVez", "aperturas", "ingresos", "ultimoIngreso", "aparato", "instalada", "version", "min"])
+        && request.resource.data.ultimaVez == request.time
+        && request.resource.data.get("name", "") is string && request.resource.data.get("name", "").size() <= 60
+        && request.resource.data.get("aparato", "") is string && request.resource.data.get("aparato", "").size() <= 20
+        && request.resource.data.get("version", "") is string && request.resource.data.get("version", "").size() <= 24
+        && request.resource.data.get("instalada", false) is bool
+        && request.resource.data.get("aperturas", 0) is int
+        && request.resource.data.get("ingresos", 0) is int
+        && request.resource.data.get("min", {}) is map && request.resource.data.get("min", {}).size() <= 120
+        && (!("ultimoIngreso" in request.resource.data) || request.resource.data.ultimoIngreso is timestamp);
+      allow delete: if false;
+    }
+
     match /monitor/{doc} {
       allow read: if admin();
       allow write: if false;
