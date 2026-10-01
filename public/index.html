@@ -740,6 +740,12 @@
   .ed-act{display:flex; flex-direction:column; gap:6px; padding:10px; border-radius:12px; background:var(--surface-2);}
   .ed-act-row{display:flex; gap:8px;}
   .ed-act-row select{flex:1; min-width:0;}
+  .ed-bulk .card-title{line-height:1.3;}
+  .ed-bulk-row{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:7px 0; border-bottom:1px solid var(--line); font-size:0.84rem; color:var(--ink);}
+  .ed-bulk-row:last-of-type{border-bottom:none;}
+  .ed-bulk-row .q{white-space:nowrap; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .ed-bulk-row.warn .q{color:#E5534B; font-weight:700;}
+  .ed-bulk .btn{width:100%; margin-top:10px;}
   body.ed-open main{padding-bottom:62vh;}
   body.ed-open footer{display:none;}
 
@@ -792,7 +798,9 @@
   .uso-p{display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid var(--line);}
   .uso-p:last-child{border-bottom:none;}
   .uso-p .who{flex:1; min-width:0;}
-  .uso-p .nm{font-weight:700; font-size:0.9rem; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .uso-p .nm{display:flex; align-items:center; min-width:0; font-weight:700; font-size:0.9rem; color:var(--ink);}
+  .uso-p .nm > span:first-child{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .uso-p .nm .uso-tag{flex:none;}
   .uso-p .meta{font-size:0.74rem; color:var(--ink-soft); line-height:1.45;}
   .uso-st{font-size:0.74rem; font-weight:700; color:var(--ink-soft); white-space:nowrap; text-align:right;}
   .uso-st.on{color:var(--accent2);}
@@ -1017,7 +1025,9 @@
     :is(#screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque,
     #screen-dashboard, #screen-monitor, #screen-admin, #screen-faltantes, #screen-soporte, #screen-perfil, #screen-avisos,
     #screen-flota, #screen-vehiculo, #screen-reporte, #screen-historial, #screen-capac, #screen-ajustes, #screen-proyecto)
-      > :is(.backbar, .lede, .dash-greet, .tip-coro, .seg-tabs, .dash-stats, .fl-stats, .mon-body, .hist-search){column-span:all;}
+      > :is(.backbar, .lede, .dash-greet, .tip-coro, .seg-tabs, .dash-stats, .fl-stats, .mon-body, .uso-body, .hist-search){column-span:all;}
+    #screen-monitor > .uso-body, #screen-monitor > .mon-body{display:flex;}
+    #screen-monitor > .uso-body:empty{display:none;}
     :is(#screen-cieloraso, #screen-recubrimientos, #screen-bloques, #screen-piso, #screen-concreto, #screen-techo, #screen-tanque) > .tip-coro,
     #screen-dashboard > .dash-stats, #screen-flota > .fl-stats, #screen-capac > .seg-tabs{display:flex;}
     #screen-dashboard > .dash-stats, #screen-flota > .fl-stats{display:grid;}
@@ -2378,6 +2388,7 @@
   <div id="edPlanWrap" hidden>
     <input type="search" id="edFind" class="hist-search" placeholder="Resaltar dónde está… (ej: tubería)" autocomplete="off" aria-label="Resaltar un artículo en el plano">
     <p class="smap-note" id="edFindMsg" style="margin:6px 0 0;"></p>
+    <section class="card ed-bulk" id="edBulk" style="margin-top:12px;" hidden></section>
     <section class="card ed-plan" id="edPlan" style="margin-top:12px;"></section>
   </div>
 </div>
@@ -6671,6 +6682,7 @@
     var total = ORDER.reduce(function(a, c){ return a + items(c).length; }, 0);
     $("edFindMsg").textContent = q ? (hits ? "Resaltados " + hits + (hits === 1 ? " lugar" : " lugares") + " con «" + $("edFind").value.trim() + "»." : "Ningún lugar tiene «" + $("edFind").value.trim() + "».")
       : total + " artículos cargados en " + ORDER.filter(function(c){ return items(c).length; }).length + " lugares.";
+    paintBulk();
   }
 
   // --- panel de un lugar -------------------------------------------------------
@@ -6795,6 +6807,126 @@
   var rmArmed = null;
   function resetRemove(){ clearTimeout(rmArmed); rmArmed = null; $("edRemove").textContent = "Quitar de aquí"; }
 
+  // --- pasar la cara B de los racks izquierdos a los racks derechos -------------
+  // Pedido de Rafael (1 oct 2026): todo lo de la cara B (lado derecho) de los
+  // racks de la izquierda, del 1 al 9, pasa a la cara A del mismo rack de la
+  // derecha, en el mismo nivel. La cara A de la izquierda no se toca. Solo el
+  // administrador. Antes descarga una copia del mapa, y cada artículo queda en
+  // mapaLog como "movió" con su lugar de origen (así se puede deshacer).
+  // Es de una sola vez: al terminar deja en mapaLog la marca "pasó cara B" y la
+  // tarjeta ya no vuelve a salir. bulkEstado: 0 = sin revisar, 1 = pendiente, 2 = hecho.
+  var BULK_MARCA = "pasó cara B";
+  var bulkArmed = null, bulkBusy = false, bulkMsg = "", bulkEstado = 0, bulkRevisando = false, bulkGen = 0;
+  function lab(c){ return LABELS[c] || c; }
+  function revisarBulk(){
+    if (bulkEstado || bulkRevisando || !X || X.me.role !== "admin") return;
+    bulkRevisando = true;
+    var uid0 = X.uid;
+    // solo vale la respuesta del servidor (sin internet no se muestra la tarjeta)
+    F().getDocsFromServer(F().query(F().collection(X.db, "mapaLog"), F().where("action", "==", BULK_MARCA), F().limit(1)))
+      .then(function(s){ if (X && X.uid === uid0){ bulkEstado = s.empty ? 1 : 2; paintBulk(); } }, function(){})
+      .then(function(){ bulkRevisando = false; });
+  }
+  function corto(c){
+    var m = /^P(\d)(D?)-(A|B)(?:-(arriba|abajo))?$/.exec(c);
+    return m ? "Rack " + m[1] + m[2] + " " + m[3] + (m[4] === "arriba" ? " ↑" : m[4] === "abajo" ? " ↓" : "") : c;
+  }
+  function bulkPlan(){
+    var out = [];
+    Object.keys(zones).forEach(function(from){
+      var m = /^P([1-9])-B(-arriba|-abajo)?$/.exec(from);
+      if (!m || !items(from).length) return;
+      var to = "P" + m[1] + "D-A" + (m[2] || "");
+      var dest = items(to).map(norm), seen = {}, mover = [], ya = [];
+      items(from).forEach(function(v){
+        var k = norm(v);
+        if (dest.indexOf(k) !== -1 || seen[k]) ya.push(v);
+        else { seen[k] = true; mover.push(v); }
+      });
+      out.push({ n:+m[1], from:from, to:to, all:items(from).slice(), mover:mover, ya:ya, lleno:items(to).length + mover.length > 300 });
+    });
+    return out.sort(function(a, b){ return a.n - b.n || (a.from < b.from ? -1 : 1); });
+  }
+  function descargarCopia(){
+    try {
+      var d = new Date(), p2 = function(n){ return ("0" + n).slice(-2); };
+      var stamp = d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + "-" + p2(d.getHours()) + p2(d.getMinutes());
+      var blob = new Blob([JSON.stringify({ fecha:d.toISOString(), por:X.me.name, mapa:zones }, null, 1)], { type:"application/json" });
+      var a = el("a"); a.href = URL.createObjectURL(blob); a.download = "respaldo-mapa-" + stamp + ".json";
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 5000);
+    } catch(e){}
+  }
+  function resetBulk(){ clearTimeout(bulkArmed); bulkArmed = null; }
+  function paintBulk(){
+    var box = $("edBulk");
+    var admin = !!X && X.me && X.me.role === "admin";
+    if (admin && !bulkEstado) revisarBulk();
+    var plan = admin && loaded && !bulkBusy && bulkEstado === 1 ? bulkPlan() : [];
+    box.hidden = !admin || !loaded || (!plan.length && !bulkMsg);
+    if (box.hidden) return;
+    box.innerHTML = "";
+    box.appendChild(el("div", "card-title", "Pasar la cara B de los racks izquierdos a los racks derechos"));
+    if (bulkBusy || !plan.length){ box.appendChild(el("p", "smap-note", bulkMsg)); return; }
+    var total = 0, totalYa = 0, lleno = false;
+    plan.forEach(function(p){ total += p.mover.length; totalYa += p.ya.length; if (p.lleno) lleno = true; });
+    box.appendChild(el("p", "smap-note", "Todo lo de la cara B (lado derecho) de cada rack de la izquierda pasa a la cara A del mismo rack de la derecha, en el mismo nivel. La cara A de la izquierda no se toca."));
+    plan.forEach(function(p){
+      var r = el("div", "ed-bulk-row" + (p.lleno ? " warn" : ""));
+      r.appendChild(el("span", "", corto(p.from) + "  →  " + corto(p.to)));
+      r.appendChild(el("span", "q", p.lleno ? "no cabe (máx. 300)" :
+        p.mover.length + (p.mover.length === 1 ? " producto" : " productos") + (p.ya.length ? " · " + p.ya.length + " ya estaba" + (p.ya.length === 1 ? "" : "n") : "")));
+      box.appendChild(r);
+    });
+    if (bulkMsg) box.appendChild(el("p", "pf-msg", bulkMsg));
+    var b = el("button", "btn primary", lleno ? "Hay un rack lleno: revisa antes de mover"
+      : bulkArmed ? "Toca otra vez para confirmar" : "Mover " + total + (total === 1 ? " producto" : " productos") + (totalYa ? " (y quitar " + totalYa + " repetidos)" : ""));
+    b.type = "button"; b.disabled = lleno;
+    b.addEventListener("click", function(){
+      if (!X || bulkBusy) return;
+      if (!bulkArmed){ bulkArmed = setTimeout(function(){ resetBulk(); paintBulk(); }, 4000); paintBulk(); return; }
+      resetBulk(); runBulk();
+    });
+    box.appendChild(b);
+    box.appendChild(el("p", "smap-note", "Antes de mover se descarga una copia del mapa a este aparato, y cada producto queda en el historial del mapa con tu nombre."));
+  }
+  function runBulk(){
+    if (bulkEstado !== 1) return;
+    var plan = bulkPlan();
+    if (!plan.length || bulkBusy || plan.some(function(p){ return p.lleno; })) return;
+    bulkBusy = true;
+    descargarCopia();
+    // se sigue mientras no se cierre la sesión (stop() sube bulkGen); el ctx
+    // se renueva con cada cambio del perfil, por eso no se compara X
+    var i = 0, movidos = 0, quitados = 0, gen = bulkGen;
+    function msg(t){ if (gen === bulkGen){ bulkMsg = t; paintBulk(); } }
+    function next(){
+      if (!X || gen !== bulkGen) return;
+      if (i >= plan.length){
+        var fin = movidos + (movidos === 1 ? " producto" : " productos") + " de " + plan.length + " lugares";
+        F().addDoc(F().collection(X.db, "mapaLog"), logDoc("(racks izquierdos, cara B)", BULK_MARCA, fin + " → cara A de los racks derechos")).catch(function(){});
+        bulkBusy = false; bulkEstado = 2;
+        msg("✓ Listo: se movieron " + fin + (quitados ? " y se quitaron " + quitados + " repetidos" : "") +
+          ". La copia se descargó y cada cambio quedó en el historial del mapa.");
+        if (X.toast) X.toast("Mapa actualizado: cara B izquierda → racks derechos");
+        return;
+      }
+      var p = plan[i++], b = F().writeBatch(X.db);
+      b.set(F().doc(X.db, "mapa", p.from), zoneData(F().arrayRemove.apply(null, p.all)), { merge:true });
+      if (p.mover.length) b.set(F().doc(X.db, "mapa", p.to), zoneData(F().arrayUnion.apply(null, p.mover)), { merge:true });
+      p.mover.forEach(function(v){ b.set(F().doc(F().collection(X.db, "mapaLog")), logDoc(p.to, "movió", v + " (desde " + lab(p.from) + ")")); });
+      p.ya.forEach(function(v){ b.set(F().doc(F().collection(X.db, "mapaLog")), logDoc(p.from, "quitó", v + " (ya estaba en " + lab(p.to) + ")")); });
+      msg("Moviendo… " + corto(p.from) + " → " + corto(p.to) + " (" + i + " de " + plan.length + ")");
+      b.commit().then(function(){ movidos += p.mover.length; quitados += p.ya.length; next(); }, function(){
+        if (gen !== bulkGen) return;
+        bulkBusy = false;
+        msg("Se detuvo en " + corto(p.from) + ": no se pudo guardar (revisa tu internet). Ya se movieron " + movidos +
+          " productos; lo que falta sigue en su lugar. Puedes tocar el botón otra vez para seguir.");
+      });
+    }
+    next();
+  }
+
   // --- arrancar / apagar ---------------------------------------------------------
   function paintAccess(){
     var ok = !!X && canEdit(X.me);
@@ -6818,6 +6950,7 @@
   }
   function stop(){
     X = null; zones = {}; loaded = false;
+    resetBulk(); bulkMsg = ""; bulkBusy = false; bulkEstado = 0; bulkGen++;
     closeZone();
     $("mapEditorLink").hidden = true;
     $("editorTile").hidden = true;
@@ -6882,7 +7015,7 @@
   var NUEVA = 30 * 60000;        // volver tras 30 min fuera cuenta como otra entrada
   var GUARDA_DIAS = 90;          // minutos por día que se conservan
   var TZ = "America/Caracas";
-  var X = null, timer = null, visSince = 0, hiddenAt = 0, acum = 0, build = "", ingreso = false, podado = false;
+  var X = null, timer = null, visSince = 0, hiddenAt = 0, acum = 0, ingreso = false, podado = false;
 
   function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
   function dia(t){
@@ -6907,16 +7040,10 @@
     try { return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; }
     catch(e){ return false; }
   }
-  // la versión interna es la del caché del service worker (sw.js → CACHE)
-  function leerBuild(){
-    if (!window.caches || !window.caches.keys) return Promise.resolve();
-    return window.caches.keys().then(function(keys){
-      var n = 0;
-      keys.forEach(function(k){ var m = /^coseimpa-cosecoro-v(\d+)$/.exec(k); if (m) n = Math.max(n, +m[1]); });
-      if (n) build = "v" + n;
-    }, function(){});
-  }
-  function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + (build ? " · " + build : "")).slice(0, 24); }
+  // Versión interna del código que está corriendo: el mismo número de CACHE en
+  // sw.js ("coseimpa-cosecoro-v44" → 44). Subir los dos juntos en cada versión.
+  var APP_BUILD = 44;
+  function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
   function contar(){
@@ -6926,8 +7053,8 @@
     visSince = document.hidden ? 0 : now;
   }
   function guardar(extra){
-    if (!X) return;
-    var F = X.F;
+    if (!X) return Promise.resolve();
+    var F = X.F, mine = X;
     contar();
     var d = { name:String(X.me.name || "").slice(0, 60), ultimaVez:F.serverTimestamp(),
               aparato:aparato(), instalada:instalada(), version:version() };
@@ -6937,7 +7064,8 @@
       if (k === "min"){ d.min = d.min || {}; Object.keys(extra.min).forEach(function(x){ d.min[x] = extra.min[x]; }); }
       else d[k] = extra[k];
     });
-    F.setDoc(F.doc(X.db, "uso", X.uid), d, { merge:true }).catch(function(){ if (m > 0) acum += m * 60000; });
+    // si falla, los minutos vuelven a la cuenta, solo si sigue la misma sesión
+    return F.setDoc(F.doc(X.db, "uso", X.uid), d, { merge:true }).catch(function(){ if (m > 0 && X === mine) acum += m * 60000; });
   }
   // borra los días viejos para que el resumen no crezca sin fin
   function podar(){
@@ -6969,9 +7097,9 @@
     var extra = { aperturas:X.F.increment(1) };
     if (ingreso){ extra.ingresos = X.F.increment(1); extra.ultimoIngreso = X.F.serverTimestamp(); ingreso = false; }
     var mine = X;
-    Promise.all([leerBuild(), podar()]).then(function(r){
+    podar().then(function(del){
       if (X !== mine) return;
-      if (r[1]) extra.min = r[1];
+      if (del) extra.min = del;
       guardar(extra);
     });
     document.addEventListener("visibilitychange", onVis);
@@ -6979,14 +7107,16 @@
     timer = setInterval(tick, CADA);
     vigilar();
   }
+  // devuelve la promesa del último guardado (el cierre de sesión la espera)
   function stop(){
-    if (!X) return;
-    if (!document.hidden) guardar();
+    if (!X) return Promise.resolve();
+    var p = document.hidden ? Promise.resolve() : guardar();
     document.removeEventListener("visibilitychange", onVis);
     window.removeEventListener("pagehide", onHide);
     clearInterval(timer); timer = null;
     dejarDeVer();
     X = null;
+    return p;
   }
 
   // --- vista del administrador: Personas -----------------------------------------
@@ -7124,7 +7254,7 @@
         r.appendChild(av);
       }
       var w = el("div", "who");
-      var nm = el("div", "nm", p.name);
+      var nm = el("div", "nm"); nm.appendChild(el("span", null, p.name));
       if (p.d && maxBuild && buildNum(p.d.version) && buildNum(p.d.version) < maxBuild) nm.appendChild(el("span", "uso-tag warn", "versión vieja"));
       w.appendChild(nm);
       var meta = [];
@@ -8464,7 +8594,12 @@
         err.className = "okmsg"; err.textContent = "Te enviamos un correo para cambiar la clave (revisa también spam).";
       }, function(e2){ err.className = "err"; err.textContent = authError(e2); });
     });
-    function logout(){ AU.signOut(auth); }
+    // antes de salir se guarda el último rato de uso (máximo 1,5 s de espera)
+    function logout(){
+      var p = window.coseUso ? window.coseUso.stop() : null;
+      Promise.race([p || Promise.resolve(), new Promise(function(r){ setTimeout(r, 1500); })])
+        .then(function(){ AU.signOut(auth); }, function(){ AU.signOut(auth); });
+    }
     $("gLogout1").addEventListener("click", logout);
     $("gLogout2").addEventListener("click", logout);
     $("gLogout3").addEventListener("click", logout);
