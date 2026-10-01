@@ -1032,6 +1032,26 @@
     .ed-plan{max-width:1100px;}
   }
 
+  /* --- Ajustes ------------------------------------------------------------ */
+  .st-card{padding:6px 16px 10px;}
+  .st-h{font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); padding:12px 0 4px;}
+  .st-acct{display:flex; align-items:center; gap:12px; padding:8px 0 10px; border-bottom:1px solid var(--line);}
+  .st-acct .txt{flex:1; min-width:0;} .st-acct .m{font-weight:700; font-size:0.98rem; overflow-wrap:anywhere;} .st-acct .s{font-size:0.78rem; color:var(--ink-soft); overflow-wrap:anywhere;}
+  .st-row{display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); cursor:pointer;}
+  .st-row.st-col{flex-direction:column; align-items:stretch; gap:10px; cursor:default;}
+  .st-card > :last-child{border-bottom:none;}
+  .st-row .txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .st-row .m{font-weight:600; font-size:0.92rem; color:var(--ink);}
+  .st-row .s{font-size:0.76rem; color:var(--ink-soft); line-height:1.4;}
+  .sw{appearance:none; -webkit-appearance:none; flex:none; width:44px; height:26px; border-radius:13px; background:var(--surface-2); border:1px solid var(--line); position:relative; cursor:pointer; transition:background .15s, border-color .15s; margin:0;}
+  .sw::after{content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--ink-soft); transition:transform .15s, background .15s;}
+  .sw:checked{background:var(--accent2); border-color:var(--accent2);}
+  .sw:checked::after{transform:translateX(18px); background:#fff;}
+  .sw:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .st-info{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; padding:8px 0 4px; font-size:0.84rem;}
+  .st-info dt, .st-info .k{color:var(--ink-soft);} .st-info .v{color:var(--ink); font-weight:600; overflow-wrap:anywhere;}
+  .no-anim *, .no-anim *::before, .no-anim *::after{animation:none!important; transition:none!important;}
+
   [hidden]{display:none!important;}
 
   @media (prefers-reduced-motion:no-preference){
@@ -1166,21 +1186,68 @@
     </button>
   </div>
   <p class="dash-greet">Ajustes</p>
-  <section class="card menu-card">
+
+  <section class="card st-card">
+    <div class="st-h">Cuenta</div>
+    <div class="st-acct"><span id="stAv"></span><div class="txt"><div class="m" id="stName"></div><div class="s" id="stMail"></div></div></div>
     <button class="menu-row" id="acctEdit" type="button">Mi perfil, foto y clave</button>
   </section>
-  <section class="card">
-    <div class="card-title">Tamaño de letra</div>
-    <div class="seg-tabs" id="fontTabs" role="tablist">
-      <button class="seg-tab" data-fs="100" type="button">Normal</button>
-      <button class="seg-tab" data-fs="112" type="button">Grande</button>
-      <button class="seg-tab" data-fs="125" type="button">Muy grande</button>
-    </div>
+
+  <section class="card st-card">
+    <div class="st-h">Apariencia</div>
+    <div class="st-row st-col"><span class="txt"><span class="m">Tema</span><span class="s">Automático sigue el modo claro u oscuro del teléfono o la computadora.</span></span>
+      <div class="seg-tabs" id="stTema" role="tablist">
+        <button class="seg-tab" data-v="auto" type="button">Automático</button>
+        <button class="seg-tab" data-v="light" type="button">Claro</button>
+        <button class="seg-tab" data-v="dark" type="button">Oscuro</button>
+      </div></div>
+    <div class="st-row st-col"><span class="txt"><span class="m">Tamaño de letra</span><span class="s">Para leer mejor en la tienda.</span></span>
+      <div class="seg-tabs" id="fontTabs" role="tablist">
+        <button class="seg-tab" data-fs="100" type="button">Normal</button>
+        <button class="seg-tab" data-fs="112" type="button">Grande</button>
+        <button class="seg-tab" data-fs="125" type="button">Muy grande</button>
+      </div></div>
+      <label class="st-row"><span class="txt"><span class="m">Animaciones</span><span class="s">Transiciones suaves al cambiar de pantalla.</span></span><input type="checkbox" class="sw" data-pref="anim"></label>
   </section>
-  <section class="card menu-card">
+
+  <section class="card st-card" id="stChatCard" hidden>
+    <div class="st-h">Chat y avisos</div>
+      <label class="st-row"><span class="txt"><span class="m">Avisos emergentes</span><span class="s">Mostrar en pantalla los mensajes y solicitudes nuevos.</span></span><input type="checkbox" class="sw" data-pref="avisos"></label>
+      <label class="st-row"><span class="txt"><span class="m">Sonido de mensaje</span><span class="s">Un timbre corto cuando llega un mensaje.</span></span><input type="checkbox" class="sw" data-pref="sonido"></label>
+      <label class="st-row" id="stVibRow"><span class="txt"><span class="m">Vibración</span><span class="s">El teléfono vibra cuando llega un mensaje.</span></span><input type="checkbox" class="sw" data-pref="vibrar"></label>
+      <label class="st-row"><span class="txt"><span class="m">Enter envía el mensaje</span><span class="s">En computadora. Con Shift + Enter haces un salto de línea.</span></span><input type="checkbox" class="sw" data-pref="enter"></label>
+      <label class="st-row"><span class="txt"><span class="m">Confirmación de lectura</span><span class="s">Si la apagas, los demás no verán las ✓✓ azules cuando leas sus mensajes.</span></span><input type="checkbox" class="sw" data-pref="lectura"></label>
+      <label class="st-row"><span class="txt"><span class="m">Mostrar que estoy en línea</span><span class="s">Si la apagas, nadie ve tu punto verde ni la hora en que te conectaste.</span></span><input type="checkbox" class="sw" data-pref="enLinea"></label>
+  </section>
+
+  <section class="card st-card">
+    <div class="st-h">Calculadoras</div>
+    <div class="st-row st-col"><span class="txt"><span class="m">Desperdicio por defecto</span><span class="s">Con qué porcentaje de merma arrancan las calculadoras en este equipo.</span></span>
+      <div class="seg-tabs" id="stMerma" role="tablist">
+        <button class="seg-tab" data-v="" type="button">Como viene</button>
+        <button class="seg-tab" data-v="5" type="button">5 %</button>
+        <button class="seg-tab" data-v="8" type="button">8 %</button>
+        <button class="seg-tab" data-v="10" type="button">10 %</button>
+      </div></div>
+  </section>
+
+  <section class="card st-card">
+    <div class="st-h">Datos y app</div>
+    <button class="menu-row" id="stExport" type="button">Descargar mi historial de cálculos</button>
     <button class="menu-row" id="dashClearBtn" type="button">Borrar historial de cálculos</button>
+    <button class="menu-row" id="stUpdate" type="button">Buscar actualización de la app</button>
+    <p class="pf-msg" id="stMsg" style="margin:6px 0 0;"></p>
+  </section>
+
+  <section class="card st-card">
+    <div class="st-h">Sesión</div>
     <button class="menu-row" id="dashSwitchBtn" type="button">Cambiar de usuario</button>
     <button class="menu-row danger" id="dashLogoutBtn" type="button" hidden>Cerrar sesión</button>
+  </section>
+
+  <section class="card st-card">
+    <div class="st-h">Acerca de</div>
+    <div class="st-info" id="stInfo"></div>
   </section>
 </div>
 
@@ -5282,6 +5349,134 @@
 
 <script>
 // ============================================================================
+// AJUSTES: preferencias de este equipo (se guardan en el navegador):
+// tema, animaciones, avisos y sonido del chat, Enter para enviar,
+// confirmación de lectura, mostrar "en línea", merma por defecto de las
+// calculadoras; más descargar el historial y buscar actualización.
+// Los demás bloques las leen con window.cosePrefs.get(clave).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var KEY = "cosecoro_prefs";
+  var DEF = { tema:"auto", anim:true, avisos:true, sonido:false, vibrar:false, enter:true, lectura:true, enLinea:true, merma:"" };
+  var P = {};
+  try{ P = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; }catch(e){ P = {}; }
+  function get(k){ return Object.prototype.hasOwnProperty.call(P, k) ? P[k] : DEF[k]; }
+  function set(k, v){
+    P[k] = v;
+    try{ localStorage.setItem(KEY, JSON.stringify(P)); }catch(e){}
+    apply(k);
+  }
+  var MERMAS = ["merma", "rMerma", "bMerma", "pMerma", "cMerma", "tMerma"];
+  function apply(k){
+    if (!k || k === "tema"){
+      var t = get("tema");
+      if (t === "auto") document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.setAttribute("data-theme", t);
+    }
+    if (!k || k === "anim") document.documentElement.classList.toggle("no-anim", !get("anim"));
+    if (!k || k === "merma"){
+      var m = get("merma");
+      if (m !== "") MERMAS.forEach(function(id){
+        var r = $(id); if (!r) return;
+        var v = Math.max(+r.min || 0, Math.min(+r.max || 100, +m));
+        if (String(r.value) !== String(v)){ r.value = v; r.dispatchEvent(new Event("input", { bubbles:true })); }
+      });
+    }
+    if (k === "enLinea" && window.coseChat && window.coseChat.refreshPresence) window.coseChat.refreshPresence();
+  }
+
+  // timbre corto para mensajes nuevos
+  var actx = null;
+  function ping(){
+    try{
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      [880, 1320].forEach(function(f, i){
+        var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.12;
+        o.frequency.value = f; o.type = "sine";
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+        o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + 0.18);
+      });
+    }catch(e){}
+  }
+  function nuevoMensaje(){
+    if (get("sonido")) ping();
+    if (get("vibrar") && navigator.vibrate) try{ navigator.vibrate([60, 40, 60]); }catch(e){}
+  }
+
+  // --- pantalla ------------------------------------------------------------
+  function seg(boxId, k){
+    document.querySelectorAll("#" + boxId + " .seg-tab").forEach(function(b){ b.classList.toggle("active", b.dataset.v === String(get(k))); });
+  }
+  function msg(t, kind){ $("stMsg").textContent = t; $("stMsg").className = "pf-msg" + (kind ? " " + kind : ""); }
+  function paint(){
+    document.querySelectorAll("#screen-ajustes .sw[data-pref]").forEach(function(c){ c.checked = !!get(c.dataset.pref); });
+    seg("stTema", "tema"); seg("stMerma", "merma");
+    var cloud = window.coseCloud && window.coseCloud.me && window.coseCloud.me();
+    $("stChatCard").hidden = !cloud;
+    $("stVibRow").hidden = !navigator.vibrate;
+    var name = cloud ? cloud.name : (localStorage.getItem("coseimpa_profile_name") || "Invitado");
+    $("stName").textContent = name;
+    $("stMail").textContent = cloud ? [cloud.cargo || "Sin área", cloud.email].filter(Boolean).join(" · ") : "Perfil guardado en este equipo";
+    var av = $("stAv"); av.innerHTML = "";
+    var me = window.coseChat && window.coseChat.me && window.coseChat.me();
+    if (me && window.coseChat.avatarFor){ var a = window.coseChat.avatarFor(me); a.classList.remove("av-sm"); av.appendChild(a); }
+    else { var sp = document.createElement("span"); sp.className = "av"; sp.textContent = (name.trim().charAt(0) || "?").toUpperCase(); av.appendChild(sp); }
+    var installed = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    var rows = [
+      ["Versión", ($("appVersion") || {}).textContent || "CC/1.0"],
+      ["Conexión", navigator.onLine ? "En línea" : "Sin conexión"],
+      ["Instalada como app", installed ? "Sí" : "No (se usa desde el navegador)"],
+      ["Dirección", "cosecoro.web.app"]
+    ];
+    var info = $("stInfo"); info.innerHTML = "";
+    rows.forEach(function(r){
+      var k = document.createElement("span"); k.className = "k"; k.textContent = r[0];
+      var v = document.createElement("span"); v.className = "v"; v.textContent = r[1];
+      info.appendChild(k); info.appendChild(v);
+    });
+  }
+  document.querySelectorAll("#screen-ajustes .sw[data-pref]").forEach(function(c){
+    c.addEventListener("change", function(){ set(c.dataset.pref, c.checked); if (c.dataset.pref === "sonido" && c.checked) ping(); });
+  });
+  document.querySelectorAll("#stTema .seg-tab").forEach(function(b){ b.addEventListener("click", function(){ set("tema", b.dataset.v); seg("stTema", "tema"); }); });
+  document.querySelectorAll("#stMerma .seg-tab").forEach(function(b){ b.addEventListener("click", function(){ set("merma", b.dataset.v); seg("stMerma", "merma"); }); });
+  $("stExport").addEventListener("click", function(){
+    var log = [];
+    try{ log = JSON.parse(localStorage.getItem("coseimpa_activity_log") || "[]"); }catch(e){}
+    if (!log.length){ msg("Todavía no hay cálculos guardados en este equipo."); return; }
+    var lines = ["COSE CORO — Historial de cálculos", "Descargado: " + new Date().toLocaleString("es-VE"), ""];
+    log.forEach(function(it){
+      lines.push("=== " + new Date(it.ts).toLocaleString("es-VE") + " · " + it.tool + (it.client ? " · " + it.client : ""));
+      lines.push(it.full || it.summary || "");
+      lines.push("");
+    });
+    var blob = new Blob([lines.join("\n")], { type:"text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "cose-coro-historial-" + new Date().toISOString().slice(0, 10) + ".txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    msg("✓ Descargado: " + log.length + " cálculo(s).", "ok");
+  });
+  $("stUpdate").addEventListener("click", function(){
+    msg("Buscando la versión más nueva…");
+    var p = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.update().catch(function(){}); })); }) : Promise.resolve();
+    p.then(function(){ return window.caches ? caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); }) : null; })
+     .catch(function(){})
+     .then(function(){ location.reload(); });
+  });
+  window.addEventListener("online", paint); window.addEventListener("offline", paint);
+  new MutationObserver(function(){ if (!$("screen-ajustes").hidden) paint(); })
+    .observe($("screen-ajustes"), { attributes:true, attributeFilter:["hidden"] });
+  apply();
+  window.cosePrefs = { get:get, set:set, nuevoMensaje:nuevoMensaje, apply:apply };
+})();
+</script>
+
+<script>
+// ============================================================================
 // CHAT DEL EQUIPO: compañeros (uno envía la solicitud y el otro la acepta),
 // mensajes en vivo, grupos, quién está en línea e ícono de perfil.
 // Solo funciona con la nube: lo arranca el bloque MODO NUBE cuando la cuenta
@@ -5425,6 +5620,7 @@
     if (!c || !c.lastAt || c.lastFrom === uid()) return;
     var t = ms(c.lastAt), me = uid();
     var mine = function(f){ return ms(c[f] && c[f][me]); };
+    if (leido && window.cosePrefs && !window.cosePrefs.get("lectura")) leido = false;
     var need = mine("recibido") < t || (leido && mine("leido") < t);
     var key = id + "|" + t + "|" + (leido ? "L" : "R");
     if (!need || receiptSent[key]) return;
@@ -6054,8 +6250,9 @@
     if (firstConex){ firstConex = false; return; }
     snap.docChanges().forEach(function(ch){
       var c = ch.doc.data();
-      if (ch.type === "added" && c.status === "pendiente" && c.to === uid()) X.toast(c.fromName + " quiere ser tu compañero.");
-      if (ch.type === "modified" && c.status === "aceptada" && c.from === uid()) X.toast(c.toName + " aceptó tu solicitud ✓");
+      var avisos = !window.cosePrefs || window.cosePrefs.get("avisos");
+      if (ch.type === "added" && c.status === "pendiente" && c.to === uid() && avisos) X.toast(c.fromName + " quiere ser tu compañero.");
+      if (ch.type === "modified" && c.status === "aceptada" && c.from === uid() && avisos) X.toast(c.toName + " aceptó tu solicitud ✓");
     });
   }
   function notifyChats(snap){
@@ -6065,6 +6262,8 @@
       var id = ch.doc.id, c = chats[id];
       if (!c || c.lastFrom === uid() || !c.lastText || viewing(id) || ch.doc.metadata.hasPendingWrites) return;
       if (!unread(id)) return;
+      if (window.cosePrefs) window.cosePrefs.nuevoMensaje();
+      if (window.cosePrefs && !window.cosePrefs.get("avisos")) return;
       X.toast((c.type === "grupo" ? c.lastFromName + " en «" + (c.name || "Grupo") + "»" : c.lastFromName) + ": " + c.lastText.slice(0, 60));
     });
   }
@@ -6080,8 +6279,13 @@
   }
 
   // --- en línea (Realtime Database) -------------------------------------------
+  // con "Mostrar que estoy en línea" apagado: siempre fuera de línea y sin hora
+  function showPres(){ return !window.cosePrefs || window.cosePrefs.get("enLinea"); }
   function setPres(on){
-    if (D && presRef) D.set(presRef, { on:on, t:D.serverTimestamp() }).catch(function(){});
+    if (!D || !presRef) return;
+    var vis = showPres();
+    D.set(presRef, { on:on && vis, t:vis ? D.serverTimestamp() : 0 }).catch(function(){});
+    D.onDisconnect(presRef).set({ on:false, t:vis ? D.serverTimestamp() : 0 }).catch(function(){});
   }
   function onVis(){
     setPres(!document.hidden);
@@ -6234,7 +6438,7 @@
   $("convInput").addEventListener("blur", function(){ if (X) stopTyping(); });
   $("convInput").addEventListener("keydown", function(e){
     // Enter envía (en computadora); Shift+Enter hace un salto de línea
-    if (e.key === "Enter" && !e.shiftKey && !e.isComposing && window.matchMedia("(pointer:fine)").matches){ e.preventDefault(); if (X) send(); }
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing && window.matchMedia("(pointer:fine)").matches && (!window.cosePrefs || window.cosePrefs.get("enter"))){ e.preventDefault(); if (X) send(); }
   });
   $("convMembersBtn").addEventListener("click", function(){
     var box = $("convMembers");
@@ -6291,6 +6495,7 @@
     iconOf: function(u){ return X ? iconOf(u) : ""; },
     me: function(){ return X ? uid() : null; },
     avatarFor: function(u){ return avatar(iconOf(u), nameOf(u), "sm"); },
+    refreshPresence: function(){ if (X) setPres(!document.hidden); },
     onlineCount: function(){ return Object.keys(estado).filter(function(u){ return estado[u] && estado[u].on === true; }).length; },
     paintAv: function(node){ if (X && (ICON_BY[myIcon] || myFoto)) paintAv(node); else { node.classList.remove("has-ic"); node.classList.remove("has-foto"); node.style.removeProperty("--c"); } },
     avatar: avatar
