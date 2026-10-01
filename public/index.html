@@ -740,6 +740,26 @@
   .ed-act{display:flex; flex-direction:column; gap:6px; padding:10px; border-radius:12px; background:var(--surface-2);}
   .ed-act-row{display:flex; gap:8px;}
   .ed-act-row select{flex:1; min-width:0;}
+  /* catálogo: productos con ubicación sugerida y arrastrar para reubicar */
+  .sug-tag{display:inline-block; font-size:0.64rem; font-weight:700; padding:1px 7px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); vertical-align:1px; white-space:nowrap;}
+  .ed-chip.sug{border-style:dashed; color:var(--ink-soft); background:transparent;}
+  .ed-chip.sug.on{color:var(--ink); border-style:solid;}
+  .ed-chip{touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;}
+  .ed-sug{margin-top:10px; display:flex; flex-direction:column; gap:8px;}
+  .ed-sug-h{font-size:0.74rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
+  .ed-hint{margin:8px 0 0; font-size:0.72rem;}
+  .ed-cell.ed-porubicar{border-style:dashed;}
+  .ed-cell.drop{outline:3px solid var(--accent2); outline-offset:1px; background:var(--ok-bg);}
+  body.ed-drag .ed-sheet{opacity:0.12; transition:opacity .15s;}
+  body.ed-drag .ed-sheet, body.ed-drag .ed-sheet *{pointer-events:none !important;}
+  body.ed-drag{cursor:grabbing; -webkit-user-select:none; user-select:none;}
+  .ed-ghost{position:fixed; left:0; top:0; z-index:9999; pointer-events:none; max-width:240px; padding:7px 12px; border-radius:999px; background:var(--ink); color:var(--surface); font-size:0.8rem; font-weight:700; box-shadow:0 8px 24px rgba(0,0,0,.25); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .ed-dropbar{position:fixed; left:0; right:0; bottom:0; z-index:9998; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line); box-shadow:0 -8px 24px rgba(0,0,0,.18);}
+  .ed-dropbar-in{max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:10px;}
+  .ed-drop-q{font-size:0.9rem; color:var(--ink); line-height:1.4;}
+  .ed-dropbar .ed-act-row .btn{flex:1;}
+  .mapa-cat-h{margin:14px 2px 6px; font-size:0.74rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
+  .mapa-hit.mapa-cat .m{font-size:0.86rem;}
   .ed-bulk .card-title{line-height:1.3;}
   .ed-bulk-row{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:7px 0; border-bottom:1px solid var(--line); font-size:0.84rem; color:var(--ink);}
   .ed-bulk-row:last-of-type{border-bottom:none;}
@@ -2393,6 +2413,16 @@
   </div>
 </div>
 
+<div class="ed-dropbar" id="edDrop" hidden role="dialog" aria-live="polite">
+  <div class="ed-dropbar-in">
+    <div class="ed-drop-q" id="edDropQ"></div>
+    <div class="ed-act-row">
+      <button class="btn" id="edDropNo" type="button">Cancelar</button>
+      <button class="btn primary" id="edDropYes" type="button">Mover aquí</button>
+    </div>
+  </div>
+</div>
+
 <div class="ed-sheet" id="edSheet" hidden role="dialog" aria-labelledby="edTitle">
   <div class="ed-sheet-in">
     <div class="ed-sheet-head">
@@ -2400,11 +2430,19 @@
       <button class="btn" id="edClose" type="button">Listo</button>
     </div>
     <div class="me-items" id="edItems"></div>
+    <div class="ed-sug" id="edSug" hidden>
+      <div class="ed-sug-h" id="edSugTitle"></div>
+      <input type="search" id="edSugFind" class="hist-search" placeholder="Filtrar estos productos…" autocomplete="off" aria-label="Filtrar productos sugeridos" hidden>
+      <div class="me-items" id="edSugItems"></div>
+      <button class="btn" id="edSugMore" type="button" hidden></button>
+    </div>
+    <p class="smap-note ed-hint" id="edDragHint">Para cambiar un producto de lugar: mantenlo presionado (o arrástralo con el ratón) y suéltalo sobre otro lugar del plano.</p>
     <div class="ed-act" id="edAct" hidden>
-      <div class="smap-note" style="margin:0;">Elegiste: <strong id="edActName"></strong></div>
+      <div class="smap-note" style="margin:0;">Elegiste: <strong id="edActName"></strong> <span class="sug-tag" id="edActSug" hidden>ubicación sugerida</span></div>
       <div class="ed-act-row">
         <select id="edMoveTo" class="hist-search" aria-label="Mover a otro lugar"></select>
         <button class="btn" id="edRemove" type="button">Quitar de aquí</button>
+        <button class="btn primary" id="edConfirm" type="button" hidden>Confirmar aquí</button>
       </div>
     </div>
     <form class="me-add" id="edForm">
@@ -3282,7 +3320,9 @@
     "CAJA-4":{x:365,y:810, t:"Caja 4", s:"Zona de cajas", r:"Al entrar, a la izquierda.", via:[[800,880],[470,880],[470,755],[365,755]]},
     "AUTOPAGO":{x:585,y:810, t:"Autopago", s:"Zona de cajas", r:"Al entrar, a la izquierda.", via:[[800,880],[585,880]]},
     "CHEQUEO":{x:230,y:952, t:"Chequeo", s:"Junto a la salida", r:"Al fondo a la izquierda, junto a la salida.", via:[[800,880],[230,880]]},
-    "ATENCION":{x:560,y:905, t:"Atención al cliente", s:"Frente a la entrada", r:"Justo a la izquierda de la entrada.", via:[[800,880],[560,880]]}
+    "ATENCION":{x:560,y:905, t:"Atención al cliente", s:"Frente a la entrada", r:"Justo a la izquierda de la entrada.", via:[[800,880],[560,880]]},
+    // madera, hierro, mallas, cemento y agregados en saco: afuera, en el patio
+    "PATIO":{x:800,y:1046, t:"Patio (afuera)", s:"Fuera de la tienda", r:"Está en el patio, afuera: pregunta en el mostrador o en despacho.", via:[[800,1032],[800,1046]]}
   };
   function zoneInfo(code){
     var m = /^P(\d)(D?)-(A|B)(?:-(arriba|abajo))?$/.exec(code);
@@ -3532,7 +3572,8 @@
       if (pm){ var zm = /^P(\d)/.exec(z.code); return zm && zm[1] === pm[1]; }
       return z.items.some(function(it){ return itemMatches(it, terms); });
     });
-    if (!matches.length){
+    var cat = !pm && window.coseCatalogo ? window.coseCatalogo.buscar(raw, terms, 25) : null;
+    if (!matches.length && !(cat && (cat.loading || cat.hits.length))){
       list.innerHTML = '<div class="dash-empty">No aparece en las zonas ya cargadas. Puede estar en una zona que aún falta — pregunta en el mostrador.</div>';
       if (window.coseFaltantes) window.coseFaltantes.offer(list, raw);
       missTimer = setTimeout(function(){ recordMiss(raw.toLowerCase()); }, 1500);
@@ -3571,6 +3612,37 @@
       list.appendChild(row);
       if (!firstRow){ firstRow = row; firstInfo = info; }
     });
+    // productos del catálogo de coseimpa.com con su ubicación sugerida
+    if (cat && cat.loading) list.insertAdjacentHTML("beforeend", '<div class="dash-empty">Buscando también en el catálogo de coseimpa.com…</div>');
+    if (cat && cat.hits.length){
+      var hh = document.createElement("div");
+      hh.className = "mapa-cat-h";
+      hh.textContent = "Del catálogo de coseimpa.com · " + (cat.total > cat.hits.length ? cat.hits.length + " de " + cat.total + " (escribe más para afinar)" : cat.total);
+      list.appendChild(hh);
+      cat.hits.forEach(function(p){
+        var info = p.code ? zoneInfo(p.code) : null;
+        var row = document.createElement("div");
+        row.className = "hist-item mapa-hit mapa-cat";
+        row.innerHTML = (info && info.n
+            ? '<span class="mapa-badge" aria-hidden="true">' + info.n + '</span>'
+            : '<span class="mapa-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>') +
+          '<div class="txt"><div class="m"></div><div class="s"></div><div class="r"></div></div>' +
+          (info ? '<span class="hist-copybtn">Ver en mapa</span>' : '');
+        row.querySelector(".m").textContent = p.nombre;
+        var s = row.querySelector(".s");
+        s.appendChild(document.createTextNode((info ? info.t + " · " + info.s : "Todavía sin lugar en el mapa") + " "));
+        var tag = document.createElement("span"); tag.className = "sug-tag"; tag.textContent = info ? "ubicación sugerida" : "por ubicar"; s.appendChild(tag);
+        row.querySelector(".r").textContent = info ? "↳ " + info.r : "↳ Pregunta en el mostrador. Quien edita el mapa puede ubicarlo.";
+        if (info) row.addEventListener("click", function(){
+          selectResult(info, row);
+          setZoom(true);
+          centerOn(info);
+          $("storeMapCard").scrollIntoView({ behavior:"smooth", block:"start" });
+        });
+        list.appendChild(row);
+        if (!firstRow && info){ firstRow = row; firstInfo = info; }
+      });
+    }
     if (firstInfo){
       selectResult(firstInfo, firstRow);
       // acercar solo al resultado cuando la persona deja de escribir
@@ -3635,12 +3707,15 @@
     decodeCode: decodeMapCode,
     zoneInfo: zoneInfo,
     current: function(){ var o = {}; MAP_DATA.forEach(function(z){ o[z.code] = z.items.slice(); }); return o; },
+    syn: SYNONYMS,
     setCloud: function(z){
       mapCloud = { z:z };
       buildMapData();
+      if (window.coseCatalogo) window.coseCatalogo.invalidate();
       buildStoreMap();
       renderMapa();
-    }
+    },
+    refresh: function(){ if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); }
   };
 
   // --- buscador del inicio: lleva directo al mapa --------------------------
@@ -6543,6 +6618,148 @@
 
 <script>
 // ============================================================================
+// CATÁLOGO DE COSEIMPA.COM (window.coseCatalogo): los 8.533 productos de la
+// tienda en línea (catalogo.json, nombres tal como los escribe la página).
+// A cada producto se le sugiere un lugar del mapa: junto a sus parecidos ya
+// cargados en el mapa (ej. tubos con "tubería"), o donde cayó la mayoría de
+// su categoría; si no, "Por ubicar". Se recalcula solo cuando cambia el mapa.
+// Lo sugerido NO está en el mapa de la nube: cuando alguien lo confirma o lo
+// arrastra a su lugar en el Editor, pasa al mapa de verdad.
+// ============================================================================
+(function(){
+  "use strict";
+  var cat = null, loading = null, failed = false, dirty = true;
+  var plan = null, porZona = {}, porUbicar = [], subs = [];
+  function norm(s){ s = String(s).toLowerCase(); try{ s = s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){} return s.replace(/ñ/g, "n"); }
+  function stem(s){ return norm(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").map(function(w){ return w.length > 3 ? w.replace(/(es|s)$/, "") : w; }).join(" "); }
+  function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  var STOP = { "de":1, "la":1, "el":1, "y":1, "p":1, "con":1, "para":1, "en":1, "a":1 };
+
+  // tipo: 1 = junto a un parecido, 2 = por su categoría, 3 = ya confirmado en el mapa, 0 = por ubicar
+  function ubicar(zonas, syn){
+    var terms = [];
+    Object.keys(zonas).forEach(function(code){
+      (zonas[code] || []).forEach(function(it){
+        norm(it).replace(/\(.*?\)/g, function(m){ return "/" + m.slice(1, -1); }).split(/[\/,]/).forEach(function(pt){
+          pt = pt.replace(/^\s*todo\s+/, "").trim();
+          if (!pt) return;
+          var group = [pt];
+          syn.forEach(function(g){ if (g.some(function(t){ return stem(t) === stem(pt); })) g.forEach(function(t){ if (group.indexOf(t) === -1) group.push(t); }); });
+          group.forEach(function(t){
+            var s = stem(t);
+            if (s.length < 3 || STOP[s]) return;
+            terms.push({ code:code, w:s.length + (t === pt ? 2 : 0), re:new RegExp("(^| )" + esc(s) + "( |$)") });
+          });
+        });
+      });
+    });
+    var n = cat.p.length, res = new Array(n), votes = {}, i, j;
+    for (i = 0; i < n; i++){
+      var name = cat.s[i], score = {}, best = "", bestS = 0;
+      for (j = 0; j < terms.length; j++){
+        if (terms[j].re.test(name)){ var c = terms[j].code; score[c] = (score[c] || 0) + terms[j].w; if (score[c] > bestS){ bestS = score[c]; best = c; } }
+      }
+      res[i] = best ? [best, 1] : ["", 0];
+      if (best){ var k = cat.p[i][1]; votes[k] = votes[k] || {}; votes[k][best] = (votes[k][best] || 0) + 1; }
+    }
+    var catZone = {};
+    Object.keys(votes).forEach(function(k){
+      var tot = 0, top = "", topN = 0;
+      Object.keys(votes[k]).forEach(function(c){ tot += votes[k][c]; if (votes[k][c] > topN){ topN = votes[k][c]; top = c; } });
+      if (topN >= 3 && topN / tot >= 0.25) catZone[k] = top;
+    });
+    // si el nombre de la categoría es una zona del mapa (ej. "Automotriz"), esa
+    cat.cats.forEach(function(cn, k){
+      var t = " " + stem(cn) + " ", best = "", bestW = 0;
+      terms.forEach(function(x){ if (x.re.test(t) && x.w > bestW){ bestW = x.w; best = x.code; } });
+      if (best) catZone[k] = best;
+    });
+    for (i = 0; i < n; i++) if (!res[i][0] && catZone[cat.p[i][1]]) res[i] = [catZone[cat.p[i][1]], 2];
+    // Madera, hierro, mallas, cemento y agregados se guardan afuera, en el patio
+    // (pedido de Rafael): nunca se sugiere un rack de la tienda para ellos.
+    var patio = {};
+    cat.cats.forEach(function(cn, k){ if (PATIO_CATS.indexOf(stem(cn)) !== -1) patio[k] = true; });
+    for (i = 0; i < n; i++) if (patio[cat.p[i][1]]) res[i] = ["PATIO", 4];
+    return res;
+  }
+  var PATIO_CATS = ["maderas y carpinteria", "hierro productos procesados", "hierro productos siderurgicos",
+    "mallas cercas y alambrados", "cementos agregados y aditivos"].map(stem);
+
+  function compute(){
+    if (!cat || !dirty) return;
+    dirty = false;
+    var api = window.coseMapApi, zonas = api ? api.current() : {}, conf = {};
+    Object.keys(zonas).forEach(function(code){ zonas[code].forEach(function(it){ conf[norm(it).trim()] = code; }); });
+    plan = ubicar(zonas, (api && api.syn) || []);
+    porZona = {}; porUbicar = [];
+    for (var i = 0; i < plan.length; i++){
+      var c = conf[cat.n[i]];
+      if (c){ plan[i] = [c, 3]; continue; }
+      if (plan[i][0]) (porZona[plan[i][0]] = porZona[plan[i][0]] || []).push(i);
+      else porUbicar.push(i);
+    }
+  }
+  function notify(){ subs.forEach(function(fn){ try{ fn(); }catch(e){} }); }
+  function load(){
+    if (cat || loading || failed) return loading;
+    loading = fetch("catalogo.json").then(function(r){ if (!r.ok) throw new Error("http " + r.status); return r.json(); }).then(function(d){
+      d.s = d.p.map(function(p){ return " " + stem(p[0]) + " "; });
+      d.n = d.p.map(function(p){ return norm(p[0]).trim(); });
+      cat = d; dirty = true; loading = null;
+      if (window.coseMapApi && window.coseMapApi.refresh) window.coseMapApi.refresh();
+      notify();
+    }).catch(function(){ failed = true; loading = null; notify(); });
+    return loading;
+  }
+  function item(i){ return { i:i, nombre:cat.p[i][0], code:plan[i][0], tipo:plan[i][1], cat:cat.cats[cat.p[i][1]] || "" }; }
+
+  window.coseCatalogo = {
+    invalidate: function(){ dirty = true; if (cat) notify(); },
+    onChange: function(fn){ subs.push(fn); },
+    load: load,
+    ready: function(){ return !!cat; },
+    failed: function(){ return failed; },
+    total: function(){ return cat ? cat.p.length : 0; },
+    nombre: function(i){ return cat && cat.p[i] ? cat.p[i][0] : ""; },
+    // búsqueda: todas las palabras (o un sinónimo) dentro del nombre; lo ya confirmado sale en el mapa normal
+    buscar: function(raw, terms, limit){
+      if (!cat){ load(); return { loading:!failed, hits:[], total:0 }; }
+      compute();
+      var words = stem(raw).split(" ").filter(function(w){ return w.length >= 2; });
+      if (!words.length) return { hits:[], total:0 };
+      // sinónimos solo con una palabra ("poceta" → "inodoro"); con varias, deben estar todas
+      var syn = words.length === 1 ? (terms || []).slice(1).map(stem).filter(function(t){ return t.length >= 3; }) : [];
+      var hits = [];
+      for (var i = 0; i < cat.s.length; i++){
+        if (plan[i][1] === 3) continue;
+        var s = cat.s[i], ok = true;
+        for (var j = 0; j < words.length; j++) if (s.indexOf(words[j]) === -1){ ok = false; break; }
+        if (!ok) for (j = 0; j < syn.length; j++) if (s.indexOf(" " + syn[j]) !== -1){ ok = true; break; }
+        if (ok) hits.push(i);
+      }
+      var w0 = " " + words[0];
+      hits.sort(function(a, b){
+        var pa = cat.s[a].indexOf(w0) === 0 ? 0 : 1, pb = cat.s[b].indexOf(w0) === 0 ? 0 : 1;
+        return pa - pb || (plan[a][0] ? 0 : 1) - (plan[b][0] ? 0 : 1) || cat.s[a].length - cat.s[b].length;
+      });
+      return { hits:hits.slice(0, limit || 25).map(item), total:hits.length };
+    },
+    // null mientras carga
+    sugeridos: function(code){ if (!cat){ load(); return failed ? [] : null; } compute(); return (porZona[code] || []).map(item); },
+    porUbicar: function(){ if (!cat){ load(); return failed ? [] : null; } compute(); return porUbicar.map(item); },
+    resumen: function(){
+      if (!cat) return null;
+      compute();
+      var r = { total:cat.p.length, directo:0, categoria:0, patio:0, confirmado:0, porUbicar:porUbicar.length };
+      plan.forEach(function(x){ if (x[1] === 1) r.directo++; else if (x[1] === 2) r.categoria++; else if (x[1] === 3) r.confirmado++; else if (x[1] === 4) r.patio++; });
+      return r;
+    }
+  };
+})();
+</script>
+
+<script>
+// ============================================================================
 // EDITOR DEL MAPA (dentro de la app): el plano de la tienda por racks,
 // paredes, cajas y zonas especiales. Tocas un lugar y ves sus artículos:
 // agregar, mover a otro lugar o quitar. Edita el mapa de la nube (mapa/{zona})
@@ -6579,6 +6796,7 @@
     ["Z-PROMAKER","Promaker"],["Z-SEGURIDAD","Equipos de seguridad"],["Z-DEWALT","Dewalt"],["Z-MAKITA","Makita / Milwaukee"],["Z-EQUIPOS","Equipos"]];
   var CAJAS = [["CAJA-1","Caja 1"],["CAJA-2","Caja 2"],["CAJA-3","Caja 3"],["CAJA-4","Caja 4"],
     ["AUTOPAGO","Autopago"],["CHEQUEO","Chequeo"],["ATENCION","Atención al cliente"]];
+  var AFUERA = [["PATIO","Patio (afuera)"]];
 
   // Nombre de cada lugar (mismos códigos que el mapa de la app)
   var LABELS = {}, ORDER = [];
@@ -6594,12 +6812,16 @@
       LABELS["PARED-IZQ-P" + n] = "Pared izquierda · altura pasillo " + n; ORDER.push("PARED-IZQ-P" + n);
       LABELS["PARED-DER-P" + n] = "Pared derecha · altura pasillo " + n; ORDER.push("PARED-DER-P" + n);
     }
-    SPECIALS.concat(CAJAS).forEach(function(z){ LABELS[z[0]] = z[1]; ORDER.push(z[0]); });
+    SPECIALS.concat(CAJAS, AFUERA).forEach(function(z){ LABELS[z[0]] = z[1]; ORDER.push(z[0]); });
   })();
+  // casilla especial: productos del catálogo que todavía no tienen lugar sugerido
+  var POR_UBICAR = "POR-UBICAR";
+  LABELS[POR_UBICAR] = "Por ubicar (catálogo de coseimpa.com)";
 
   var X = null;                   // { db, F, uid, me, toast, norm }
   var zones = {}, loaded = false; // mapa de la nube (lo pasa el bloque MODO NUBE)
-  var sel = null, selItem = null;
+  var sel = null, selItem = null, selSug = null, sugShown = 60;
+  function CAT(){ return window.coseCatalogo || null; }
   function norm(s){ return X && X.norm ? X.norm(s) : String(s).toLowerCase(); }
   function items(code){ return zones[code] || []; }
   function current(){ return window.coseApp ? window.coseApp.current() : ""; }
@@ -6653,11 +6875,11 @@
     grid.appendChild(wall("DER"));
     plan.appendChild(grid);
     var bottom = el("div", "ed-bottom");
-    [["Cajas y chequeo", CAJAS], ["Góndolas y zonas", SPECIALS]].forEach(function(g){
+    [["Cajas y chequeo", CAJAS], ["Góndolas y zonas", SPECIALS], ["Afuera", AFUERA], ["Catálogo de coseimpa.com", [[POR_UBICAR, "Por ubicar"]]]].forEach(function(g){
       var box = el("div", "ed-group");
       box.appendChild(el("div", "ed-colh", g[0]));
       var w = el("div", "ed-wrap");
-      g[1].forEach(function(z){ w.appendChild(cell(z[0], z[1], "ed-wide")); });
+      g[1].forEach(function(z){ w.appendChild(cell(z[0], z[1], "ed-wide" + (z[0] === POR_UBICAR ? " ed-porubicar" : ""))); });
       box.appendChild(w);
       bottom.appendChild(box);
     });
@@ -6672,6 +6894,13 @@
     var q = norm($("edFind").value.trim()), hits = 0;
     document.querySelectorAll("#edPlan .ed-cell[data-code]").forEach(function(b){
       var code = b.dataset.code, it = items(code);
+      if (code === POR_UBICAR){
+        var pu = CAT() && CAT().ready() ? CAT().porUbicar() : null;
+        b.querySelector(".ed-n").textContent = pu && pu.length ? String(pu.length) : "";
+        b.classList.toggle("has", !!(pu && pu.length));
+        b.classList.toggle("sel", code === sel);
+        return;
+      }
       b.querySelector(".ed-n").textContent = it.length ? String(it.length) : "";
       b.classList.toggle("has", it.length > 0);
       b.classList.toggle("sel", code === sel);
@@ -6687,7 +6916,10 @@
 
   // --- panel de un lugar -------------------------------------------------------
   function openZone(code){
-    sel = code; selItem = null;
+    if (drag && drag.started) return;
+    sel = code; selItem = null; selSug = null; sugShown = 60;
+    $("edSugFind").value = "";
+    if (CAT()) CAT().load();
     $("edNew").value = "";
     $("edMsg").textContent = "";
     $("edSheet").hidden = false;
@@ -6696,30 +6928,39 @@
     paintPlan();
   }
   function closeZone(){
-    sel = null; selItem = null;
+    sel = null; selItem = null; selSug = null;
+    hideDrop();
     $("edSheet").hidden = true;
     document.body.classList.remove("ed-open");
     paintPlan();
   }
   function paintSheet(){
     if (!sel) return;
-    var it = items(sel);
+    if (drag && drag.started){ drag.repaint = true; return; } // no tocar los botones mientras se arrastra
+    var it = items(sel), pu = sel === POR_UBICAR;
     $("edTitle").textContent = LABELS[sel];
-    $("edCount").textContent = it.length ? it.length + (it.length === 1 ? " artículo" : " artículos") : "Sin artículos todavía";
+    $("edCount").textContent = pu ? "Productos del catálogo que todavía no tienen lugar. Arrástralos a su sitio en el plano."
+      : it.length ? it.length + (it.length === 1 ? " artículo confirmado" : " artículos confirmados") : "Sin artículos confirmados todavía";
+    $("edForm").hidden = pu;
     var box = $("edItems");
     box.innerHTML = "";
     it.forEach(function(t){
       var b = el("button", "me-chip ed-chip" + (selItem === t ? " on" : ""), t);
       b.type = "button";
       b.setAttribute("aria-pressed", String(selItem === t));
-      b.addEventListener("click", function(){ selItem = selItem === t ? null : t; paintSheet(); });
+      b.addEventListener("click", function(){ selItem = selItem === t ? null : t; selSug = null; paintSheet(); });
+      armDrag(b, { kind:"item", v:t, from:sel });
       box.appendChild(b);
     });
-    // acciones sobre el artículo elegido
-    var act = $("edAct");
-    act.hidden = !selItem;
-    if (selItem){
-      $("edActName").textContent = selItem;
+    paintSug();
+    // acciones sobre el artículo elegido (confirmado o sugerido)
+    var act = $("edAct"), sugName = selSug != null && CAT() ? CAT().nombre(selSug) : "";
+    act.hidden = !selItem && !sugName;
+    $("edActSug").hidden = !sugName;
+    $("edRemove").hidden = !!sugName;
+    $("edConfirm").hidden = !sugName || pu;
+    if (selItem || sugName){
+      $("edActName").textContent = selItem || sugName;
       var mv = $("edMoveTo");
       if (!mv.options.length){
         var o0 = el("option", "", "Mover a…"); o0.value = ""; mv.appendChild(o0);
@@ -6757,6 +6998,157 @@
     $("edSuggestH").textContent = q ? (list.length ? "Coincidencias" : "") : "Categorías de coseimpa.com";
   }
 
+  // productos del catálogo con ubicación sugerida en este lugar (o "Por ubicar")
+  function paintSug(){
+    var box = $("edSug"), C = CAT();
+    if (!C || !sel){ box.hidden = true; return; }
+    var list = sel === POR_UBICAR ? C.porUbicar() : C.sugeridos(sel);
+    var itemsBox = $("edSugItems");
+    itemsBox.innerHTML = "";
+    if (list === null){
+      box.hidden = false; $("edSugTitle").textContent = "Cargando el catálogo de coseimpa.com…";
+      $("edSugFind").hidden = true; $("edSugMore").hidden = true; return;
+    }
+    box.hidden = !list.length;
+    if (!list.length) return;
+    var f = norm($("edSugFind").value.trim());
+    var shown = f ? list.filter(function(p){ return norm(p.nombre).indexOf(f) !== -1; }) : list;
+    $("edSugTitle").textContent = (sel === POR_UBICAR ? "Por ubicar · " : "Ubicación sugerida aquí · ") + list.length +
+      (list.length === 1 ? " producto" : " productos") + (f ? " · " + shown.length + " con «" + $("edSugFind").value.trim() + "»" : "");
+    $("edSugFind").hidden = list.length <= 12;
+    shown.slice(0, sugShown).forEach(function(p){
+      var b = el("button", "me-chip ed-chip sug" + (selSug === p.i ? " on" : ""), p.nombre);
+      b.type = "button";
+      b.title = p.cat + (sel === POR_UBICAR ? "" : " · ubicación sugerida");
+      b.setAttribute("aria-pressed", String(selSug === p.i));
+      b.addEventListener("click", function(){ selSug = selSug === p.i ? null : p.i; selItem = null; paintSheet(); });
+      armDrag(b, { kind:"sug", i:p.i, from:sel });
+      itemsBox.appendChild(b);
+    });
+    var rest = shown.length - sugShown;
+    $("edSugMore").hidden = rest <= 0;
+    $("edSugMore").textContent = "Ver " + Math.min(rest, 60) + " más (quedan " + rest + ")";
+  }
+
+  // --- arrastrar un producto a otro lugar del plano ------------------------------
+  // Ratón: se arrastra. Teléfono: se mantiene presionado (~0,4 s) y se arrastra.
+  // Al soltar sobre un lugar se pide confirmar; el panel se vuelve transparente
+  // mientras tanto para ver todo el plano.
+  var drag = null, dropReq = null, scrollTimer = null, noClick = false;
+  function dragName(d){ return d.kind === "item" ? d.v : (CAT() ? CAT().nombre(d.i) : ""); }
+  function cellAt(x, y){
+    var e = document.elementFromPoint(x, y);
+    var c = e && e.closest ? e.closest("#edPlan .ed-cell[data-code]") : null;
+    return c && c.dataset.code !== POR_UBICAR ? c : null;
+  }
+  function armDrag(chip, data){
+    if (!X || !canEdit(X.me)) return;
+    chip.addEventListener("mousedown", function(e){
+      if (e.button !== 0 || drag) return;
+      drag = { data:data, sx:e.clientX, sy:e.clientY, x:e.clientX, y:e.clientY, started:false, chip:chip };
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+    chip.addEventListener("touchstart", function(e){
+      if (e.touches.length !== 1 || drag) return;
+      var t = e.touches[0];
+      drag = { data:data, sx:t.clientX, sy:t.clientY, x:t.clientX, y:t.clientY, started:false, chip:chip, touch:true };
+      drag.timer = setTimeout(function(){ if (drag && !drag.started) startDrag(); }, 400);
+      chip.addEventListener("touchmove", onTouchMove, { passive:false });
+      chip.addEventListener("touchend", onTouchEnd);
+      chip.addEventListener("touchcancel", onTouchEnd);
+    }, { passive:true });
+    chip.addEventListener("contextmenu", function(e){ if (drag) e.preventDefault(); });
+    chip.addEventListener("click", function(e){ if (noClick){ noClick = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  }
+  function startDrag(){
+    drag.started = true;
+    try { if (navigator.vibrate) navigator.vibrate(15); } catch(e){}
+    drag.ghost = el("div", "ed-ghost", dragName(drag.data));
+    document.body.appendChild(drag.ghost);
+    document.body.classList.add("ed-drag");
+    moveDrag(drag.x, drag.y);
+    // si el dedo o el ratón llega al borde, el plano se desplaza solo
+    scrollTimer = setInterval(function(){
+      if (!drag || !drag.started) return;
+      var dy = drag.y < 70 ? -14 : drag.y > window.innerHeight - 70 ? 14 : 0;
+      if (dy){ window.scrollBy(0, dy); moveDrag(drag.x, drag.y); }
+    }, 30);
+  }
+  function moveDrag(x, y){
+    drag.x = x; drag.y = y;
+    drag.ghost.style.transform = "translate(" + (x + 14) + "px," + (y + 14) + "px)";
+    var c = cellAt(x, y);
+    if (drag.over !== c){
+      if (drag.over) drag.over.classList.remove("drop");
+      if (c && c.dataset.code !== drag.data.from) c.classList.add("drop");
+      drag.over = c;
+    }
+  }
+  function endDrag(){
+    var d = drag; drag = null;
+    clearTimeout(d.timer); clearInterval(scrollTimer); scrollTimer = null;
+    if (!d.started) return;
+    if (d.ghost) d.ghost.remove();
+    if (d.over) d.over.classList.remove("drop");
+    document.body.classList.remove("ed-drag");
+    var to = d.over && d.over.dataset.code;
+    if (to && to !== d.data.from) askDrop(d.data, to);
+    if (d.repaint){ paintSheet(); paintPlan(); }
+  }
+  function onMouseMove(e){
+    if (!drag) return;
+    if (!drag.started){
+      if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) < 7) return;
+      drag.x = e.clientX; drag.y = e.clientY; startDrag();
+    }
+    e.preventDefault();
+    moveDrag(e.clientX, e.clientY);
+  }
+  function onMouseUp(){
+    document.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseup", onMouseUp);
+    if (drag && drag.started){ noClick = true; setTimeout(function(){ noClick = false; }, 0); }
+    if (drag) endDrag();
+  }
+  function onTouchMove(e){
+    if (!drag) return;
+    var t = e.touches[0];
+    if (!drag.started){
+      // se movió antes de tiempo: es un desplazamiento normal de la pantalla
+      if (Math.abs(t.clientX - drag.sx) + Math.abs(t.clientY - drag.sy) > 10){ clearTimeout(drag.timer); unbindTouch(drag.chip); drag = null; }
+      else { drag.x = t.clientX; drag.y = t.clientY; }
+      return;
+    }
+    e.preventDefault();
+    moveDrag(t.clientX, t.clientY);
+  }
+  function onTouchEnd(e){
+    if (!drag) return;
+    unbindTouch(drag.chip);
+    if (drag.started && e.cancelable) e.preventDefault(); // que no cuente como toque
+    endDrag();
+  }
+  function unbindTouch(chip){
+    chip.removeEventListener("touchmove", onTouchMove);
+    chip.removeEventListener("touchend", onTouchEnd);
+    chip.removeEventListener("touchcancel", onTouchEnd);
+  }
+  function askDrop(data, to){
+    dropReq = { data:data, to:to };
+    var name = dragName(data);
+    $("edDropQ").textContent = "¿Mover «" + name + "» a " + LABELS[to] + "?" + (data.kind === "sug" ? " Quedará confirmado en ese lugar." : "");
+    $("edDrop").hidden = false;
+    $("edDropYes").focus();
+  }
+  function hideDrop(){ dropReq = null; var d = $("edDrop"); if (d) d.hidden = true; }
+  function doDrop(){
+    var r = dropReq; hideDrop();
+    if (!r || !X) return;
+    if (r.data.kind === "item") moveItem(r.data.v, r.data.from, r.to);
+    else placeSug(r.data.i, r.data.from, r.to, "movió");
+  }
+
   // --- guardar en la nube ------------------------------------------------------
   function F(){ return X.F; }
   function logDoc(zone, action, item){
@@ -6777,32 +7169,48 @@
     $("edMsg").textContent = "✓ Agregado: " + v + ". Todos lo ven al instante.";
     paintSuggest();
   }
-  function removeSel(){
-    var v = selItem, from = sel;
-    if (!v) return;
+  function removeItem(v, from){
+    if (!v || !from) return;
     var b = F().writeBatch(X.db);
     b.set(F().doc(X.db, "mapa", from), zoneData(F().arrayRemove(v)), { merge:true });
     b.set(F().doc(F().collection(X.db, "mapaLog")), logDoc(from, "quitó", v));
     b.commit().catch(fail);
-    selItem = null;
+    if (selItem === v) selItem = null;
     $("edMsg").textContent = "✓ Quitado: " + v + ".";
   }
-  function moveSel(to){
-    var v = selItem, from = sel;
-    if (!v || !to || to === from) return;
+  function removeSel(){ removeItem(selItem, sel); }
+  function moveItem(v, from, to){
+    if (!v || !to || to === from || to === POR_UBICAR) return;
     if (items(to).some(function(t){ return norm(t) === norm(v); })){
       // ya estaba allá: solo se quita de aquí
-      removeSel();
+      removeItem(v, from);
       $("edMsg").textContent = "«" + v + "» ya estaba en " + LABELS[to] + "; se quitó de aquí.";
       return;
     }
+    if (items(to).length >= 300){ $("edMsg").textContent = LABELS[to] + " llegó al máximo de 300 artículos."; return; }
     var b = F().writeBatch(X.db);
     b.set(F().doc(X.db, "mapa", from), zoneData(F().arrayRemove(v)), { merge:true });
     b.set(F().doc(X.db, "mapa", to), zoneData(F().arrayUnion(v)), { merge:true });
     b.set(F().doc(F().collection(X.db, "mapaLog")), logDoc(to, "movió", v + " (desde " + LABELS[from] + ")"));
     b.commit().catch(fail);
-    selItem = null;
+    if (selItem === v) selItem = null;
     $("edMsg").textContent = "✓ Movido: " + v + " → " + LABELS[to] + ".";
+  }
+  function moveSel(to){ moveItem(selItem, sel, to); }
+  // Un producto del catálogo pasa al mapa de verdad: se confirma donde estaba
+  // sugerido ("confirmó") o se lleva a otro lugar ("movió"). Deja de ser sugerido.
+  function placeSug(i, from, to, how){
+    var v = CAT() ? CAT().nombre(i) : "";
+    if (!v || !to || to === POR_UBICAR) return;
+    if (items(to).some(function(t){ return norm(t) === norm(v); })){ $("edMsg").textContent = "«" + v + "» ya está en " + LABELS[to] + "."; selSug = null; return; }
+    if (items(to).length >= 300){ $("edMsg").textContent = LABELS[to] + " llegó al máximo de 300 artículos."; return; }
+    var b = F().writeBatch(X.db);
+    b.set(F().doc(X.db, "mapa", to), zoneData(F().arrayUnion(v)), { merge:true });
+    b.set(F().doc(F().collection(X.db, "mapaLog")), logDoc(to, how,
+      v + (how === "confirmó" ? " (era ubicación sugerida)" : " (sugerido en " + (LABELS[from] || from) + ")")));
+    b.commit().catch(fail);
+    if (selSug === i) selSug = null;
+    $("edMsg").textContent = how === "confirmó" ? "✓ Confirmado aquí: " + v + "." : "✓ Ubicado en " + LABELS[to] + ": " + v + ".";
   }
   var rmArmed = null;
   function resetRemove(){ clearTimeout(rmArmed); rmArmed = null; $("edRemove").textContent = "Quitar de aquí"; }
@@ -6964,6 +7372,7 @@
   function open(){
     if (!X || !canEdit(X.me)) return;
     window.coseApp.showScreen("editor");
+    if (CAT()) CAT().load();
     paintEmpty(); paintPlan();
   }
 
@@ -6976,7 +7385,21 @@
   $("edClose").addEventListener("click", closeZone);
   $("edForm").addEventListener("submit", function(e){ e.preventDefault(); if (X) add($("edNew").value); });
   $("edNew").addEventListener("input", paintSuggest);
-  $("edMoveTo").addEventListener("change", function(){ if (X && this.value) moveSel(this.value); });
+  $("edMoveTo").addEventListener("change", function(){
+    if (!X || !this.value) return;
+    if (selSug != null) placeSug(selSug, sel, this.value, "movió"); else moveSel(this.value);
+  });
+  $("edConfirm").addEventListener("click", function(){ if (X && selSug != null && sel && sel !== POR_UBICAR) placeSug(selSug, sel, sel, "confirmó"); });
+  $("edSugFind").addEventListener("input", function(){ sugShown = 60; paintSug(); });
+  $("edSugMore").addEventListener("click", function(){ sugShown += 60; paintSug(); });
+  $("edDropYes").addEventListener("click", doDrop);
+  $("edDropNo").addEventListener("click", hideDrop);
+  // cuando llega el catálogo o cambia el mapa, se repintan las sugerencias
+  if (window.coseCatalogo) window.coseCatalogo.onChange(function(){
+    if (current() !== "editor") return;
+    paintPlan();
+    if (sel) paintSheet();
+  });
   $("edRemove").addEventListener("click", function(){
     if (!X) return;
     if (!rmArmed){ this.textContent = "Toca otra vez para quitar"; rmArmed = setTimeout(resetRemove, 3000); return; }
@@ -6988,7 +7411,11 @@
     $("admUpload").click();
     $("edEmptyMsg").textContent = "Subiendo el mapa…";
   });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !$("edSheet").hidden) closeZone(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "Escape") return;
+    if (!$("edDrop").hidden){ hideDrop(); return; }
+    if (!$("edSheet").hidden) closeZone();
+  });
   new MutationObserver(function(){ if ($("screen-editor").hidden && sel) closeZone(); })
     .observe($("screen-editor"), { attributes:true, attributeFilter:["hidden"] });
   (function(){
@@ -7041,8 +7468,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v44" → 44). Subir los dos juntos en cada versión.
-  var APP_BUILD = 44;
+  // sw.js ("coseimpa-cosecoro-v45" → 45). Subir los dos juntos en cada versión.
+  var APP_BUILD = 45;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
