@@ -320,6 +320,112 @@ await t("aparato muy largo no", () => assertFails(setDoc(doc(B, "uso", "B"), uso
 await t("pendiente no guarda uso", () => assertFails(setDoc(doc(D, "uso", "D"), Object.assign(usoB(), { name: "Dani" }), { merge: true })));
 await t("nadie lo borra", () => assertFails(deleteDoc(doc(B, "uso", "B"))));
 
+console.log("avisos con la app cerrada");
+// (A esta altura C ya está bloqueada y D sigue pendiente.)
+const LLAVE = "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM";
+await env.withSecurityRulesDisabled(async (ctx) => {
+  const db = ctx.firestore();
+  await setDoc(doc(db, "config", "push"), { publicKey: LLAVE, updatedAt: new Date() });
+  // Equipo de E, guardado cuando aún estaba aprobada
+  await setDoc(doc(db, "push", "E_eeeeeeeeeeeeeeee"), { uid: "E", dev: "eeeeeeeeeeeeeeee", endpoint: "https://fcm.googleapis.com/fcm/send/e", p256dh: LLAVE, auth: "tBHItJI5svbpez7KI4CCXg", ua: "x", at: new Date() });
+  await setDoc(doc(db, "push", "INVX_aaaaaaaaaaaaaaaa"), { uid: "INVX", dev: "aaaaaaaaaaaaaaaa", endpoint: "https://fcm.googleapis.com/fcm/send/x", p256dh: LLAVE, auth: "tBHItJI5svbpez7KI4CCXg", ua: "x", at: new Date() });
+});
+const DEV = "k3j9x0p2m7q1z8w4";
+const ENDPOINT = "https://fcm.googleapis.com/fcm/send/dX1y-Z_2:APA91bH7xQ";
+const pushDoc = (uid, dev = DEV, extra = {}) => Object.assign({ uid, dev, endpoint: ENDPOINT, p256dh: LLAVE, auth: "tBHItJI5svbpez7KI4CCXg",
+  ua: "Mozilla/5.0 (Linux; Android 14) Chrome/130", at: serverTimestamp() }, extra);
+const pushRef = (db, uid, dev = DEV) => doc(db, "push", uid + "_" + dev);
+// Guardar
+await t("B activa los avisos en su equipo", () => assertSucceeds(setDoc(pushRef(B, "B"), pushDoc("B"))));
+await t("B lo vuelve a guardar con otra dirección", () => assertSucceeds(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "https://web.push.apple.com/QGx-y_z1" }))));
+await t("B cambia solo la dirección (con la hora del servidor)", () => assertSucceeds(updateDoc(pushRef(B, "B"), { endpoint: "https://updates.push.services.mozilla.com/wpush/v2/gAAAA", at: serverTimestamp() })));
+await t("B al cambiarla sin la hora del servidor no", () => assertFails(updateDoc(pushRef(B, "B"), { endpoint: ENDPOINT })));
+await t("B activa los avisos en otro equipo", () => assertSucceeds(setDoc(pushRef(B, "B", "otroequipo123"), pushDoc("B", "otroequipo123"))));
+await t("la admin activa los suyos", () => assertSucceeds(setDoc(pushRef(A, "A"), pushDoc("A"))));
+await t("el mecánico activa los suyos (dirección de Windows con ?token=)", () => assertSucceeds(setDoc(pushRef(MEC, "MEC"), pushDoc("MEC", DEV, { endpoint: "https://wns2-par02p.notify.windows.com/w/?token=BQYAAAB%2bXy" }))));
+await t("dirección de 800 letras sí", () => assertSucceeds(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "https://fcm.googleapis.com/" + "a".repeat(800 - 27) }))));
+// Quién y con qué id
+await t("id que no empieza con su uid no", () => assertFails(setDoc(pushRef(B, "C"), pushDoc("B"))));
+await t("id con otro equipo no", () => assertFails(setDoc(pushRef(B, "B", "otroequipo999"), pushDoc("B"))));
+await t("id sin el equipo no", () => assertFails(setDoc(doc(B, "push", "B"), pushDoc("B"))));
+await t("id sin guion bajo no", () => assertFails(setDoc(doc(B, "push", "B" + DEV), pushDoc("B"))));
+await t("B no guarda a nombre de C (id de C)", () => assertFails(setDoc(pushRef(B, "C"), pushDoc("C"))));
+await t("B no pone el uid de otro en su documento", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("C"))));
+await t("la admin no guarda el equipo de otro", () => assertFails(setDoc(pushRef(A, "B", "deadmin12345"), pushDoc("B", "deadmin12345"))));
+// Campos
+for (const f of ["uid", "dev", "endpoint", "p256dh", "auth", "ua", "at"]){
+  await t("faltando " + f + " no", () => { const d = pushDoc("B"); delete d[f]; return assertFails(setDoc(pushRef(B, "B"), d)); });
+}
+await t("sin campos extra", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { role: "admin" }))));
+await t("equipo con mayúsculas no", () => assertFails(setDoc(pushRef(B, "B", "ABCdef123456"), pushDoc("B", "ABCdef123456"))));
+await t("equipo muy corto no", () => assertFails(setDoc(pushRef(B, "B", "abc1234"), pushDoc("B", "abc1234"))));
+await t("equipo muy largo no", () => assertFails(setDoc(pushRef(B, "B", "a".repeat(25)), pushDoc("B", "a".repeat(25)))));
+await t("equipo con guion bajo no", () => assertFails(setDoc(pushRef(B, "B", "abcd_efgh1234"), pushDoc("B", "abcd_efgh1234"))));
+await t("equipo que no es texto no", () => assertFails(setDoc(doc(B, "push", "B_12345678"), pushDoc("B", 12345678))));
+await t("dirección http:// no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "http://fcm.googleapis.com/fcm/send/x" }))));
+await t("dirección que no es web no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "javascript:alert(1)" }))));
+await t("dirección con espacios no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "https://fcm.googleapis.com/fcm/send/a b" }))));
+await t("dirección sin ruta no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "https://fcm.googleapis.com" }))));
+await t("dirección de más de 800 letras no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: "https://fcm.googleapis.com/" + "a".repeat(800 - 26) }))));
+await t("dirección que no es texto no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { endpoint: 42 }))));
+await t("p256dh muy corta no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { p256dh: "A".repeat(59) }))));
+await t("p256dh muy larga no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { p256dh: "A".repeat(121) }))));
+await t("p256dh con letras que no son base64url no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { p256dh: LLAVE.slice(0, 80) + "+/+/+/=" }))));
+await t("p256dh que no es texto no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { p256dh: 7 }))));
+await t("auth muy corta no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { auth: "a".repeat(15) }))));
+await t("auth muy larga no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { auth: "a".repeat(41) }))));
+await t("auth con letras que no son base64url no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { auth: "tBHItJI5svbpez7KI4CCXg==" }))));
+await t("aparato (ua) de más de 120 letras no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { ua: "x".repeat(121) }))));
+await t("aparato (ua) que no es texto no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { ua: true }))));
+await t("hora puesta por el teléfono no", () => assertFails(setDoc(pushRef(B, "B"), pushDoc("B", DEV, { at: new Date() }))));
+// Personas sin acceso
+await t("D (pendiente) no activa avisos", () => assertFails(setDoc(pushRef(D, "D"), pushDoc("D"))));
+await t("E (bloqueada) no activa avisos", () => assertFails(setDoc(pushRef(E, "E", "nuevoequipo1"), pushDoc("E", "nuevoequipo1"))));
+await t("C (bloqueada) no activa avisos", () => assertFails(setDoc(pushRef(C, "C"), pushDoc("C"))));
+await t("B con correo sin confirmar no activa avisos", () => assertFails(setDoc(pushRef(Bun, "B", "sinconfirmar1"), pushDoc("B", "sinconfirmar1"))));
+await t("sin sesión no activa avisos", () => assertFails(setDoc(doc(anon, "push", "B_" + DEV), pushDoc("B"))));
+// Leer: nadie desde la app
+await t("B no lee su propio equipo", () => assertFails(getDoc(pushRef(B, "B"))));
+await t("B no lista los suyos", () => assertFails(getDocs(query(collection(B, "push"), where("uid", "==", "B")))));
+await t("la admin no lee el equipo de B", () => assertFails(getDoc(pushRef(A, "B"))));
+await t("la admin no lee ni el suyo", () => assertFails(getDoc(pushRef(A, "A"))));
+await t("Rafael no lista los equipos", () => assertFails(getDocs(collection(R, "push"))));
+await t("sin sesión no lee", () => assertFails(getDoc(doc(anon, "push", "B_" + DEV))));
+// Borrar
+await t("otra persona (Inventario) no borra el de B", () => assertFails(deleteDoc(pushRef(INV, "B"))));
+await t("la admin no borra el de B", () => assertFails(deleteDoc(pushRef(A, "B"))));
+await t("Rafael no borra el de B", () => assertFails(deleteDoc(pushRef(R, "B"))));
+await t("sin sesión no borra", () => assertFails(deleteDoc(doc(anon, "push", "B_" + DEV))));
+await t("un uid que empieza igual no borra el de otro", () => assertFails(deleteDoc(doc(INV, "push", "INVX_aaaaaaaaaaaaaaaa"))));
+await t("id con dos guiones bajos no se borra", () => assertFails(deleteDoc(doc(B, "push", "B_C_" + DEV))));
+await t("B borra el suyo", () => assertSucceeds(deleteDoc(pushRef(B, "B"))));
+await t("B borra el suyo aunque ya no exista", () => assertSucceeds(deleteDoc(pushRef(B, "B"))));
+await t("B con correo sin confirmar borra el suyo", () => assertSucceeds(deleteDoc(pushRef(Bun, "B", "otroequipo123"))));
+await t("E (bloqueada) borra el suyo", () => assertSucceeds(deleteDoc(doc(E, "push", "E_eeeeeeeeeeeeeeee"))));
+await t("D (pendiente) borra el suyo aunque no exista", () => assertSucceeds(deleteDoc(pushRef(D, "D"))));
+await t("y quedó borrado", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const s = await getDoc(doc(ctx.firestore(), "push", "E_eeeeeeeeeeeeeeee"));
+    if (s.exists()) throw new Error("sigue ahí");
+  });
+});
+// Llave pública (config/push)
+await t("B (aprobado) lee la llave pública", async () => {
+  const s = await assertSucceeds(getDoc(doc(B, "config", "push")));
+  if (s.data().publicKey !== LLAVE) throw new Error("llave distinta");
+});
+await t("D (pendiente) no lee la llave", () => assertFails(getDoc(doc(D, "config", "push"))));
+await t("E (bloqueada) no lee la llave", () => assertFails(getDoc(doc(E, "config", "push"))));
+await t("B con correo sin confirmar no lee la llave", () => assertFails(getDoc(doc(Bun, "config", "push"))));
+await t("sin sesión no lee la llave", () => assertFails(getDoc(doc(anon, "config", "push"))));
+await t("nadie lista config", () => assertFails(getDocs(collection(B, "config"))));
+await t("B no cambia la llave", () => assertFails(setDoc(doc(B, "config", "push"), { publicKey: "x", updatedAt: serverTimestamp() })));
+await t("la admin no cambia la llave", () => assertFails(setDoc(doc(A, "config", "push"), { publicKey: "x", updatedAt: serverTimestamp() })));
+await t("la admin no la edita", () => assertFails(updateDoc(doc(A, "config", "push"), { publicKey: "x" })));
+await t("Rafael no cambia la llave", () => assertFails(setDoc(doc(R, "config", "push"), { publicKey: "x", updatedAt: serverTimestamp() })));
+await t("la admin no borra la llave", () => assertFails(deleteDoc(doc(A, "config", "push"))));
+await t("la lista de cargos se sigue leyendo sin sesión", () => assertSucceeds(getDoc(doc(anon, "config", "cargos"))));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));

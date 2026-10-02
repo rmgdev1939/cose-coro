@@ -1,4 +1,4 @@
-const CACHE = "coseimpa-cosecoro-v46";
+const CACHE = "coseimpa-cosecoro-v47";
 const ASSETS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -62,5 +62,91 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cached);
     })
+  );
+});
+
+// ---------- AVISOS CON LA APP CERRADA (notificaciones push) ----------
+// El iMac manda cada aviso como texto JSON: { t: título, b: texto, tag, go }.
+// "go" dice qué abrir al tocarlo: "chat:<id>", "avisos", "soporte", "compas"
+// o "flota". En Chrome/Edge, si la app está abierta y a la vista, no se
+// muestra el aviso del teléfono (la app ya muestra el suyo dentro): solo se
+// le pasa el mensaje. En iPhone (Safari) y Firefox se muestra siempre, porque
+// Safari quita el permiso si llega un aviso que no se muestra.
+// (En iPhone/iPad todos los navegadores son Safari por dentro, aunque digan
+// "EdgiOS" o "CriOS": ahí siempre se muestra.)
+const esChromium = () => {
+  const ua = (self.navigator && self.navigator.userAgent) || "";
+  return /Chrome|Chromium|Edg/.test(ua) && !/iPhone|iPad|iPod|EdgiOS|CriOS|FxiOS/.test(ua);
+};
+const texto = (v) => (v == null ? "" : String(v));
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  if (event.data) {
+    try { data = event.data.json(); }
+    catch (e) {
+      try { data = { b: event.data.text() }; } catch (e2) { data = {}; }
+    }
+  }
+  if (data === null || typeof data !== "object") data = { b: texto(data) };
+  const title = texto(data.t) || "Cose Coro";
+  const body = texto(data.b);
+  const tag = texto(data.tag);
+  const go = texto(data.go);
+  const opts = {
+    body: body,
+    icon: "icon-192.png",
+    renotify: !!tag,
+    data: { go: go },
+    lang: "es",
+    timestamp: Date.now()
+  };
+  if (tag) opts.tag = tag;
+  // Ventanas de la app que se están viendo ahora (solo cuenta en Chrome/Edge).
+  const visibles = esChromium()
+    ? self.clients.matchAll({ type: "window", includeUncontrolled: true })
+        .then((list) => list.filter((c) => c.visibilityState === "visible"))
+        .catch(() => [])
+    : Promise.resolve([]);
+  event.waitUntil(visibles.then((list) => {
+    if (list.length) {
+      list.forEach((c) => { try { c.postMessage({ type: "cc-push", t: title, b: body, go: go }); } catch (e) {} });
+      return;
+    }
+    return self.registration.showNotification(title, opts);
+  }));
+});
+
+// Al tocar el aviso: si la app ya está abierta se trae al frente y se le dice
+// qué abrir; si no, se abre con ?go=... en la dirección.
+self.addEventListener("notificationclick", (event) => {
+  const n = event.notification;
+  const go = n.data && typeof n.data.go === "string" ? n.data.go : "";
+  n.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const scope = (self.registration && self.registration.scope) || "";
+      const win = list.find((c) => scope && (c.url || "").indexOf(scope) === 0) || list[0];
+      if (win) {
+        const avisar = (c) => { try { (c || win).postMessage({ type: "cc-go", go: go }); } catch (e) {} };
+        return Promise.resolve()
+          .then(() => win.focus())
+          .then(avisar, () => avisar(win));
+      }
+      return self.clients.openWindow(go ? "./?go=" + encodeURIComponent(go) : "./");
+    })
+  );
+});
+
+// Si el navegador cambia la suscripción, se vuelve a suscribir con la misma
+// clave. La dirección nueva la guarda la app la próxima vez que se abra.
+self.addEventListener("pushsubscriptionchange", (event) => {
+  if (event.newSubscription) return;
+  const old = event.oldSubscription;
+  const key = old && old.options && old.options.applicationServerKey;
+  if (!key) return;
+  event.waitUntil(
+    self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })
+      .catch(() => {})
   );
 });

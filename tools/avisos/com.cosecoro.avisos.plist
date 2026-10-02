@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Enviador de avisos con la app cerrada de Cose Coro (avisos-push.cjs).
+     Corre todo el tiempo en el iMac y launchd lo vuelve a abrir si se cierra.
+     Es una plantilla: instalar.sh cambia __NODE__ (el programa node),
+     __DEST__ (la copia en ~/Library/Application Support/CoseCoro/avisos, porque
+     macOS no deja a los procesos de fondo leer el Escritorio) y __LOG__ (el
+     registro), y la copia a ~/Library/LaunchAgents.
+     Instalar o actualizar: bash tools/avisos/instalar.sh
+     Parar: launchctl bootout gui/$(id -u)/com.cosecoro.avisos -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.cosecoro.avisos</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__DEST__/avisos-push.cjs</string>
+  </array>
+  <key>WorkingDirectory</key><string>__DEST__</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>60</integer>
+  <key>StandardOutPath</key><string>__LOG__</string>
+  <key>StandardErrorPath</key><string>__LOG__</string>
+</dict>
+</plist>

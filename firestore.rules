@@ -397,6 +397,43 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ---------------- Avisos con la app cerrada (notificaciones push) ---------
+    // Llave pública para activar los avisos: la escribe solo el enviador del
+    // iMac (tools/avisos/avisos-push.cjs, con la cuenta del dueño, que no pasa
+    // por estas reglas). La leen las personas aprobadas; desde la app nadie
+    // la cambia.
+    match /config/push {
+      allow get: if verified();
+      allow list, write: if false;
+    }
+
+    // Equipos que reciben los avisos: un documento por persona y equipo, con
+    // id = {uid}_{equipo}. Cada quien guarda solo los suyos, con la hora del
+    // servidor. Nadie los lee desde la app (ni la persona ni el administrador):
+    // solo el enviador del iMac. Cada quien borra los suyos siempre, aunque el
+    // documento ya no exista o la cuenta ya no esté aprobada (al desactivar
+    // los avisos o al cerrar sesión).
+    match /push/{id} {
+      // endpoint: dirección del servicio de avisos del teléfono (solo https,
+      // sin espacios). p256dh y auth: llaves del equipo (base64url, sin "=").
+      function pushOk(d) {
+        return d.keys().hasAll(["uid", "dev", "endpoint", "p256dh", "auth", "ua", "at"])
+          && d.keys().hasOnly(["uid", "dev", "endpoint", "p256dh", "auth", "ua", "at"])
+          && d.uid == request.auth.uid
+          && d.dev is string && d.dev.matches("[a-z0-9]{8,24}")
+          && id == request.auth.uid + "_" + d.dev
+          && d.endpoint is string && d.endpoint.size() <= 800
+          && d.endpoint.matches("https://[A-Za-z0-9.-]+/[!-~]*")
+          && d.p256dh is string && d.p256dh.matches("[A-Za-z0-9_-]{60,120}")
+          && d.auth is string && d.auth.matches("[A-Za-z0-9_-]{16,40}")
+          && d.ua is string && d.ua.size() <= 120
+          && d.at == request.time;
+      }
+      allow read: if false;
+      allow create, update: if verified() && pushOk(request.resource.data);
+      allow delete: if signedIn() && id.split("_").size() == 2 && id.split("_")[0] == request.auth.uid;
+    }
+
     // Todo lo demás, cerrado
     match /{document=**} {
       allow read, write: if false;
