@@ -38,6 +38,9 @@ const MAX_DEVICES = 5;       // equipos por persona (los más recientes)
 const PAGE = 20;             // mensajes por consulta
 const TTL = 43200;           // 12 horas: si el teléfono pasa más tiempo apagado, el aviso se pierde
 const SEND_TIMEOUT = 15000;
+const REINTENTO = 15000;     // espera antes de reintentar un envío que falló por un momento
+const SALUD_CADA = 15 * 60e3; // cada cuánto prueba que la conexión con Firebase sigue bien
+const SALUD_FALLAS = 3;      // fallas seguidas para reiniciar
 
 // Servicios de avisos permitidos. El iMac está en la red de la tienda: nunca
 // se le manda nada a otra dirección (por ejemplo, un equipo de la red interna).
@@ -207,7 +210,8 @@ function start(opts){
   const estadoFile = path.join(dir, "avisos-estado.json");
   const est = leerEstado(estadoFile, log);
   const huboEstado = est.lastAlive > 0;
-  const since = Math.max(now() - CATCHUP, huboEstado ? est.lastAlive - OVERLAP : 0);
+  // (nunca en el futuro: si el reloj se adelantó alguna vez, no se pierde nada)
+  const since = Math.min(now(), Math.max(now() - CATCHUP, huboEstado ? est.lastAlive - OVERLAP : 0));
   const sinceTs = Timestamp.fromMillis(since);
 
   let lastAlive = est.lastAlive, parado = false, todoListo = false, sucio = false, ultimoGuardado = 0;
@@ -256,6 +260,7 @@ function start(opts){
     parado = true;
     unsubs.forEach(u => { try { u(); } catch (x) { /* nada */ } });
     clearInterval(timer);
+    clearInterval(salud);
     guardar(false);
     onFatal(e);
   }
@@ -264,6 +269,11 @@ function start(opts){
   function aprobado(uid){ const p = typeof uid === "string" && personas.get(uid); return !!(p && p.status === "verificado"); }
   function aprobados(){ const l = []; personas.forEach((p, uid) => { if (p.status === "verificado") l.push(uid); }); return l; }
   function nombre(uid){ const p = personas.get(uid); return (p && p.name) || ""; }
+  // ¿pasó hace más de 10 minutos? (se compara con la hora del servidor de la
+  // consulta: si el iMac se quedó sin internet un rato largo, al volver no se
+  // mandan avisos atrasados)
+  function viejo(ts, leido){ return esTs(ts) && leido - tsMs(ts) > CATCHUP; }
+  function anotarViejo(tipo, ref){ log(tipo, ref, "de hace más de " + Math.round(CATCHUP / 60e3) + " min: no se avisa"); }
 
   // --- mandar ------------------------------------------------------------------
   function quitarEquipo(s){
@@ -284,7 +294,19 @@ function start(opts){
     let ok = 0, fallos = 0, vencidos = 0, saltados = 0;
     await Promise.all(lista.map(async s => {
       if (!pushHostOk(s.endpoint)){ saltados++; log("salto el equipo " + s.id + ": dirección no permitida"); return; }
-      try { await send(s, p); ok++; }
+      try {
+        try { await send(s, p); }
+        catch (e1) {
+          // falla pasajera (sin internet, 429 o error del servicio): un reintento
+          const st1 = e1 && e1.statusCode;
+          if (!(st1 === undefined || st1 === 429 || st1 >= 500) || parado) throw e1;
+          const ra = Number(e1 && e1.headers && (e1.headers["retry-after"] || e1.headers["Retry-After"]));
+          await esperar(isFinite(ra) && ra > 0 ? Math.min(60, ra) * 1000 : REINTENTO);
+          if (parado) throw e1;
+          await send(s, p);
+        }
+        ok++;
+      }
       catch (e) {
         const st = e && e.statusCode;
         if (st === 404 || st === 410){ vencidos++; await vencido(s); }
@@ -329,14 +351,18 @@ function start(opts){
       if (!c || !c.lastFrom || !esTs(hasta) || cmpTs(hasta, cur) <= 0) return;
       const snap = await db.collection("chats").doc(id).collection("mensajes")
         .where("at", ">", cur).orderBy("at").limit(PAGE).get();
-      let repetidos = 0;
+      const leido = tsMs(snap.readTime) || now();
+      let repetidos = 0, viejos = 0;
       for (const d of snap.docs){
         if (parado) return;
-        if (await mensaje(id, d) === false) repetidos++;
+        const r = await mensaje(id, d, leido);
+        if (r === false) repetidos++;
+        else if (r === "viejo") viejos++;
         const at = d.get("at");
         if (cmpTs(at, cur) > 0){ cur = at; ponerCursor(id, cur); }
       }
       if (repetidos) log("chat=" + id, "repetidos=" + repetidos, "(ya se habían mandado)");
+      if (viejos) log("chat=" + id, "atrasados=" + viejos, "(de hace más de " + Math.round(CATCHUP / 60e3) + " min: no se avisan)");
       if (snap.size < PAGE){
         // ya están todos los que había hasta "hasta"
         if (cmpTs(hasta, cursores.get(id)) > 0) ponerCursor(id, hasta);
@@ -344,10 +370,11 @@ function start(opts){
       }
     }
   }
-  async function mensaje(chatId, d){
+  async function mensaje(chatId, d, leido){
     const key = "m:" + chatId + "/" + d.id;
     if (yaVisto(key)) return false;
     const m = d.data() || {}, c = chats.get(chatId) || {};
+    if (viejo(m.at, leido)) return "viejo";
     const members = Array.isArray(c.members) ? c.members : [];
     if (typeof m.from !== "string" || typeof m.text !== "string" || !m.text) return;
     if (members.indexOf(m.from) < 0 || !aprobado(m.from)){ log("mensaje", "chat=" + chatId, "msg=" + d.id, "autor no aprobado o fuera del chat: no se avisa"); return; }
@@ -357,44 +384,50 @@ function start(opts){
   }
 
   // --- avisos, soporte, compañeros y flota ---------------------------------------
-  function aviso(d){
+  function aviso(d, leido){
     const a = d.data() || {};
     if (yaVisto("a:" + d.id)) return;
+    if (viejo(a.at, leido)) return anotarViejo("aviso", "id=" + d.id);
     if (a.by && !aprobado(a.by)) return;
     return repartir("aviso", "id=" + d.id, aprobados().filter(u => u !== a.by), avisoAviso(d.id, a));
   }
-  function reporteNuevo(d){
+  function reporteNuevo(d, leido){
     const r = d.data() || {};
     if (yaVisto("rn:" + d.id)) return;
+    if (viejo(r.at, leido)) return anotarViejo("reporte", "id=" + d.id);
     if (!aprobado(r.uid)) return;
     const admins = aprobados().filter(u => u !== r.uid && personas.get(u).role === "admin");
     return repartir("reporte", "id=" + d.id, admins, avisoReporte(d.id, r));
   }
-  function respuesta(d){
+  function respuesta(d, leido){
     const r = d.data() || {};
     if (!esTs(r.respondidoAt) || typeof r.respuesta !== "string" || !r.respuesta.trim()) return;
     if (yaVisto("rr:" + d.id + ":" + tsMs(r.respondidoAt))) return;
+    if (viejo(r.respondidoAt, leido)) return anotarViejo("respuesta", "id=" + d.id);
     return repartir("respuesta", "id=" + d.id, aprobado(r.uid) ? [r.uid] : [], avisoRespuesta(d.id, r));
   }
   // (la misma pareja puede volver a pedirse: por eso la hora va en la clave)
-  function solicitud(d){
+  function solicitud(d, leido){
     const c = d.data() || {};
     if (c.status !== "pendiente" || !esTs(c.createdAt)) return;
     if (yaVisto("cp:" + d.id + ":" + tsMs(c.createdAt))) return;
+    if (viejo(c.createdAt, leido)) return anotarViejo("solicitud", "id=" + d.id);
     if (!aprobado(c.from) || c.to === c.from) return;
     return repartir("solicitud", "id=" + d.id, aprobado(c.to) ? [c.to] : [], avisoSolicitud(d.id, c));
   }
-  function aceptada(d){
+  function aceptada(d, leido){
     const c = d.data() || {};
     if (c.status !== "aceptada" || !esTs(c.acceptedAt)) return;
     if (yaVisto("ca:" + d.id + ":" + tsMs(c.acceptedAt))) return;
+    if (viejo(c.acceptedAt, leido)) return anotarViejo("aceptada", "id=" + d.id);
     if (!aprobado(c.to) || c.to === c.from) return;
     return repartir("aceptada", "id=" + d.id, aprobado(c.from) ? [c.from] : [], avisoAceptada(d.id, c));
   }
-  function revision(d){
+  function revision(d, leido){
     const r = d.data() || {};
     if (!(typeof r.fallas === "number" && r.fallas > 0)) return;
     if (yaVisto("v:" + d.id)) return;
+    if (viejo(r.at, leido)) return anotarViejo("revision", "id=" + d.id);
     if (!aprobado(r.by)) return;
     const destinos = aprobados().filter(u => {
       const p = personas.get(u);
@@ -424,10 +457,11 @@ function start(opts){
   function quizasBase(){ if (tengoPersonas && tengoEquipos) listoBase(); }
   function atender(nombreL, tipos, fn){
     return snap => {
+      const leido = tsMs(snap.readTime) || now();
       snap.docChanges().forEach(ch => {
         if (tipos.indexOf(ch.type) < 0) return;
         const d = ch.doc;
-        seguir(base.then(() => parado ? null : fn(d)).catch(e => fatal(nombreL, e)));
+        seguir(base.then(() => parado ? null : fn(d, leido)).catch(e => fatal(nombreL, e)));
       });
     };
   }
@@ -478,6 +512,22 @@ function start(opts){
     }
   }
 
+  // Las escuchas de Firestore reintentan solas, sin avisar, si la sesión de
+  // Firebase venció o se acabó la cuota del día: cada 15 minutos se lee
+  // config/push y, si falla 3 veces seguidas, se reinicia (y queda en el registro).
+  let fallasSalud = 0;
+  const salud = setInterval(() => {
+    if (parado || !todoListo) return;
+    db.collection("config").doc("push").get()
+      .then(() => { fallasSalud = 0; })
+      .catch(e => {
+        fallasSalud++;
+        log("no pude leer config/push (" + fallasSalud + " de " + SALUD_FALLAS + "): " + resumenError(e));
+        if (fallasSalud >= SALUD_FALLAS) fatal("conexión con Firebase", e);
+      });
+  }, opts.saludCada || SALUD_CADA);
+  if (salud.unref) salud.unref();
+
   log("arrancando: me pongo al día desde " + new Date(since).toISOString() + (huboEstado ? "" : " (primera vez: los mensajes viejos no se mandan)"));
   const ready = (async () => {
     await asegurarLlave();
@@ -497,6 +547,7 @@ function start(opts){
     parado = true;
     unsubs.forEach(u => { try { u(); } catch (e) { /* nada */ } });
     clearInterval(timer);
+    clearInterval(salud);
     // espera lo que se estaba enviando (máximo 10 segundos)
     await Promise.race([Promise.all(Array.from(pendientes)).catch(() => {}), esperar(10000)]);
     guardar(true);

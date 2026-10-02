@@ -367,6 +367,36 @@ await t("lo que pasó con el enviador apagado se manda al volver", async () => {
 });
 await h.stop();
 
+// Como si el iMac llevara un rato largo sin internet: el enviador cree que es
+// media hora antes, así sus consultas alcanzan cosas de hace 20 minutos. Esas
+// ya no se avisan (se compara con la hora del servidor); lo nuevo sí.
+await t("lo de hace más de 10 minutos no se avisa aunque llegue tarde", async () => {
+  // (con el mismo estado de antes: lo ya enviado no se repite)
+  const h2 = av.start({ db: db, send: send, dataDir: dir, now: () => Date.now() - 30 * 60e3, log: (...x) => logs.push(x.join(" ")),
+    onFatal: e => { console.log("FATAL", e); process.exit(1); } });
+  try {
+  await h2.ready;
+  await nada(300);
+  const hace20 = Timestamp.fromMillis(Date.now() - 20 * 60e3);
+  await db.collection("avisos").doc("atrasado").set({ titulo: "Aviso atrasado", texto: "x", tipo: "sistema", by: RAFA, byName: U[RAFA].name, at: hace20 });
+  await esperarLog("aviso id=atrasado de hace más de");
+  // un grupo que aparece ahora, con un mensaje de hace 20 minutos (como los que
+  // se acumulan mientras el iMac no tiene internet) y luego uno nuevo
+  const G2 = "grupo-atrasado";
+  const b = db.batch();
+  b.set(db.collection("chats").doc(G2), { type: "grupo", name: "Turno noche", members: ["B", "C"], createdBy: "B", createdAt: hace20,
+    lastText: "atrasado", lastAt: FieldValue.serverTimestamp(), lastFrom: "B", lastFromName: U.B.name });
+  b.set(db.collection("chats").doc(G2).collection("mensajes").doc(), { from: "B", fromName: U.B.name, text: "atrasado", at: hace20 });
+  await b.commit();
+  await esperarLog("chat=" + G2 + " atrasados=1");
+  await nada(300);
+  await mensaje(G2, "B", "Este sí es nuevo");
+  const l = await recibir(1, "mensaje nuevo con el reloj atrasado");
+  assert.deepEqual(ids(l), ["C_carla001"]);
+  assert.deepEqual(l[0].p, { t: "Turno noche", b: "Beto Pérez: Este sí es nuevo", tag: "chat-" + G2, go: "chat:" + G2 });
+  } finally { await h2.stop(); }
+});
+
 await t("el registro no tiene textos, nombres de mensajes ni llaves", () => {
   const todo = logs.join("\n");
   const k = JSON.parse(readFileSync(join(dir, "vapid.json"), "utf8"));

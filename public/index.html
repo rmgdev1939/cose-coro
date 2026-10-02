@@ -5686,6 +5686,20 @@
 
   // --- ayudas ------------------------------------------------------------------
   function falla(t){ var e = new Error(t); e.cc = true; return e; }
+  // ¿sigue adentro la misma persona? (unlock() llama a start() con un objeto
+  // nuevo cada vez que cambia su cuenta: se compara por uid)
+  function sigue(c){ return !!X && !!c && X.uid === c.uid; }
+  // quita del teléfono los avisos que ya estaban a la vista (al cerrar sesión o
+  // al cambiar de persona, para que el siguiente no lea los mensajes del anterior)
+  function cerrarAvisos(){
+    if (!("serviceWorker" in navigator)) return;
+    try{
+      navigator.serviceWorker.getRegistration().then(function(r){
+        if (!r || !r.getNotifications) return;
+        return r.getNotifications().then(function(l){ l.forEach(function(n){ try{ n.close(); }catch(e){} }); });
+      }).then(null, function(){});
+    }catch(e){}
+  }
   function conLimite(p, ms, texto){
     return new Promise(function(ok, mal){
       var t = setTimeout(function(){ mal(falla(texto || T_RED)); }, ms);
@@ -5790,10 +5804,10 @@
       return registro().then(function(r){ sw = r; return suscribir(r, clave); });
     }).then(function(s){
       sub = s;
-      if (X !== c) throw falla("");
+      if (!sigue(c)) throw falla("");
       return guardarDoc(c, sub);
     }).then(function(){
-      if (X !== c) throw falla("");
+      if (!sigue(c)) throw falla("");
       if (!guardarReg(c.uid, sub.endpoint)) throw falla("Este navegador no deja guardar datos en este equipo (¿ventana privada?). Abre la app normal e inténtalo otra vez.");
       // aviso de prueba, para que se vea cómo llegan
       try{
@@ -5807,7 +5821,7 @@
       borrar(REG_KEY);
       if (sub){ sub.unsubscribe().then(null, function(){}); quitarDoc(c); }
       ocupado = false;
-      if (X === c) avisar(textoError(e), "err");
+      if (sigue(c)) avisar(textoError(e), "err");
       else { nota = null; paint(); }
     });
   }
@@ -5817,7 +5831,7 @@
     borrar(REG_KEY);
     Promise.all([quitarDoc(c), desuscribir()]).then(function(){
       ocupado = false;
-      if (X === c) avisar("Desactivado en este equipo.");
+      if (sigue(c)) avisar("Desactivado en este equipo.");
       else { nota = null; paint(); }
     });
   }
@@ -5829,6 +5843,7 @@
     if (r && r.uid !== c.uid){
       // eran los avisos de otra persona que usó este teléfono: que dejen de llegar aquí
       borrar(REG_KEY);
+      cerrarAvisos();
       limpieza = desuscribir().then(paint);
       return;
     }
@@ -5851,14 +5866,16 @@
         if (sub && (!clave || mismaClave(sub, clave))) return sub;
         if (!clave){ perdido = true; throw falla("sin llave"); }
         // el navegador perdió la suscripción o cambió la llave: una nueva, sin preguntar
-        return suscribir(sw, clave).then(null, function(e){ perdido = true; throw e; });
+        // (si el teléfono no lo permite, se da por perdida; si es por falta de
+        // internet, se intenta otra vez la próxima vez que se abra la app)
+        return suscribir(sw, clave).then(null, function(e){ if (e && e.name === "NotAllowedError") perdido = true; throw e; });
       }).then(function(s){
-        if (X !== c) return null;
-        return guardarDoc(c, s).then(function(){ if (X === c) guardarReg(c.uid, s.endpoint); });
+        if (!sigue(c)) return null;
+        return guardarDoc(c, s).then(function(){ if (sigue(c)) guardarReg(c.uid, s.endpoint); });
       });
     }).then(null, function(){
       // sin internet: se intenta otra vez la próxima vez que se abra la app
-      if (!perdido || X !== c) return;
+      if (!perdido || !sigue(c)) return;
       borrar(REG_KEY);
       quitarDoc(c);
       paint();
@@ -5884,9 +5901,12 @@
   // al cerrar sesión (antes de salir): este equipo deja de recibir los avisos de la cuenta
   function olvidar(){
     var c = X || prev, r = reg();
-    if (!c || !r || r.uid !== c.uid) return Promise.resolve();
+    cerrarAvisos();
+    if (!soporte()) return Promise.resolve();
+    var tareas = [desuscribir()];
+    if (c && r && r.uid === c.uid) tareas.push(quitarDoc(c));
     borrar(REG_KEY);
-    return Promise.all([quitarDoc(c), desuscribir()]).then(function(){ paint(); }, function(){});
+    return Promise.all(tareas).then(function(){ paint(); }, function(){});
   }
 
   // --- al tocar un aviso: abrir lo que corresponde -------------------------------------
@@ -5925,12 +5945,15 @@
     try{ history.replaceState(history.state, "", location.pathname + (location.hash || "")); }catch(e){}
   })();
   // la app ya estaba abierta: el service worker (sw.js) avisa qué abrir.
-  // ("cc-push" no hace falta: la app abierta ya muestra sus propios avisos)
+  // "cc-push" llega cuando el aviso no se mostró porque la app estaba a la
+  // vista: la app ya muestra sus propios avisos, salvo los de soporte.
   if ("serviceWorker" in navigator){
     try{
       navigator.serviceWorker.addEventListener("message", function(e){
         var d = e && e.data;
         if (d && typeof d === "object" && d.type === "cc-go") route(d.go);
+        else if (d && typeof d === "object" && d.type === "cc-push" && d.go === "soporte" && X && X.toast)
+          X.toast(String(d.t || "") + (d.b ? ": " + String(d.b).slice(0, 80) : ""));
       });
     }catch(e){}
   }

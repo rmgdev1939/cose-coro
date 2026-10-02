@@ -51,7 +51,8 @@ Cómo funciona: el teléfono guarda en `push/{uid}_{equipo}` su dirección de av
 - Registro: `~/Library/Logs/cosecoro-avisos.log` (solo dice qué tipo de aviso salió y a cuántos equipos; nunca los textos).
 - Parar: `launchctl bootout gui/$(id -u)/com.cosecoro.avisos` (para volver a encenderlo, correr otra vez `instalar.sh`).
 - Las llaves y el estado quedan en `~/Library/Application Support/CoseCoro` (`vapid.json` y `avisos-estado.json`). No borrar `vapid.json` ni subirlo al repositorio: si se pierde, cada persona tiene que volver a activar los avisos.
-- Si el iMac está apagado o sin internet, estos avisos esperan: al volver, manda lo de los últimos 10 minutos (lo más viejo ya no, para no llenar el teléfono de avisos atrasados). Los avisos dentro de la app (campanita, chat) siguen funcionando igual.
+- Si el iMac está apagado o sin internet, estos avisos no salen: al volver solo manda lo de los últimos 10 minutos (lo más viejo no, para no llenar el teléfono de avisos atrasados). Los avisos dentro de la app (campanita, chat) siguen funcionando igual.
+- Después de un corte de luz, el programa arranca cuando se entra a la sesión del usuario en el iMac (igual que el medidor). Para que el iMac se encienda solo al volver la luz: Ajustes del Sistema → Energía → «Arrancar automáticamente después de un corte de luz».
 
 ## Datos en la nube
 

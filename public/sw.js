@@ -33,11 +33,15 @@ self.addEventListener("fetch", (event) => {
     // Con internet lento no se espera más de 4 segundos: se abre la copia
     // guardada y la versión nueva queda lista para la próxima vez. Solo se
     // guardan respuestas buenas (una página de error no reemplaza la copia).
-    const saved = () => caches.match(event.request).then((c) => c || caches.match("index.html"));
+    // (la página se guarda sin lo que va después de "?": así abrir la app desde
+    // un aviso, con ?go=..., no deja una copia más por cada chat)
+    const pageKey = url.origin + url.pathname;
+    const saved = () => caches.match(pageKey).then((c) => c || caches.match(event.request, { ignoreSearch: true }))
+      .then((c) => c || caches.match("index.html"));
     const net = fetch(event.request).then((res) => {
       if (res.ok) {
         const copy = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+        caches.open(CACHE).then((cache) => cache.put(pageKey, copy)).catch(() => {});
       }
       return res;
     });
