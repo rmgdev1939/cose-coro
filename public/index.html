@@ -970,6 +970,28 @@
   .h-item:last-child{border-bottom:none;}
   .h-item .h-t{font-weight:700;} .h-item .h-s{color:var(--ink-soft); font-size:0.76rem;}
   .h-item.mal .h-t{color:#C2403A;}
+  /* Códigos de radio (Código 5) */
+  .tool-tile.tile-cod{border-left-color:#D62828;}
+  .c5-globo{position:fixed; left:50%; transform:translateX(-50%); top:calc(70px + env(safe-area-inset-top,0px)); z-index:60;
+    width:min(460px, calc(100% - 24px)); box-sizing:border-box; background:#D62828; color:#fff; border-radius:18px;
+    padding:12px 14px; box-shadow:0 10px 30px rgba(214,40,40,.45); animation:c5Blink 1s ease-in-out infinite;}
+  .c5-globo.ok{background:#1F7A4D; box-shadow:0 10px 30px rgba(31,122,77,.4); animation:none;}
+  .c5-globo .t{font-weight:800; font-size:1rem; letter-spacing:.02em;}
+  .c5-globo .d{font-size:0.92rem; margin-top:3px; overflow-wrap:anywhere;}
+  .c5-globo .s{font-size:0.76rem; opacity:.9; margin-top:2px;}
+  .c5-globo .b{display:flex; gap:8px; margin-top:10px;}
+  .c5-globo button{flex:1; border:none; border-radius:12px; padding:10px; font-weight:700; font-size:0.92rem; cursor:pointer;}
+  .c5-globo .si{background:#fff; color:#D62828;} .c5-globo.ok .si{color:#1F7A4D;}
+  .c5-globo .no{background:rgba(255,255,255,.18); color:#fff;}
+  @keyframes c5Blink{0%,100%{background:#D62828;} 50%{background:#8E1414;}}
+  @media (prefers-reduced-motion: reduce){ .c5-globo{animation:none;} }
+  .c5-row{padding:10px 0; border-bottom:1px solid var(--line);}
+  .c5-row:last-child{border-bottom:none;}
+  .c5-row .m{font-weight:600; font-size:0.9rem; overflow-wrap:anywhere;} .c5-row .s{font-size:0.76rem; color:var(--ink-soft); margin-top:2px;}
+  .c5-row .btns{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
+  .c5-est{display:inline-block; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:99px; margin-right:6px; vertical-align:1px;}
+  .c5-est.abierto{background:#FDE2E2; color:#B42318;} .c5-est.aceptado{background:#FFF1D6; color:#9A5B00;}
+  .c5-est.llevado{background:#DDF3E6; color:#1F7A4D;} .c5-est.cancelado{background:var(--line); color:var(--ink-soft);}
   .tool-tile.tile-falt{border-left-color:#C2403A;}
   .fa-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);}
   .fa-row:last-child{border-bottom:none;}
@@ -1180,6 +1202,7 @@
   <button class="chat-chip" id="chatBtn" aria-label="Chat del equipo" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="badge" id="chatBtnBadge" hidden></span></button>
   <button class="profile-chip" id="profileChip" aria-label="Mi perfil" type="button">?</button>
 </header>
+<div class="c5-globo" id="c5Globo" role="alert" hidden></div>
 
 <main>
 
@@ -1516,6 +1539,15 @@
       <span class="tool-text">
         <span class="tool-title">Editor del mapa</span>
         <span class="tool-sub">Autoservicio e inventario: dónde va cada artículo</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-cod" id="c5Tile" type="button" hidden>
+      <span class="tool-icon" style="color:#D62828"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="15" rx="2"/><path d="M10 7V2"/><path d="M10 12h4M10 16h4"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Código 5 · Bajar mercancía</span>
+        <span class="tool-sub" id="c5TileSub">Pide a Autoservicio que baje o lleve algo a chequeo</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -2454,6 +2486,28 @@
   </div>
 </div>
 
+<div class="screen" id="screen-codigos" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Código 5 · Bajar mercancía</p>
+  <section class="card">
+    <form class="pf-form" id="c5Form" novalidate>
+      <div><label for="c5Ped">¿Qué hay que bajar o traer a chequeo?</label><input type="text" id="c5Ped" class="hist-search" maxlength="80" autocomplete="off" placeholder="Ej: 25 m de cable 12 THW"></div>
+      <div><label for="c5Nota">Detalle (opcional)</label><input type="text" id="c5Nota" class="hist-search" maxlength="200" autocomplete="off" placeholder="Ej: pasillo 4, caja 2, cliente esperando"></div>
+      <p class="pf-msg" id="c5Msg"></p>
+      <button class="btn primary" type="submit" id="c5Send" style="background:#D62828; border-color:#D62828; color:#fff;">Pedir Código 5</button>
+    </form>
+  </section>
+  <section class="card">
+    <div class="card-title">Últimas 24 horas</div>
+    <div id="c5Lista"></div>
+  </section>
+</div>
+
 <div class="screen" id="screen-faltantes" hidden>
   <div class="backbar">
     <button class="backbtn" data-back>
@@ -2742,7 +2796,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
   };
   var headerTags = {
     home: "Sucursal Coro · herramientas",
@@ -2774,6 +2828,7 @@
     techo: "Techos · láminas y tornillos",
     tanque: "Tanques de agua",
     faltantes: "Lo pidieron y no hay",
+    codigos: "Código 5 · Autoservicio",
     flota: "Vehículos",
     vehiculo: "Vehículos"
   };
@@ -6047,6 +6102,8 @@
     var med = $("ppMed"); med.innerHTML = "";
     var n = +(p.medallas || 0);
     if (n > 0) med.appendChild(window.coseMedalla(n, true));
+    var n5 = +(p.c5 || 0);
+    if (n5 > 0) med.appendChild(el("span", "medal conn", "📦 " + n5 + (n5 === 1 ? " Código 5 llevado" : " Códigos 5 llevados")));
     var nc = u === me ? compas().length : +(p.companeros || 0);
     med.appendChild(el("span", "medal conn", "👥 " + nc + (nc === 1 ? " compañero" : " compañeros")));
     var act = $("ppActions"); act.innerHTML = "";
@@ -7469,7 +7526,7 @@
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v46" → 46). Subir los dos juntos en cada versión.
-  var APP_BUILD = 46;
+  var APP_BUILD = 48;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -8767,6 +8824,193 @@
 
 <script>
 // ============================================================================
+// CÓDIGOS DE RADIO (por ahora solo el Código 5: bajar o traer mercancía a
+// chequeo). Cualquiera lo pide (codigos/). A todo Autoservicio (y al
+// administrador) le sale un globo rojo que parpadea arriba para Aceptar o
+// Rechazar. Quien acepta lo hace y marca "Lo llevé a chequeo"; eso suma 1
+// en su perfil (perfiles/{uid}.c5, contado en el servidor).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var X = null, unsub = null, lista = [], avisados = {}, primera = true, timer = null;
+  var EST = { abierto:"Esperando", aceptado:"En camino", llevado:"Llevado ✓", cancelado:"Cancelado" };
+  function recibe(me){ return !!me && (me.role === "admin" || me.cargo === "Autoservicio"); }
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : Date.now(); }
+  function hora(t){ return new Date(t).toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" }); }
+  function nom(s){ return String(s || "").split(" ")[0]; }
+  function F(){ return X.F; }
+  function ref(id){ return F().doc(X.db, "codigos", id); }
+  function fallo(){ X.toast("No se pudo. Revisa tu internet."); }
+
+  function alerta(c){
+    try{ if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 300]); }catch(e){}
+    try{
+      var A = window.AudioContext || window.webkitAudioContext, a = new A();
+      [0, 0.25, 0.5].forEach(function(d){
+        var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + d;
+        o.frequency.value = 880; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.2);
+      });
+    }catch(e){}
+    // con la app abierta pero en otra pestaña o minimizada
+    try{
+      if (document.hidden && window.Notification && Notification.permission === "granted" && navigator.serviceWorker)
+        navigator.serviceWorker.ready.then(function(r){ r.showNotification("🚨 Código 5", { body:c.pedido + " · pide " + nom(c.byName), tag:"c5-" + c.id, renotify:true }); });
+    }catch(e){}
+  }
+
+  function globo(){
+    var g = $("c5Globo"); g.innerHTML = ""; g.className = "c5-globo";
+    if (!X){ g.hidden = true; return; }
+    var mio = lista.filter(function(c){ return c.estado === "aceptado" && c.tomadoPor === X.uid; })[0];
+    var abiertos = recibe(X.me) ? lista.filter(function(c){ return c.estado === "abierto" && c.by !== X.uid && (c.rechazos || []).indexOf(X.uid) < 0; }) : [];
+    var b;
+    if (mio){
+      g.classList.add("ok");
+      g.appendChild(el("div", "t", "Tu Código 5"));
+      g.appendChild(el("div", "d", mio.pedido));
+      g.appendChild(el("div", "s", "Para " + nom(mio.byName) + (mio.nota ? " · " + mio.nota : "")));
+      b = el("div", "b"); g.appendChild(b);
+      boton(b, "si", "Lo llevé a chequeo", function(){ terminar(mio); });
+    } else if (abiertos.length){
+      var c = abiertos[abiertos.length - 1];
+      g.appendChild(el("div", "t", "🚨 CÓDIGO 5" + (abiertos.length > 1 ? " · " + abiertos.length + " esperando" : "")));
+      g.appendChild(el("div", "d", c.pedido));
+      g.appendChild(el("div", "s", "Pide " + nom(c.byName) + " · " + hora(ms(c.at)) + (c.nota ? " · " + c.nota : "")));
+      b = el("div", "b"); g.appendChild(b);
+      boton(b, "si", "Aceptar", function(){ aceptar(c); });
+      boton(b, "no", "Rechazar", function(){ rechazar(c); });
+    } else { g.hidden = true; return; }
+    g.hidden = false;
+  }
+  function boton(box, cls, text, fn){
+    var x = el("button", cls, text); x.type = "button";
+    x.addEventListener("click", function(){ x.disabled = true; fn(x); });
+    box.appendChild(x); return x;
+  }
+
+  function aceptar(c){
+    var r = ref(c.id);
+    F().runTransaction(X.db, function(tx){
+      return tx.get(r).then(function(s){
+        if (!s.exists() || s.data().estado !== "abierto") throw "tomado";
+        tx.update(r, { estado:"aceptado", tomadoPor:X.uid, tomadoPorNombre:X.me.name, tomadoAt:F().serverTimestamp() });
+      });
+    }).then(function(){ X.toast("Aceptaste el Código 5. Al terminar toca «Lo llevé a chequeo»."); },
+            function(e){ X.toast(e === "tomado" ? "Otra persona ya lo aceptó." : "No se pudo. Revisa tu internet."); globo(); });
+  }
+  function rechazar(c){
+    F().updateDoc(ref(c.id), { rechazos:(c.rechazos || []).concat([X.uid]) }).catch(function(){ fallo(); globo(); });
+  }
+  function terminar(c){
+    F().updateDoc(ref(c.id), { estado:"llevado", finAt:F().serverTimestamp() })
+      .then(function(){ X.toast("✓ ¡Listo! +1 Código 5 en tu perfil."); contar(); }, function(){ fallo(); globo(); });
+  }
+  function cancelar(c){
+    if (!confirm("¿Cancelar este Código 5?")) return;
+    F().updateDoc(ref(c.id), { estado:"cancelado", finAt:F().serverTimestamp() }).catch(fallo);
+  }
+  // Contribuciones: se cuentan en el servidor (1 lectura) y se copian al perfil.
+  function contar(){
+    if (!X || !F().getCountFromServer) return;
+    var mine = X;
+    F().getCountFromServer(F().query(F().collection(X.db, "codigos"), F().where("tomadoPor", "==", X.uid), F().where("estado", "==", "llevado"))).then(function(s){
+      if (X !== mine) return;
+      var n = s.data().count, p = window.coseChat && window.coseChat.people()[X.uid];
+      if (p && +(p.c5 || 0) === n) return;
+      if (!n && !p) return;
+      F().setDoc(F().doc(X.db, "perfiles", X.uid), { c5:n, updatedAt:F().serverTimestamp() }, { merge:true }).catch(function(){});
+    }, function(){});
+  }
+
+  function paint(){
+    globo();
+    var abiertos = lista.filter(function(c){ return c.estado === "abierto"; }).length;
+    $("c5TileSub").textContent = abiertos ? abiertos + " Código 5 esperando que alguien lo acepte" : "Pide a Autoservicio que baje o lleve algo a chequeo";
+    if (!X || current() !== "codigos") return;
+    var box = $("c5Lista"); box.innerHTML = "";
+    if (!lista.length) box.appendChild(el("div", "c-empty", "No hay Códigos 5 en las últimas 24 horas."));
+    lista.forEach(function(c){
+      var r = el("div", "c5-row"), m = el("div", "m");
+      m.appendChild(el("span", "c5-est " + c.estado, EST[c.estado] || c.estado));
+      m.appendChild(document.createTextNode(c.pedido));
+      r.appendChild(m);
+      var s = hora(ms(c.at)) + " · pide " + nom(c.byName) + (c.nota ? " · " + c.nota : "");
+      if (c.tomadoPorNombre) s += " · " + (c.estado === "llevado" ? "lo llevó " : "lo lleva ") + nom(c.tomadoPorNombre);
+      r.appendChild(el("div", "s", s));
+      var bb = el("div", "btns");
+      function bt(text, fn, prim){ var x = el("button", "hist-copybtn" + (prim ? " wa" : ""), text); x.type = "button"; x.addEventListener("click", function(){ fn(c); }); bb.appendChild(x); }
+      if (c.estado === "abierto" && recibe(X.me) && c.by !== X.uid) bt("Aceptar", aceptar, true);
+      if (c.estado === "aceptado" && c.tomadoPor === X.uid) bt("Lo llevé a chequeo", terminar, true);
+      if ((c.estado === "abierto" || c.estado === "aceptado") && (c.by === X.uid || X.me.role === "admin")) bt("Cancelar", cancelar);
+      if (bb.childNodes.length) r.appendChild(bb);
+      box.appendChild(r);
+    });
+  }
+  function pedir(e){
+    e.preventDefault();
+    var ped = $("c5Ped").value.trim().replace(/\s+/g, " ").slice(0, 80), msg = $("c5Msg");
+    if (ped.length < 2){ msg.className = "pf-msg err"; msg.textContent = "Escribe qué hay que bajar."; return; }
+    $("c5Send").disabled = true;
+    F().addDoc(F().collection(X.db, "codigos"), { codigo:5, pedido:ped, nota:$("c5Nota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
+      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Código 5 enviado a Autoservicio. Aquí abajo ves quién lo acepta."; $("c5Ped").value = ""; $("c5Nota").value = ""; },
+            function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
+      .then(function(){ $("c5Send").disabled = false; });
+  }
+  function open(){
+    if (!X) return;
+    window.coseApp.showScreen("codigos");
+    $("c5Msg").textContent = "";
+    paint();
+  }
+  function escuchar(){
+    if (unsub){ try{ unsub(); }catch(e){} }
+    var desde = F().Timestamp.fromMillis(Date.now() - 86400000);
+    unsub = F().onSnapshot(F().query(F().collection(X.db, "codigos"), F().where("at", ">=", desde)), function(s){
+      var antes = {}; lista.forEach(function(c){ antes[c.id] = c; });
+      lista = []; s.forEach(function(d){ var c = d.data({ serverTimestamps:"estimate" }); c.id = d.id; lista.push(c); });
+      lista.sort(function(a, b){ return ms(b.at) - ms(a.at); });
+      lista.forEach(function(c){
+        var a = antes[c.id];
+        if (!primera && recibe(X.me) && c.estado === "abierto" && c.by !== X.uid && !avisados[c.id]) alerta(c);
+        if (!primera && a && c.by === X.uid && a.estado !== c.estado){
+          if (c.estado === "aceptado" && c.tomadoPor !== X.uid) X.toast("✓ " + nom(c.tomadoPorNombre) + " aceptó tu Código 5: " + c.pedido);
+          if (c.estado === "llevado" && c.tomadoPor !== X.uid) X.toast("✓ " + nom(c.tomadoPorNombre) + " llevó a chequeo: " + c.pedido);
+        }
+        if (c.estado === "abierto") avisados[c.id] = 1;
+      });
+      primera = false;
+      paint();
+    }, function(){});
+  }
+  function start(ctx){
+    if (X){ X.me = ctx.me; paint(); return; }
+    X = ctx; primera = true;
+    $("c5Tile").hidden = false;
+    escuchar();
+    // la ventana de 24 h se corre cada hora
+    timer = setInterval(function(){ if (X) escuchar(); }, 3600000);
+    if (recibe(X.me)) setTimeout(contar, 4000);
+  }
+  function stop(){
+    if (unsub){ try{ unsub(); }catch(e){} } unsub = null;
+    if (timer) clearInterval(timer); timer = null;
+    X = null; lista = []; avisados = {};
+    $("c5Tile").hidden = true; $("c5Globo").hidden = true;
+    if (current() === "codigos") window.coseApp.showScreen("home");
+  }
+  $("c5Tile").addEventListener("click", open);
+  $("c5Form").addEventListener("submit", function(e){ if (X) pedir(e); else e.preventDefault(); });
+  if ((location.hash || "").slice(1) === "codigos") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
+  window.coseCodigos = { start:start, stop:stop, open:open };
+})();
+</script>
+
+<script>
+// ============================================================================
 // MENÚ LATERAL (versión web): repite los accesos de la app y se muestra solo
 // en pantallas grandes. Cada opción toca el botón real de la app, así respeta
 // quién puede ver qué; se oculta y marca puntos rojos igual que el original.
@@ -8783,6 +9027,7 @@
     editor:'<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
     chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/>',
     bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+    c5:'<rect x="7" y="7" width="10" height="15" rx="2"/><path d="M10 7V2"/><path d="M10 12h4M10 16h4"/>',
     fa:'<path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/><path d="M4 6h16"/><path d="M9 11l6 6M15 11l-6 6"/>',
     flota:'<path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
     capac:'<circle cx="12" cy="15" r="6"/><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7"/>',
@@ -8798,6 +9043,7 @@
     ["sec", "Equipo"],
     ["chat", "Chat", "chat", "chatBtn", "chatBtn", "chatBtnBadge"],
     ["bell", "Notificaciones", "bell", "bellBtn", "bellBtn", "bellBadge"],
+    ["c5", "Código 5", "c5", "c5Tile", "c5Tile"],
     ["fa", "Lo pidieron y no hay", "fa", "faTile", "faTile"],
     ["flota", "Vehículos", "flota", "flTile", "flTile"],
     ["capac", "Capacitación", "capac", "capTile", "capTile"],
@@ -8806,7 +9052,7 @@
     ["help", "Ayuda y soporte", "help", "helpBtn", null, null, "hdot"]
   ];
   var ACTIVE = { home:"home", calculadoras:"calc", cieloraso:"calc", recubrimientos:"calc", bloques:"calc", piso:"calc", concreto:"calc", techo:"calc", tanque:"calc", proyecto:"calc",
-    mapa:"mapa", editor:"editor", chat:"chat", conv:"chat", grupo:"chat", perfilpub:"chat", avisos:"bell", faltantes:"fa", flota:"flota", vehiculo:"flota",
+    mapa:"mapa", editor:"editor", chat:"chat", conv:"chat", grupo:"chat", perfilpub:"chat", avisos:"bell", faltantes:"fa", codigos:"c5", flota:"flota", vehiculo:"flota",
     capac:"capac", leccion:"capac", dashboard:"dash", ajustes:"dash", perfil:"dash", monitor:"dash", admin:"dash", reporte:"dash", historial:"dash", soporte:"help" };
   var els = {};
   var brand = document.createElement("button");
@@ -8857,7 +9103,7 @@
   function later(){ if (queued) return; queued = true; requestAnimationFrame(function(){ queued = false; sync(); }); }
   var mo = new MutationObserver(later);
   document.querySelectorAll(".screen").forEach(function(sc){ mo.observe(sc, { attributes:true, attributeFilter:["hidden"] }); });
-  ["editorTile", "chatBtn", "bellBtn", "faTile", "flTile", "capTile", "chatBtnBadge", "bellBadge", "helpBtn"].forEach(function(id){
+  ["editorTile", "chatBtn", "bellBtn", "c5Tile", "faTile", "flTile", "capTile", "chatBtnBadge", "bellBadge", "helpBtn"].forEach(function(id){
     var n = $(id); if (n) mo.observe(n, { attributes:true, attributeFilter:["hidden"], childList:true, characterData:true, subtree:true });
   });
   sync();
@@ -9143,6 +9389,7 @@
       if (window.coseCapac) window.coseCapac.stop();
       if (window.coseFlota) window.coseFlota.stop();
       if (window.coseFaltantes) window.coseFaltantes.stop();
+      if (window.coseCodigos) window.coseCodigos.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -9155,6 +9402,7 @@
       if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
+      if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:me });
       if (unlocked){

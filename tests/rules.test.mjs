@@ -320,6 +320,36 @@ await t("aparato muy largo no", () => assertFails(setDoc(doc(B, "uso", "B"), uso
 await t("pendiente no guarda uso", () => assertFails(setDoc(doc(D, "uso", "D"), Object.assign(usoB(), { name: "Dani" }), { merge: true })));
 await t("nadie lo borra", () => assertFails(deleteDoc(doc(B, "uso", "B"))));
 
+console.log("código 5");
+{
+  const AUT = as("AUT"), ts = serverTimestamp();
+  const nuevo = (extra = {}) => ({ codigo: 5, pedido: "25 m de cable", nota: "", by: "B", byName: "Beto", at: ts, estado: "abierto", ...extra });
+  await t("B pide un Código 5", () => assertSucceeds(setDoc(doc(B, "codigos", "k1"), nuevo())));
+  await t("no se pide a nombre de otro", () => assertFails(setDoc(doc(B, "codigos", "k2"), nuevo({ by: "C", byName: "Carla" }))));
+  await t("no se crea ya aceptado", () => assertFails(setDoc(doc(B, "codigos", "k2"), nuevo({ estado: "aceptado" }))));
+  await t("D (pendiente) no pide", () => assertFails(setDoc(doc(D, "codigos", "k2"), nuevo({ by: "D", byName: "Dani Pendiente" }))));
+  await t("Inventario lee los códigos", () => assertSucceeds(getDoc(doc(as("INV"), "codigos", "k1"))));
+  await t("C (Ventas) no acepta", () => assertFails(updateDoc(doc(C, "codigos", "k1"), { estado: "aceptado", tomadoPor: "C", tomadoPorNombre: "Carla", tomadoAt: ts })));
+  await t("Autoservicio rechaza (solo para sí)", () => assertSucceeds(updateDoc(doc(AUT, "codigos", "k1"), { rechazos: ["AUT"] })));
+  await t("no rechaza por otro", () => assertFails(updateDoc(doc(AUT, "codigos", "k1"), { rechazos: ["AUT", "INV"] })));
+  await t("Autoservicio no lo acepta a nombre de otro", () => assertFails(updateDoc(doc(AUT, "codigos", "k1"), { estado: "aceptado", tomadoPor: "C", tomadoPorNombre: "Carla", tomadoAt: ts })));
+  await t("Autoservicio acepta", () => assertSucceeds(updateDoc(doc(AUT, "codigos", "k1"), { estado: "aceptado", tomadoPor: "AUT", tomadoPorNombre: "Aura Autoservicio", tomadoAt: ts })));
+  await t("el admin ya no lo acepta (está tomado)", () => assertFails(updateDoc(doc(A, "codigos", "k1"), { estado: "aceptado", tomadoPor: "A", tomadoPorNombre: "Ana Admin", tomadoAt: ts })));
+  await t("quien lo pidió no lo marca llevado", () => assertFails(updateDoc(doc(B, "codigos", "k1"), { estado: "llevado", finAt: ts })));
+  await t("quien lo aceptó lo marca llevado", () => assertSucceeds(updateDoc(doc(AUT, "codigos", "k1"), { estado: "llevado", finAt: ts })));
+  await t("ya llevado no se cancela", () => assertFails(updateDoc(doc(B, "codigos", "k1"), { estado: "cancelado", finAt: ts })));
+  await t("B pide otro", () => assertSucceeds(setDoc(doc(B, "codigos", "k3"), nuevo())));
+  await t("C no cancela el de B", () => assertFails(updateDoc(doc(C, "codigos", "k3"), { estado: "cancelado", finAt: ts })));
+  await t("B cancela el suyo", () => assertSucceeds(updateDoc(doc(B, "codigos", "k3"), { estado: "cancelado", finAt: ts })));
+  await t("B no lo borra", () => assertFails(deleteDoc(doc(B, "codigos", "k3"))));
+  await t("contar los llevados de AUT", async () => {
+    const s = await assertSucceeds(getDocs(query(collection(AUT, "codigos"), where("tomadoPor", "==", "AUT"), where("estado", "==", "llevado"))));
+    if (s.size !== 1) throw new Error("esperaba 1, hay " + s.size);
+  });
+  await t("AUT guarda c5 en su perfil", () => assertSucceeds(setDoc(doc(AUT, "perfiles", "AUT"), { c5: 1, updatedAt: ts }, { merge: true })));
+  await t("c5 no puede ser texto", () => assertFails(setDoc(doc(AUT, "perfiles", "AUT"), { c5: "9", updatedAt: ts }, { merge: true })));
+}
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));
