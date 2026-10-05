@@ -510,6 +510,13 @@
   footer .company{color:var(--ink-soft); font-weight:600;}
   footer .ft{display:flex; align-items:center; justify-content:center; gap:5px; color:var(--ink-soft); opacity:0.5; font-weight:600; font-size:0.62rem; letter-spacing:0.02em;}
   footer .ft-mark{width:11px; height:11px;}
+  footer .dl-btn{display:inline-flex; align-items:center; gap:6px; margin:0 auto 8px; padding:7px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font:inherit; font-size:0.78rem; font-weight:600; cursor:pointer;}
+  footer .dl-btn svg{width:15px; height:15px;}
+  footer .dl-box{max-width:340px; margin:0 auto 10px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:var(--surface-2); color:var(--ink); text-align:left; font-size:0.78rem;}
+  footer .dl-tabs{display:flex; gap:6px; margin-bottom:8px;}
+  footer .dl-tabs button{flex:1; padding:6px; border-radius:8px; border:1px solid var(--line); background:none; color:var(--ink); font:inherit; font-weight:600; cursor:pointer;}
+  footer .dl-tabs button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#1b1b1b;}
+  footer .dl-box ol{margin:0; padding-left:18px;}
 
   /* --- Modo nube: acceso, edición del mapa, administración ------------- */
   .gate{position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; align-items:flex-start; justify-content:center; padding:48px 20px 20px; overflow:auto;}
@@ -2777,6 +2784,15 @@
 </div>
 
 <footer>
+  <button type="button" class="dl-btn" id="dlBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar la app</button>
+  <div class="dl-box" id="dlBox" hidden>
+    <div class="dl-tabs" role="group" aria-label="Tu teléfono">
+      <button type="button" data-dl="android" aria-pressed="true">Android</button>
+      <button type="button" data-dl="iphone" aria-pressed="false">iPhone</button>
+    </div>
+    <ol data-dl-pasos="android"><li>Abre <strong>cosecoro.web.app</strong> en Chrome.</li><li>Toca el menú <strong>⋮</strong> (arriba a la derecha).</li><li>Elige <strong>«Instalar app»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</li></ol>
+    <ol data-dl-pasos="iphone" hidden><li>Abre <strong>cosecoro.web.app</strong> en Safari.</li><li>Toca <strong>Compartir</strong> (el cuadrito con la flecha).</li><li>Elige <strong>«Agregar a inicio»</strong> y luego <strong>Agregar</strong>.</li><li>Abre Cose Coro desde el ícono nuevo.</li></ol>
+  </div>
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
@@ -2785,6 +2801,39 @@
 </footer>
 
 </main>
+
+<script>
+// Botón «Descargar la app» del pie: usa la instalación del navegador si la
+// ofrece (Android/Chrome); si no, muestra los pasos para Android o iPhone.
+(function(){
+  "use strict";
+  var btn = document.getElementById("dlBtn"), box = document.getElementById("dlBox"), aviso = null;
+  if (!btn || !box) return;
+  function instalada(){
+    try { return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; }
+    catch(e){ return false; }
+  }
+  function elegir(cual){
+    box.querySelectorAll("[data-dl]").forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-dl") === cual ? "true" : "false"); });
+    box.querySelectorAll("[data-dl-pasos]").forEach(function(o){ o.hidden = o.getAttribute("data-dl-pasos") !== cual; });
+  }
+  if (instalada()) return;
+  btn.hidden = false;
+  elegir(!/android/i.test(navigator.userAgent) && (/iphone|ipad|ipod/i.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ? "iphone" : "android");
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); aviso = e; });
+  window.addEventListener("appinstalled", function(){ btn.hidden = true; box.hidden = true; aviso = null; });
+  box.addEventListener("click", function(e){ var b = e.target.closest("[data-dl]"); if (b) elegir(b.getAttribute("data-dl")); });
+  btn.addEventListener("click", function(){
+    if (aviso) {
+      var a = aviso; aviso = null;
+      a.prompt();
+      a.userChoice.then(function(r){ if (r && r.outcome !== "accepted") box.hidden = false; }, function(){ box.hidden = false; });
+      return;
+    }
+    box.hidden = !box.hidden;
+  });
+})();
+</script>
 
 <script>
 (function(){
@@ -7934,8 +7983,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v49" → 49). Subir los dos juntos en cada versión.
-  var APP_BUILD = 49;
+  // sw.js ("coseimpa-cosecoro-v50" → 50). Subir los dos juntos en cada versión.
+  var APP_BUILD = 50;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
