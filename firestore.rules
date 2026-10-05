@@ -106,7 +106,9 @@ service cloud.firestore {
     match /perfiles/{uid} {
       allow read: if verified();
       allow create, update: if verified() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(["name", "cargo", "icon", "foto", "medallas", "companeros", "updatedAt"])
+        && request.resource.data.keys().hasOnly(["name", "cargo", "icon", "foto", "medallas", "companeros", "c5", "updatedAt"])
+        && (!("c5" in request.resource.data) || (request.resource.data.c5 is int
+             && request.resource.data.c5 >= 0 && request.resource.data.c5 <= 100000))
         && (!("companeros" in request.resource.data) || (request.resource.data.companeros is int
              && request.resource.data.companeros >= 0 && request.resource.data.companeros <= 1000))
         && (!("foto" in request.resource.data) || (request.resource.data.foto is string
@@ -320,6 +322,49 @@ service cloud.firestore {
       allow update: if comprasVer()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado"])
         && request.resource.data.estado in ["pendiente", "pedido", "descartado"];
+      allow delete: if admin();
+    }
+
+    // Códigos de radio del 1 al 8 (el 5: bajar mercancía a chequeo).
+    // Lo pide Autoservicio; Autoservicio y el administrador lo aceptan o
+    // rechazan; quien lo aceptó lo marca llevado; quien lo pidió lo cancela.
+    function autoserv() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Autoservicio"); }
+    match /codigos/{id} {
+      allow read: if verified();
+      allow create: if autoserv()
+        && request.resource.data.keys().hasOnly(["codigo", "pedido", "destino", "nota", "by", "byName", "at", "estado"])
+        && (!("destino" in request.resource.data) || (request.resource.data.destino is string && request.resource.data.destino.size() <= 30))
+        && request.resource.data.codigo is int && request.resource.data.codigo >= 1 && request.resource.data.codigo <= 8
+        && request.resource.data.pedido is string && request.resource.data.pedido.size() >= 2 && request.resource.data.pedido.size() <= 80
+        && request.resource.data.nota is string && request.resource.data.nota.size() <= 200
+        && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
+        && request.resource.data.estado == "abierto"
+        && request.resource.data.at == request.time;
+      // aceptar
+      allow update: if autoserv() && resource.data.estado == "abierto"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "tomadoPor", "tomadoPorNombre", "tomadoAt"])
+        && request.resource.data.estado == "aceptado"
+        && request.resource.data.tomadoPor == request.auth.uid
+        && request.resource.data.tomadoPorNombre == me().name
+        && request.resource.data.tomadoAt == request.time;
+      // rechazar (solo se quita el globo de quien rechaza)
+      allow update: if autoserv() && resource.data.estado == "abierto"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["rechazos"])
+        && !(request.auth.uid in resource.data.get("rechazos", []))
+        && request.resource.data.rechazos == resource.data.get("rechazos", []).concat([request.auth.uid])
+        && request.resource.data.rechazos.size() <= 100;
+      // lo llevó a chequeo
+      allow update: if verified() && resource.data.estado == "aceptado"
+        && resource.data.tomadoPor == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "finAt"])
+        && request.resource.data.estado == "llevado"
+        && request.resource.data.finAt == request.time;
+      // cancelar
+      allow update: if verified() && (resource.data.by == request.auth.uid || admin())
+        && resource.data.estado in ["abierto", "aceptado"]
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "finAt"])
+        && request.resource.data.estado == "cancelado"
+        && request.resource.data.finAt == request.time;
       allow delete: if admin();
     }
 
