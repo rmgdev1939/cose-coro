@@ -1,0 +1,14 @@
+{
+  "name": "cosecoro-avisos",
+  "private": true,
+  "description": "Enviador de avisos con la app cerrada (notificaciones push) de Cose Coro. Corre en el iMac de Rafael.",
+  "main": "avisos-push.cjs",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node avisos-push.cjs"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^8.7.1",
+    "web-push": "^3.6.7"
+  }
+}

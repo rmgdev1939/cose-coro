@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "cd .. && npx -y firebase-tools@14 emulators:exec --only firestore,database --project demo-cosecoro \"node tests/rules.test.mjs\""
+    "test": "cd .. && npx -y firebase-tools@14 emulators:exec --only firestore,database --project demo-cosecoro \"node tests/rules.test.mjs\"",
+    "test:avisos": "cd .. && npx -y firebase-tools@14 emulators:exec --only firestore --project demo-cosecoro \"node tests/avisos.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
