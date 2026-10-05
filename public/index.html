@@ -1135,6 +1135,11 @@
   .sw:checked{background:var(--accent2); border-color:var(--accent2);}
   .sw:checked::after{transform:translateX(18px); background:#fff;}
   .sw:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .sw:disabled{opacity:0.45; cursor:default;}
+  /* avisos con la app cerrada: el mensaje queda pegado a su fila */
+  #stPushRow.con-msg{border-bottom:none; padding-bottom:4px;}
+  #stPushMsg{padding-bottom:10px; border-bottom:1px solid var(--line);}
+  #stPushMsg:empty{display:none;}
   .st-info{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; padding:8px 0 4px; font-size:0.84rem;}
   .st-info dt, .st-info .k{color:var(--ink-soft);} .st-info .v{color:var(--ink); font-weight:600; overflow-wrap:anywhere;}
   .no-anim *, .no-anim *::before, .no-anim *::after{animation:none!important; transition:none!important;}
@@ -1300,6 +1305,8 @@
 
   <section class="card st-card" id="stChatCard" hidden>
     <div class="st-h">Chat y avisos</div>
+      <label class="st-row" id="stPushRow"><span class="txt"><span class="m">Avisos con la app cerrada</span><span class="s" id="stPushNote">Te llegan al teléfono los mensajes, avisos y respuestas aunque la app esté cerrada. En el aviso se ve quién escribe y el comienzo del mensaje.</span></span><input type="checkbox" class="sw" id="stPush"></label>
+      <p class="pf-msg" id="stPushMsg" style="margin:0 0 6px;"></p>
       <label class="st-row"><span class="txt"><span class="m">Avisos emergentes</span><span class="s">Mostrar en pantalla los mensajes y solicitudes nuevos.</span></span><input type="checkbox" class="sw" data-pref="avisos"></label>
       <label class="st-row"><span class="txt"><span class="m">Sonido de mensaje</span><span class="s">Un timbre corto cuando llega un mensaje.</span></span><input type="checkbox" class="sw" data-pref="sonido"></label>
       <label class="st-row" id="stVibRow"><span class="txt"><span class="m">Vibración</span><span class="s">El teléfono vibra cuando llega un mensaje.</span></span><input type="checkbox" class="sw" data-pref="vibrar"></label>
@@ -5663,6 +5670,388 @@
 
 <script>
 // ============================================================================
+// AVISOS CON LA APP CERRADA (notificaciones push): con el interruptor de
+// Ajustes → "Chat y avisos", a este equipo le llegan los mensajes del chat,
+// los avisos de la administración, las respuestas a reportes, las solicitudes
+// de compañero y las revisiones con fallas aunque la app esté cerrada.
+// Al activarlo, el navegador da una dirección de avisos (suscripción) que se
+// guarda en push/{uid}_{equipo}; los avisos los manda el programa del iMac
+// (tools/avisos/avisos-push.cjs) con la llave pública de config/push.
+// Al desactivarlo o al cerrar sesión se borra. Lo que este equipo guardó por
+// última vez queda en el navegador ("cosecoro_push").
+// Al tocar un aviso se abre la app en el chat o la pantalla que corresponde.
+// Lo arranca el bloque MODO NUBE (window.cosePush.start) al entrar a la cuenta.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var DEV_KEY = "cosecoro_push_dev", REG_KEY = "cosecoro_push";
+  var SEMANA = 7 * 86400000;     // cada cuánto se vuelve a guardar el equipo
+  var X = null, prev = null, ocupado = false, nota = null, pendiente = "", rutaN = 0, devId = "";
+  var limpieza = Promise.resolve();
+
+  var T_IOS = "En iPhone primero instala la app: botón Compartir → «Agregar a inicio». Después actívalo aquí.";
+  var T_IOS_VIEJO = "Para recibir avisos con la app cerrada hay que actualizar el iPhone (iOS 16.4 o más nuevo).";
+  var T_NO = "Este navegador no permite avisos con la app cerrada.";
+  var T_PREPARANDO = "El envío de avisos todavía se está preparando. Prueba más tarde.";
+  var T_RED = "No se pudo activar. Revisa tu internet e inténtalo otra vez.";
+  var T_SW = "La app todavía se está preparando en este equipo. Recarga la página e inténtalo otra vez.";
+  function tBloqueado(){
+    return esIOS()
+      ? "Los avisos están bloqueados para Cose Coro. Para permitirlos: Ajustes del iPhone → Notificaciones → Cose Coro → Permitir notificaciones."
+      : "Los avisos están bloqueados para Cose Coro en este equipo. Para permitirlos: toca el candado junto a la dirección → Notificaciones → Permitir. En Android también: Ajustes del teléfono → Apps → Chrome (o Cose Coro) → Notificaciones.";
+  }
+
+  // --- datos de este equipo (en el navegador) ---------------------------------
+  function leer(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function escribir(k, v){ try{ localStorage.setItem(k, v); return true; }catch(e){ return false; } }
+  function borrar(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  // identificador al azar de este equipo (16 letras y números): se crea una vez
+  function dev(){
+    if (devId) return devId;
+    var d = leer(DEV_KEY);
+    if (!d || !/^[a-z0-9]{8,24}$/.test(d)){
+      var abc = "abcdefghijklmnopqrstuvwxyz0123456789", b = null, i;
+      try{ b = new Uint8Array(16); window.crypto.getRandomValues(b); }catch(e){ b = null; }
+      d = "";
+      for (i = 0; i < 16; i++) d += abc.charAt(b ? b[i] % 36 : Math.floor(Math.random() * 36));
+      escribir(DEV_KEY, d);
+    }
+    devId = d;
+    return d;
+  }
+  // lo que este equipo guardó por última vez: { uid, endpoint, at }
+  function reg(){
+    var r = null;
+    try{ r = JSON.parse(leer(REG_KEY) || "null"); }catch(e){ r = null; }
+    return r && typeof r === "object" && typeof r.uid === "string" ? r : null;
+  }
+  function guardarReg(uid, endpoint){ return escribir(REG_KEY, JSON.stringify({ uid:uid, endpoint:endpoint, at:Date.now() })); }
+
+  // --- qué permite este navegador -----------------------------------------------
+  function soporte(){ return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window; }
+  function esIOS(){ var ua = navigator.userAgent || ""; return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); }
+  function instalada(){
+    try{ return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true; }
+    catch(e){ return false; }
+  }
+  function permiso(){ try{ return Notification.permission; }catch(e){ return "default"; } }
+
+  // --- llaves en base64url (sin "=") -------------------------------------------
+  function aBytes(s){
+    s = String(s).replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function aTexto(buf){
+    if (!buf) return "";
+    var b = new Uint8Array(buf), s = "";
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function limpiaClave(k){ return String(k || "").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  // ¿la suscripción se hizo con esta llave? (si el navegador no lo dice, se da por buena)
+  function mismaClave(sub, clave){
+    var k = sub && sub.options && sub.options.applicationServerKey;
+    return !k || aTexto(k) === clave;
+  }
+
+  // --- ayudas ------------------------------------------------------------------
+  function falla(t){ var e = new Error(t); e.cc = true; return e; }
+  // ¿sigue adentro la misma persona? (unlock() llama a start() con un objeto
+  // nuevo cada vez que cambia su cuenta: se compara por uid)
+  function sigue(c){ return !!X && !!c && X.uid === c.uid; }
+  // quita del teléfono los avisos que ya estaban a la vista (al cerrar sesión o
+  // al cambiar de persona, para que el siguiente no lea los mensajes del anterior)
+  function cerrarAvisos(){
+    if (!("serviceWorker" in navigator)) return;
+    try{
+      navigator.serviceWorker.getRegistration().then(function(r){
+        if (!r || !r.getNotifications) return;
+        return r.getNotifications().then(function(l){ l.forEach(function(n){ try{ n.close(); }catch(e){} }); });
+      }).then(null, function(){});
+    }catch(e){}
+  }
+  function conLimite(p, ms, texto){
+    return new Promise(function(ok, mal){
+      var t = setTimeout(function(){ mal(falla(texto || T_RED)); }, ms);
+      Promise.resolve(p).then(function(v){ clearTimeout(t); ok(v); }, function(e){ clearTimeout(t); mal(e); });
+    });
+  }
+  function textoError(e){
+    if (e && e.cc) return e.message;
+    var n = e ? (typeof e.code === "string" ? e.code : e.name) : "";
+    if (n === "NotAllowedError") return "El teléfono no dejó activar los avisos. Revisa que las notificaciones estén permitidas para Cose Coro.";
+    if (n === "AbortError" || n === "NotSupportedError" || n === "InvalidStateError")
+      return "Este navegador no pudo conectarse con su servicio de avisos. Prueba con Chrome o con la app instalada.";
+    if (n === "permission-denied") return "Tu cuenta no pudo guardar este equipo. Cierra la app, ábrela otra vez e inténtalo de nuevo.";
+    return T_RED;
+  }
+  // pedir permiso (los navegadores viejos usan una función de respuesta en vez de promesa)
+  function pedirPermiso(){
+    return new Promise(function(ok){
+      var listo = false;
+      function fin(p){ if (!listo){ listo = true; ok(p || permiso()); } }
+      try{
+        var r = Notification.requestPermission(fin);
+        if (r && typeof r.then === "function") r.then(fin, function(){ fin(permiso()); });
+      }catch(e){ fin(permiso()); }
+    });
+  }
+  function registro(){ return conLimite(navigator.serviceWorker.ready, 10000, T_SW); }
+  function leerClave(c){
+    return c.F.getDoc(c.F.doc(c.db, "config", "push")).then(function(s){
+      var k = s.exists() ? (s.data() || {}).publicKey : "";
+      return typeof k === "string" && k.length > 40 ? limpiaClave(k) : "";
+    });
+  }
+  // usa la suscripción que ya tiene el navegador si se hizo con la misma llave;
+  // si no, la cambia por una nueva
+  function suscribir(r, clave){
+    var pm = r.pushManager;
+    return pm.getSubscription().then(function(sub){
+      if (sub && mismaClave(sub, clave)) return sub;
+      return (sub ? sub.unsubscribe().catch(function(){}) : Promise.resolve()).then(function(){
+        return pm.subscribe({ userVisibleOnly:true, applicationServerKey:aBytes(clave) });
+      });
+    });
+  }
+  function desuscribir(){
+    if (!soporte()) return Promise.resolve();
+    return Promise.resolve().then(function(){ return navigator.serviceWorker.getRegistration(); })
+      .then(function(r){ return r && r.pushManager ? r.pushManager.getSubscription() : null; })
+      .then(function(sub){ return sub ? sub.unsubscribe() : false; })
+      .then(function(){}, function(){});
+  }
+  function refDoc(c){ return c.F.doc(c.db, "push", c.uid + "_" + dev()); }
+  function datos(c, sub){
+    var d = {
+      uid:c.uid, dev:dev(), endpoint:String(sub.endpoint || ""),
+      p256dh:aTexto(sub.getKey ? sub.getKey("p256dh") : null), auth:aTexto(sub.getKey ? sub.getKey("auth") : null),
+      ua:String(navigator.userAgent || "").slice(0, 120), at:c.F.serverTimestamp()
+    };
+    // lo mismo que piden las reglas: así el problema se explica aquí
+    if (d.endpoint.length > 800 || !/^https:\/\/[A-Za-z0-9.-]+\/[!-~]*$/.test(d.endpoint) ||
+        !/^[A-Za-z0-9_-]{60,120}$/.test(d.p256dh) || !/^[A-Za-z0-9_-]{16,40}$/.test(d.auth)) throw falla(T_NO);
+    return d;
+  }
+  function guardarDoc(c, sub){ return conLimite(c.F.setDoc(refDoc(c), datos(c, sub)), 15000, T_RED); }
+  // sin internet el borrado queda en cola y se hace solo al volver la conexión
+  function quitarDoc(c){ return conLimite(c.F.deleteDoc(refDoc(c)), 8000).then(function(){}, function(){}); }
+
+  // --- pantalla (Ajustes → Chat y avisos) ----------------------------------------
+  function avisar(t, kind){ nota = t ? { t:t, k:kind || "" } : null; paint(); }
+  function paint(){
+    var c = $("stPush"), m = $("stPushMsg"), row = $("stPushRow");
+    if (!c || !m) return;
+    var fija = "", r = reg();
+    if (!soporte()){
+      c.checked = false; c.disabled = true;
+      fija = esIOS() ? (instalada() ? T_IOS_VIEJO : T_IOS) : T_NO;
+    } else {
+      c.disabled = !X || ocupado;
+      if (!ocupado){
+        c.checked = !!(X && r && r.uid === X.uid && permiso() === "granted");
+        if (!c.checked && permiso() === "denied") fija = tBloqueado();
+      }
+    }
+    var n = nota || { t:fija, k:"" };
+    m.textContent = n.t;
+    m.className = "pf-msg" + (n.k ? " " + n.k : "");
+    if (row) row.classList.toggle("con-msg", !!n.t);
+  }
+
+  // --- activar / desactivar (el toque en el interruptor) ----------------------------
+  function activar(){
+    var c = X, sw = null, sub = null;
+    if (navigator.onLine === false){ avisar("Sin conexión. Conéctate a internet e inténtalo otra vez.", "err"); return; }
+    ocupado = true; avisar("Activando…");
+    // el permiso se pide enseguida, mientras dura el toque (iPhone lo exige)
+    pedirPermiso().then(function(p){
+      if (p === "denied") throw falla(tBloqueado());
+      if (p !== "granted") throw falla("Para recibir los avisos toca «Permitir» cuando el teléfono pregunte.");
+      return limpieza.then(function(){ return conLimite(leerClave(c), 15000, T_RED); });
+    }).then(function(clave){
+      if (!clave) throw falla(T_PREPARANDO);
+      return registro().then(function(r){ sw = r; return suscribir(r, clave); });
+    }).then(function(s){
+      sub = s;
+      if (!sigue(c)) throw falla("");
+      return guardarDoc(c, sub);
+    }).then(function(){
+      if (!sigue(c)) throw falla("");
+      if (!guardarReg(c.uid, sub.endpoint)) throw falla("Este navegador no deja guardar datos en este equipo (¿ventana privada?). Abre la app normal e inténtalo otra vez.");
+      // aviso de prueba, para que se vea cómo llegan
+      try{
+        var pr = sw.showNotification("Cose Coro", { body:"Listo: así te llegarán los avisos.", icon:"icon-192.png", tag:"cc-prueba" });
+        if (pr && pr.then) pr.then(null, function(){});
+      }catch(e){}
+      ocupado = false;
+      avisar("✓ Activado en este equipo.", "ok");
+    }).then(null, function(e){
+      // deshacer lo que alcanzó a quedar a medias
+      borrar(REG_KEY);
+      if (sub){ sub.unsubscribe().then(null, function(){}); quitarDoc(c); }
+      ocupado = false;
+      if (sigue(c)) avisar(textoError(e), "err");
+      else { nota = null; paint(); }
+    });
+  }
+  function desactivar(){
+    var c = X;
+    ocupado = true; avisar("Desactivando…");
+    borrar(REG_KEY);
+    Promise.all([quitarDoc(c), desuscribir()]).then(function(){
+      ocupado = false;
+      if (sigue(c)) avisar("Desactivado en este equipo.");
+      else { nota = null; paint(); }
+    });
+  }
+
+  // --- al entrar a la cuenta: poner al día este equipo (sin preguntar nada) ----------
+  function revisar(c){
+    if (!soporte()) return;
+    var r = reg();
+    if (r && r.uid !== c.uid){
+      // eran los avisos de otra persona que usó este teléfono: que dejen de llegar aquí
+      borrar(REG_KEY);
+      cerrarAvisos();
+      limpieza = desuscribir().then(paint);
+      return;
+    }
+    if (!r){
+      // una suscripción sin dueño conocido (quedó de antes) se quita
+      if (permiso() === "granted") limpieza = desuscribir();
+      return;
+    }
+    if (permiso() !== "granted"){
+      // quitaron el permiso de avisos: se borra este equipo de la cuenta
+      borrar(REG_KEY);
+      quitarDoc(c);
+      limpieza = desuscribir();
+      return;
+    }
+    var viejo = !(r.at > 0) || Date.now() - r.at > SEMANA, sw = null, perdido = false;
+    registro().then(function(x){ sw = x; return sw.pushManager.getSubscription(); }).then(function(sub){
+      if (sub && sub.endpoint === r.endpoint && !viejo) return null;
+      return conLimite(leerClave(c), 15000).then(function(clave){
+        if (sub && (!clave || mismaClave(sub, clave))) return sub;
+        if (!clave){ perdido = true; throw falla("sin llave"); }
+        // el navegador perdió la suscripción o cambió la llave: una nueva, sin preguntar
+        // (si el teléfono no lo permite, se da por perdida; si es por falta de
+        // internet, se intenta otra vez la próxima vez que se abra la app)
+        return suscribir(sw, clave).then(null, function(e){ if (e && e.name === "NotAllowedError") perdido = true; throw e; });
+      }).then(function(s){
+        if (!sigue(c)) return null;
+        return guardarDoc(c, s).then(function(){ if (sigue(c)) guardarReg(c.uid, s.endpoint); });
+      });
+    }).then(null, function(){
+      // sin internet: se intenta otra vez la próxima vez que se abra la app
+      if (!perdido || !sigue(c)) return;
+      borrar(REG_KEY);
+      quitarDoc(c);
+      paint();
+    });
+  }
+
+  function start(ctx){
+    var nuevo = !X || X.uid !== ctx.uid;
+    X = ctx;
+    prev = { db:ctx.db, F:ctx.F, uid:ctx.uid };
+    if (nuevo){ nota = null; revisar(ctx); }
+    paint();
+    if (pendiente){
+      var g = pendiente;
+      pendiente = "";
+      setTimeout(function(){ route(g); }, 0);
+    }
+  }
+  function stop(){
+    X = null; ocupado = false; nota = null; rutaN++;
+    paint();
+  }
+  // al cerrar sesión (antes de salir): este equipo deja de recibir los avisos de la cuenta
+  function olvidar(){
+    var c = X || prev, r = reg();
+    cerrarAvisos();
+    if (!soporte()) return Promise.resolve();
+    var tareas = [desuscribir()];
+    if (c && r && r.uid === c.uid) tareas.push(quitarDoc(c));
+    borrar(REG_KEY);
+    return Promise.all(tareas).then(function(){ paint(); }, function(){});
+  }
+
+  // --- al tocar un aviso: abrir lo que corresponde -------------------------------------
+  function route(go){
+    go = typeof go === "string" ? go : "";
+    if (!go) return;
+    if (!X){ pendiente = go; return; }
+    var n = ++rutaN;
+    if (go.indexOf("chat:") === 0){
+      // los chats tardan un poco en cargar: se intenta cada 300 ms hasta 8 s
+      var id = go.slice(5), hasta = Date.now() + 8000;
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) return;
+      (function intenta(){
+        if (n !== rutaN || !X) return;
+        var ok = false;
+        try{ ok = !!window.coseChat && window.coseChat.openChat(id) === true; }catch(e){ ok = false; }
+        if (!ok && Date.now() < hasta) setTimeout(intenta, 300);
+      })();
+      return;
+    }
+    var A = window.coseAvisos, C = window.coseChat;
+    if (go === "avisos"){ if (A && A.openBell) A.openBell(); return; }
+    if (go === "soporte"){ if (A && A.openSoporte) A.openSoporte(X.me && X.me.role === "admin" ? "admin" : "mios"); return; }
+    if (go === "compas"){ if (C && C.openCompas) C.openCompas(); return; }
+    if (go === "codigos"){ if (window.coseCodigos) window.coseCodigos.open(); return; }
+    if (go === "flota"){
+      // solo quien ve Vehículos (como si tocara su botón: abre la pantalla y la pinta)
+      var t = $("flTile");
+      if (t && !t.hidden) t.click();
+    }
+  }
+  // la app se abrió desde un aviso: ?go=… se guarda y se quita de la dirección
+  (function(){
+    var m = /[?&]go=([^&#]*)/.exec(location.search || "");
+    if (!m) return;
+    try{ pendiente = decodeURIComponent(m[1].replace(/\+/g, " ")); }catch(e){ pendiente = ""; }
+    try{ history.replaceState(history.state, "", location.pathname + (location.hash || "")); }catch(e){}
+  })();
+  // la app ya estaba abierta: el service worker (sw.js) avisa qué abrir.
+  // "cc-push" llega cuando el aviso no se mostró porque la app estaba a la
+  // vista: la app ya muestra sus propios avisos, salvo los de soporte.
+  if ("serviceWorker" in navigator){
+    try{
+      navigator.serviceWorker.addEventListener("message", function(e){
+        var d = e && e.data;
+        if (d && typeof d === "object" && d.type === "cc-go") route(d.go);
+        else if (d && typeof d === "object" && d.type === "cc-push" && d.go === "soporte" && X && X.toast)
+          X.toast(String(d.t || "") + (d.b ? ": " + String(d.b).slice(0, 80) : ""));
+      });
+    }catch(e){}
+  }
+
+  // --- eventos ---------------------------------------------------------------
+  var chk = $("stPush");
+  if (chk) chk.addEventListener("change", function(){
+    if (!X || ocupado || !soporte()){ paint(); return; }
+    nota = null;
+    if (chk.checked) activar(); else desactivar();
+  });
+  new MutationObserver(function(){ if (!$("screen-ajustes").hidden){ if (!ocupado) nota = null; paint(); } })
+    .observe($("screen-ajustes"), { attributes:true, attributeFilter:["hidden"] });
+  // al volver a la app (quizás cambió el permiso en los ajustes del teléfono)
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden && !$("screen-ajustes").hidden) paint(); });
+  paint();
+
+  window.cosePush = { start:start, stop:stop, olvidar:olvidar };
+})();
+</script>
+
+<script>
+// ============================================================================
 // CHAT DEL EQUIPO: compañeros (uno envía la solicitud y el otro la acepta),
 // mensajes en vivo, grupos, quién está en línea e ícono de perfil.
 // Solo funciona con la nube: lo arranca el bloque MODO NUBE cuando la cuenta
@@ -6676,7 +7065,8 @@
         requests: Object.keys(conex).filter(function(k){ return conex[k].status === "pendiente" && conex[k].to === uid(); }).map(function(k){ return { name:conex[k].fromName }; })
       };
     },
-    openChat: function(id){ if (X && chats[id]) openConv(id); },
+    // devuelve true si abrió el chat (los avisos con la app cerrada lo reintentan hasta que carguen los chats)
+    openChat: function(id){ if (X && Object.prototype.hasOwnProperty.call(chats, id) && chats[id]){ openConv(id); return true; } return false; },
     openCompas: function(){ if (X){ show("chat"); tabTo("compas"); } },
     openProfile: openProfile,
     people: function(){ return X ? perfiles : {}; },
@@ -7544,8 +7934,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v46" → 46). Subir los dos juntos en cada versión.
-  var APP_BUILD = 48;
+  // sw.js ("coseimpa-cosecoro-v49" → 49). Subir los dos juntos en cada versión.
+  var APP_BUILD = 49;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -8214,7 +8604,7 @@
   }).observe($("screen-avisos"), { attributes:true, attributeFilter:["hidden"] });
   if ((location.hash || "").slice(1) === "avisos") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
 
-  window.coseAvisos = { start:start, stop:stop, refresh:paintBadge };
+  window.coseAvisos = { start:start, stop:stop, refresh:paintBadge, openBell:openBell, openSoporte:openSoporte };
 })();
 </script>
 
@@ -9344,10 +9734,11 @@
         err.className = "okmsg"; err.textContent = "Te enviamos un correo para cambiar la clave (revisa también spam).";
       }, function(e2){ err.className = "err"; err.textContent = authError(e2); });
     });
-    // antes de salir se guarda el último rato de uso (máximo 1,5 s de espera)
+    // antes de salir se guarda el último rato de uso y este equipo deja de
+    // recibir los avisos de la cuenta (máximo 1,5 s de espera)
     function logout(){
-      var p = window.coseUso ? window.coseUso.stop() : null;
-      Promise.race([p || Promise.resolve(), new Promise(function(r){ setTimeout(r, 1500); })])
+      var p = Promise.all([window.coseUso ? window.coseUso.stop() : null, window.cosePush ? window.cosePush.olvidar() : null]);
+      Promise.race([p, new Promise(function(r){ setTimeout(r, 1500); })])
         .then(function(){ AU.signOut(auth); }, function(){ AU.signOut(auth); });
     }
     $("gLogout1").addEventListener("click", logout);
@@ -9467,6 +9858,7 @@
       if (window.coseFlota) window.coseFlota.stop();
       if (window.coseFaltantes) window.coseFaltantes.stop();
       if (window.coseCodigos) window.coseCodigos.stop();
+      if (window.cosePush) window.cosePush.stop();
     }
     function unlock(){
       gate.hidden = true;
@@ -9482,6 +9874,7 @@
       if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:me });
+      if (window.cosePush) window.cosePush.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
         if (!admin && adminWatching) stopAdmin();
