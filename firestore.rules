@@ -326,13 +326,14 @@ service cloud.firestore {
     }
 
     // Códigos de radio (por ahora el Código 5: bajar mercancía a chequeo).
-    // Cualquiera lo pide; Autoservicio y el administrador lo aceptan o
+    // Lo pide Autoservicio; Autoservicio y el administrador lo aceptan o
     // rechazan; quien lo aceptó lo marca llevado; quien lo pidió lo cancela.
     function autoserv() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Autoservicio"); }
     match /codigos/{id} {
       allow read: if verified();
-      allow create: if verified()
-        && request.resource.data.keys().hasOnly(["codigo", "pedido", "nota", "by", "byName", "at", "estado"])
+      allow create: if autoserv()
+        && request.resource.data.keys().hasOnly(["codigo", "pedido", "destino", "nota", "by", "byName", "at", "estado"])
+        && (!("destino" in request.resource.data) || (request.resource.data.destino is string && request.resource.data.destino.size() <= 30))
         && request.resource.data.codigo == 5
         && request.resource.data.pedido is string && request.resource.data.pedido.size() >= 2 && request.resource.data.pedido.size() <= 80
         && request.resource.data.nota is string && request.resource.data.nota.size() <= 200
