@@ -330,6 +330,8 @@ console.log("código 5");
   await t("no se pide a nombre de otro", () => assertFails(setDoc(doc(B, "codigos", "k2"), nuevo({ by: "C", byName: "Carla" }))));
   await t("no se crea ya aceptado", () => assertFails(setDoc(doc(B, "codigos", "k2"), nuevo({ estado: "aceptado" }))));
   await t("Autoservicio pide un Código 5 a pasillo", () => assertSucceeds(setDoc(doc(as("AUT"), "codigos", "k9"), nuevo({ by: "AUT", byName: "Aura Autoservicio", destino: "Pasillo 4" }))));
+  await t("Autoservicio pide un Código 8", () => assertSucceeds(setDoc(doc(as("AUT"), "codigos", "k8"), nuevo({ codigo: 8, by: "AUT", byName: "Aura Autoservicio" }))));
+  await t("no existe el Código 9", () => assertFails(setDoc(doc(as("AUT"), "codigos", "k10"), nuevo({ codigo: 9, by: "AUT", byName: "Aura Autoservicio" }))));
   await t("D (pendiente) no pide", () => assertFails(setDoc(doc(D, "codigos", "k2"), nuevo({ by: "D", byName: "Dani Pendiente" }))));
   await t("Inventario lee los códigos", () => assertSucceeds(getDoc(doc(as("INV"), "codigos", "k1"))));
   await t("C (Ventas) no acepta", () => assertFails(updateDoc(doc(C, "codigos", "k1"), { estado: "aceptado", tomadoPor: "C", tomadoPorNombre: "Carla", tomadoAt: ts })));

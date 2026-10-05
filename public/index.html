@@ -970,7 +970,18 @@
   .h-item:last-child{border-bottom:none;}
   .h-item .h-t{font-weight:700;} .h-item .h-s{color:var(--ink-soft); font-size:0.76rem;}
   .h-item.mal .h-t{color:#C2403A;}
-  /* Códigos de radio (Código 5) */
+  /* Códigos de radio (1 al 8) */
+  .c5-nums{display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;}
+  .c5-num{border:1.5px solid var(--line); background:var(--surface); color:var(--ink); border-radius:12px; padding:9px 4px; font-weight:800; font-size:1.05rem; cursor:pointer; line-height:1.1;}
+  .c5-num small{display:block; font-weight:600; font-size:0.62rem; color:var(--ink-soft); margin-top:3px;}
+  .c5-home{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:12px; margin-bottom:14px;}
+  .c5-home-t{display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.9rem; margin-bottom:8px;}
+  .c5-home-t button{border:none; background:none; color:var(--ink-soft); font-weight:700; font-size:0.78rem; cursor:pointer; text-decoration:underline;}
+  .c5-home .c5-num{padding:12px 2px; font-size:1.3rem;}
+  .c5-num:active{transform:scale(.95);}
+  .c5-sent{margin-top:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; background:#DDF3E6; color:#1F7A4D; border-radius:10px; padding:8px 10px; font-size:0.84rem; font-weight:700;}
+  .c5-sent button{border:none; background:#fff; color:#1F7A4D; border-radius:8px; padding:6px 10px; font-weight:700; cursor:pointer;}
+  .c5-num.on{background:#D62828; border-color:#D62828; color:#fff;} .c5-num.on small{color:#fff;}
   .tool-tile.tile-cod{border-left-color:#D62828;}
   .c5-globo{position:fixed; left:50%; transform:translateX(-50%); top:calc(70px + env(safe-area-inset-top,0px)); z-index:60;
     width:min(460px, calc(100% - 24px)); box-sizing:border-box; background:#D62828; color:#fff; border-radius:18px;
@@ -1482,6 +1493,12 @@
     <button class="close" id="installTipClose" aria-label="Cerrar aviso">✕</button>
   </div>
 
+  <section class="c5-home" id="c5Home" hidden>
+    <div class="c5-home-t"><span>📻 Códigos de radio</span><button type="button" id="c5HomeMas">Ver pedidos</button></div>
+    <div class="c5-nums" id="c5HomeNums"></div>
+    <div class="c5-sent" id="c5Sent" hidden></div>
+  </section>
+
   <div class="bcv-card">
     <div>
       <div class="bcv-label">Tasa BCV · USD</div>
@@ -1546,8 +1563,8 @@
     <button class="tool-tile tile-cod" id="c5Tile" type="button" hidden>
       <span class="tool-icon" style="color:#D62828"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="15" rx="2"/><path d="M10 7V2"/><path d="M10 12h4M10 16h4"/></svg></span>
       <span class="tool-text">
-        <span class="tool-title">Código 5 · Bajar mercancía</span>
-        <span class="tool-sub" id="c5TileSub">Pide a tus compañeros que bajen mercancía a chequeo</span>
+        <span class="tool-title">Códigos de radio</span>
+        <span class="tool-sub" id="c5TileSub">Código 5 y los demás: avisa a tus compañeros</span>
       </span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -2493,11 +2510,12 @@
       Inicio
     </button>
   </div>
-  <p class="dash-greet">Código 5 · Bajar mercancía</p>
+  <p class="dash-greet">Códigos de radio</p>
   <section class="card">
     <form class="pf-form" id="c5Form" novalidate>
-      <div><label for="c5Ped">¿Qué hay que bajar o traer a chequeo?</label><input type="text" id="c5Ped" class="hist-search" maxlength="80" autocomplete="off" placeholder="Ej: 25 m de cable 12 THW"></div>
-      <div><label for="c5Dest">¿A dónde lo llevan?</label><select id="c5Dest" class="hist-search"><option>Chequeo</option><option>Pasillo 1</option><option>Pasillo 2</option><option>Pasillo 3</option><option>Pasillo 4</option><option>Pasillo 5</option><option>Pasillo 6</option><option>Pasillo 7</option><option>Pasillo 8</option><option>Pasillo 9</option><option>Patio</option><option>Otro (ver detalle)</option></select></div>
+      <div><label>¿Qué código?</label><div class="c5-nums" id="c5Nums"></div><p class="pf-msg" id="c5Que" style="margin-top:6px;"></p></div>
+      <div><label for="c5Ped" id="c5PedLbl">¿Qué hay que bajar o traer a chequeo?</label><input type="text" id="c5Ped" class="hist-search" maxlength="80" autocomplete="off" placeholder="Ej: 25 m de cable 12 THW"></div>
+      <div><label for="c5Dest" id="c5DestLbl">¿A dónde lo llevan?</label><select id="c5Dest" class="hist-search"><option>Chequeo</option><option>Caja</option><option>Entrada</option><option>Pasillo 1</option><option>Pasillo 2</option><option>Pasillo 3</option><option>Pasillo 4</option><option>Pasillo 5</option><option>Pasillo 6</option><option>Pasillo 7</option><option>Pasillo 8</option><option>Pasillo 9</option><option>Patio</option><option>Otro (ver detalle)</option></select></div>
       <div><label for="c5Nota">Detalle (opcional)</label><input type="text" id="c5Nota" class="hist-search" maxlength="200" autocomplete="off" placeholder="Ej: caja 2, cliente esperando"></div>
       <p class="pf-msg" id="c5Msg"></p>
       <button class="btn primary" type="submit" id="c5Send" style="background:#D62828; border-color:#D62828; color:#fff;">Pedir Código 5</button>
@@ -2829,7 +2847,7 @@
     techo: "Techos · láminas y tornillos",
     tanque: "Tanques de agua",
     faltantes: "Lo pidieron y no hay",
-    codigos: "Código 5 · Autoservicio",
+    codigos: "Códigos de radio · Autoservicio",
     flota: "Vehículos",
     vehiculo: "Vehículos"
   };
@@ -8825,8 +8843,8 @@
 
 <script>
 // ============================================================================
-// CÓDIGOS DE RADIO (por ahora solo el Código 5: bajar o traer mercancía a
-// chequeo). Lo pide Autoservicio (codigos/), con destino (Chequeo por
+// CÓDIGOS DE RADIO (del 1 al 8; el más usado es el 5: bajar o traer
+// mercancía a chequeo). Lo pide Autoservicio (codigos/), con destino (Chequeo por
 // defecto, un pasillo, Patio u otro). Al resto de Autoservicio (y al
 // administrador) le sale un globo rojo que parpadea arriba para Aceptar o
 // Rechazar. Quien acepta lo hace y marca "Lo llevé a chequeo"; eso suma 1
@@ -8842,6 +8860,17 @@
   function current(){ return window.coseApp ? window.coseApp.current() : ""; }
   function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : Date.now(); }
   function hora(t){ return new Date(t).toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" }); }
+  // Nombres que dio Rafael; los que faltan se ven solo con su número.
+  var NOMBRES = { 1:"Problema en caja", 2:"Artículo no está en sistema", 3:"Apoyo en chequeo", 4:"Activar las cajas",
+    5:"Bajar o traer mercancía", 6:"Devolución", 7:"Asesoría a un cliente", 8:"¡Atentos!" };
+  var CORTOS = { 1:"Caja", 2:"No en sistema", 3:"Apoyo chequeo", 4:"Activar cajas", 5:"Bajar mercancía", 6:"Devolución", 7:"Asesoría", 8:"¡Atentos!" };
+  var LUGAR = { 1:"Caja", 2:"Caja", 3:"Chequeo", 4:"Caja", 5:"Chequeo", 6:"Chequeo", 7:"Tienda", 8:"Tienda" };
+  // 2 y 5 necesitan saber qué artículo; los demás salen con un solo toque.
+  var CON_TEXTO = { 2:1, 5:1 };
+  var cod = 5;
+  function num(c){ return +(c && c.codigo) || 5; }
+  function nombre(n){ return NOMBRES[n] || ""; }
+  function titulo(n){ return "Código " + n + (nombre(n) ? " · " + nombre(n) : ""); }
   function dest(c){ return c.destino || "Chequeo"; }
   function nom(s){ return String(s || "").split(" ")[0]; }
   function F(){ return X.F; }
@@ -8861,7 +8890,7 @@
     // con la app abierta pero en otra pestaña o minimizada
     try{
       if (document.hidden && window.Notification && Notification.permission === "granted" && navigator.serviceWorker)
-        navigator.serviceWorker.ready.then(function(r){ r.showNotification("🚨 Código 5", { body:c.pedido + " → " + dest(c) + " · pide " + nom(c.byName), tag:"c5-" + c.id, renotify:true }); });
+        navigator.serviceWorker.ready.then(function(r){ r.showNotification("🚨 " + titulo(num(c)), { body:c.pedido + " → " + dest(c) + " · pide " + nom(c.byName), tag:"c5-" + c.id, renotify:true }); });
     }catch(e){}
   }
 
@@ -8873,15 +8902,15 @@
     var b;
     if (mio){
       g.classList.add("ok");
-      g.appendChild(el("div", "t", "Tu Código 5"));
-      g.appendChild(el("div", "d", mio.pedido));
+      g.appendChild(el("div", "t", "Tu " + titulo(num(mio))));
+      if (mio.pedido !== nombre(num(mio))) g.appendChild(el("div", "d", mio.pedido));
       g.appendChild(el("div", "s", "Llévalo a " + dest(mio) + " · para " + nom(mio.byName) + (mio.nota ? " · " + mio.nota : "")));
       b = el("div", "b"); g.appendChild(b);
-      boton(b, "si", "Listo, lo llevé a " + dest(mio), function(){ terminar(mio); });
+      boton(b, "si", num(mio) === 5 ? "Listo, lo llevé a " + dest(mio) : "Listo, atendido", function(){ terminar(mio); });
     } else if (abiertos.length){
       var c = abiertos[abiertos.length - 1];
-      g.appendChild(el("div", "t", "🚨 CÓDIGO 5" + (abiertos.length > 1 ? " · " + abiertos.length + " esperando" : "")));
-      g.appendChild(el("div", "d", c.pedido));
+      g.appendChild(el("div", "t", "🚨 CÓDIGO " + num(c) + (nombre(num(c)) ? " · " + nombre(num(c)).toUpperCase() : "") + (abiertos.length > 1 ? " · " + abiertos.length + " esperando" : "")));
+      if (c.pedido !== nombre(num(c))) g.appendChild(el("div", "d", c.pedido));
       g.appendChild(el("div", "s", "→ " + dest(c) + " · pide " + nom(c.byName) + " · " + hora(ms(c.at)) + (c.nota ? " · " + c.nota : "")));
       b = el("div", "b"); g.appendChild(b);
       boton(b, "si", "Aceptar", function(){ aceptar(c); });
@@ -8902,7 +8931,7 @@
         if (!s.exists() || s.data().estado !== "abierto") throw "tomado";
         tx.update(r, { estado:"aceptado", tomadoPor:X.uid, tomadoPorNombre:X.me.name, tomadoAt:F().serverTimestamp() });
       });
-    }).then(function(){ X.toast("Aceptaste el Código 5. Al terminar toca «Listo, lo llevé»."); },
+    }).then(function(){ X.toast("Aceptaste el Código " + num(c) + ". Al terminar toca «Listo»."); },
             function(e){ X.toast(e === "tomado" ? "Otra persona ya lo aceptó." : "No se pudo. Revisa tu internet."); globo(); });
   }
   function rechazar(c){
@@ -8910,17 +8939,17 @@
   }
   function terminar(c){
     F().updateDoc(ref(c.id), { estado:"llevado", finAt:F().serverTimestamp() })
-      .then(function(){ X.toast("✓ ¡Listo! +1 Código 5 en tu perfil."); contar(); }, function(){ fallo(); globo(); });
+      .then(function(){ X.toast(num(c) === 5 ? "✓ ¡Listo! +1 Código 5 en tu perfil." : "✓ ¡Listo! Código " + num(c) + " atendido."); contar(); }, function(){ fallo(); globo(); });
   }
   function cancelar(c){
-    if (!confirm("¿Cancelar este Código 5?")) return;
+    if (!confirm("¿Cancelar este Código " + num(c) + "?")) return;
     F().updateDoc(ref(c.id), { estado:"cancelado", finAt:F().serverTimestamp() }).catch(fallo);
   }
   // Contribuciones: se cuentan en el servidor (1 lectura) y se copian al perfil.
   function contar(){
     if (!X || !F().getCountFromServer) return;
     var mine = X;
-    F().getCountFromServer(F().query(F().collection(X.db, "codigos"), F().where("tomadoPor", "==", X.uid), F().where("estado", "==", "llevado"))).then(function(s){
+    F().getCountFromServer(F().query(F().collection(X.db, "codigos"), F().where("tomadoPor", "==", X.uid), F().where("estado", "==", "llevado"), F().where("codigo", "==", 5))).then(function(s){
       if (X !== mine) return;
       var n = s.data().count, p = window.coseChat && window.coseChat.people()[X.uid];
       if (p && +(p.c5 || 0) === n) return;
@@ -8932,14 +8961,14 @@
   function paint(){
     globo();
     var abiertos = lista.filter(function(c){ return c.estado === "abierto"; }).length;
-    $("c5TileSub").textContent = abiertos ? abiertos + " Código 5 esperando que alguien lo acepte" : "Pide a tus compañeros que bajen mercancía a chequeo";
+    $("c5TileSub").textContent = abiertos ? abiertos + (abiertos === 1 ? " código esperando" : " códigos esperando") + " que alguien lo acepte" : "Código 5 y los demás: avisa a tus compañeros";
     if (!X || current() !== "codigos") return;
     var box = $("c5Lista"); box.innerHTML = "";
     if (!lista.length) box.appendChild(el("div", "c-empty", "No hay Códigos 5 en las últimas 24 horas."));
     lista.forEach(function(c){
       var r = el("div", "c5-row"), m = el("div", "m");
       m.appendChild(el("span", "c5-est " + c.estado, EST[c.estado] || c.estado));
-      m.appendChild(document.createTextNode(c.pedido));
+      m.appendChild(document.createTextNode((num(c) === 5 ? "" : "Código " + num(c) + " · ") + (c.pedido === nombre(num(c)) ? c.pedido : nombre(num(c)) + ": " + c.pedido)));
       r.appendChild(m);
       var s = hora(ms(c.at)) + " · → " + dest(c) + " · pide " + nom(c.byName) + (c.nota ? " · " + c.nota : "");
       if (c.tomadoPorNombre) s += " · " + (c.estado === "llevado" ? "lo llevó " : "lo lleva ") + nom(c.tomadoPorNombre);
@@ -8947,7 +8976,7 @@
       var bb = el("div", "btns");
       function bt(text, fn, prim){ var x = el("button", "hist-copybtn" + (prim ? " wa" : ""), text); x.type = "button"; x.addEventListener("click", function(){ fn(c); }); bb.appendChild(x); }
       if (c.estado === "abierto" && recibe(X.me) && c.by !== X.uid) bt("Aceptar", aceptar, true);
-      if (c.estado === "aceptado" && c.tomadoPor === X.uid) bt("Listo, lo llevé", terminar, true);
+      if (c.estado === "aceptado" && c.tomadoPor === X.uid) bt(num(c) === 5 ? "Listo, lo llevé" : "Listo, atendido", terminar, true);
       if ((c.estado === "abierto" || c.estado === "aceptado") && (c.by === X.uid || X.me.role === "admin")) bt("Cancelar", cancelar);
       if (bb.childNodes.length) r.appendChild(bb);
       box.appendChild(r);
@@ -8956,12 +8985,55 @@
   function pedir(e){
     e.preventDefault();
     var ped = $("c5Ped").value.trim().replace(/\s+/g, " ").slice(0, 80), msg = $("c5Msg");
+    if (!CON_TEXTO[cod] && ped.length < 2) ped = nombre(cod) || "Código " + cod;
     if (ped.length < 2){ msg.className = "pf-msg err"; msg.textContent = "Escribe qué hay que bajar."; return; }
     $("c5Send").disabled = true;
-    F().addDoc(F().collection(X.db, "codigos"), { codigo:5, pedido:ped, destino:$("c5Dest").value.slice(0, 30), nota:$("c5Nota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
-      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Código 5 enviado a tus compañeros de Autoservicio. Aquí abajo ves quién lo acepta."; $("c5Ped").value = ""; $("c5Nota").value = ""; $("c5Dest").value = "Chequeo"; },
+    F().addDoc(F().collection(X.db, "codigos"), { codigo:cod, pedido:ped, destino:$("c5Dest").value.slice(0, 30), nota:$("c5Nota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
+      .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Código " + cod + " enviado a tus compañeros de Autoservicio. Aquí abajo ves quién lo acepta."; $("c5Ped").value = ""; $("c5Nota").value = ""; $("c5Dest").value = "Chequeo"; elegir(5); },
             function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
       .then(function(){ $("c5Send").disabled = false; });
+  }
+  function elegir(n){
+    cod = n;
+    document.querySelectorAll("#c5Nums .c5-num").forEach(function(b){ b.classList.toggle("on", +b.dataset.n === n); });
+    $("c5Que").textContent = titulo(n);
+    $("c5PedLbl").textContent = n === 5 ? "¿Qué hay que bajar o traer a chequeo?" : n === 2 ? "¿Qué artículo?" : "¿Qué pasa? (opcional)";
+    $("c5Ped").placeholder = n === 5 ? "Ej: 25 m de cable 12 THW" : n === 2 ? "Ej: tubo PVC 1/2 marca X" : "Ej: " + (n === 1 ? "caja 3 no abre" : n === 8 ? "cliente con bolso grande, pasillo 3" : "escribe lo que pasa");
+    $("c5DestLbl").textContent = n === 5 ? "¿A dónde lo llevan?" : "¿Dónde?";
+    $("c5Dest").value = LUGAR[n] || "Chequeo";
+    $("c5Send").textContent = "Pedir Código " + n;
+  }
+  (function(){
+    var box = $("c5Nums");
+    for (var i = 1; i <= 8; i++){
+      var b = el("button", "c5-num", String(i)); b.type = "button"; b.dataset.n = i;
+      b.appendChild(el("small", "", CORTOS[i]));
+      b.addEventListener("click", function(){ elegir(+this.dataset.n); });
+      box.appendChild(b);
+      // Inicio: un toque y se envía (2 y 5 abren la pantalla para escribir el artículo)
+      var h = el("button", "c5-num", String(i)); h.type = "button"; h.dataset.n = i;
+      h.appendChild(el("small", "", CORTOS[i]));
+      h.addEventListener("click", function(){ rapido(+this.dataset.n, this); });
+      $("c5HomeNums").appendChild(h);
+    }
+    elegir(5);
+  })();
+  var sentT = null;
+  function rapido(n, btn){
+    if (!X) return;
+    if (CON_TEXTO[n]){ open(); elegir(n); setTimeout(function(){ $("c5Ped").focus(); }, 50); return; }
+    btn.disabled = true;
+    var bar = $("c5Sent");
+    F().addDoc(F().collection(X.db, "codigos"), { codigo:n, pedido:NOMBRES[n], destino:LUGAR[n], nota:"", by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
+      .then(function(r){
+        bar.innerHTML = ""; bar.appendChild(el("span", "", "✓ Código " + n + " enviado"));
+        var u = el("button", "", "Deshacer"); u.type = "button";
+        u.addEventListener("click", function(){ F().updateDoc(r, { estado:"cancelado", finAt:F().serverTimestamp() }).catch(fallo); bar.hidden = true; });
+        bar.appendChild(u); bar.hidden = false;
+        try{ if (navigator.vibrate) navigator.vibrate(40); }catch(e){}
+        clearTimeout(sentT); sentT = setTimeout(function(){ bar.hidden = true; }, 6000);
+      }, fallo)
+      .then(function(){ btn.disabled = false; });
   }
   function open(){
     if (!X) return;
@@ -8980,7 +9052,7 @@
         var a = antes[c.id];
         if (!primera && recibe(X.me) && c.estado === "abierto" && c.by !== X.uid && !avisados[c.id]) alerta(c);
         if (!primera && a && c.by === X.uid && a.estado !== c.estado){
-          if (c.estado === "aceptado" && c.tomadoPor !== X.uid) X.toast("✓ " + nom(c.tomadoPorNombre) + " aceptó tu Código 5: " + c.pedido);
+          if (c.estado === "aceptado" && c.tomadoPor !== X.uid) X.toast("✓ " + nom(c.tomadoPorNombre) + " aceptó tu Código " + num(c) + ": " + c.pedido);
           if (c.estado === "llevado" && c.tomadoPor !== X.uid) X.toast("✓ " + nom(c.tomadoPorNombre) + " llevó a chequeo: " + c.pedido);
         }
         if (c.estado === "abierto") avisados[c.id] = 1;
@@ -8993,7 +9065,7 @@
     if (X){ X.me = ctx.me; if (!recibe(X.me)) stop(); else paint(); return; }
     if (!recibe(ctx.me)) return;
     X = ctx; primera = true;
-    $("c5Tile").hidden = false;
+    $("c5Tile").hidden = false; $("c5Home").hidden = false;
     escuchar();
     // la ventana de 24 h se corre cada hora
     timer = setInterval(function(){ if (X) escuchar(); }, 3600000);
@@ -9003,10 +9075,11 @@
     if (unsub){ try{ unsub(); }catch(e){} } unsub = null;
     if (timer) clearInterval(timer); timer = null;
     X = null; lista = []; avisados = {};
-    $("c5Tile").hidden = true; $("c5Globo").hidden = true;
+    $("c5Tile").hidden = true; $("c5Globo").hidden = true; $("c5Home").hidden = true;
     if (current() === "codigos") window.coseApp.showScreen("home");
   }
   $("c5Tile").addEventListener("click", open);
+  $("c5HomeMas").addEventListener("click", open);
   $("c5Form").addEventListener("submit", function(e){ if (X) pedir(e); else e.preventDefault(); });
   if ((location.hash || "").slice(1) === "codigos") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); }, 0);
   window.coseCodigos = { start:start, stop:stop, open:open };
@@ -9047,7 +9120,7 @@
     ["sec", "Equipo"],
     ["chat", "Chat", "chat", "chatBtn", "chatBtn", "chatBtnBadge"],
     ["bell", "Notificaciones", "bell", "bellBtn", "bellBtn", "bellBadge"],
-    ["c5", "Código 5", "c5", "c5Tile", "c5Tile"],
+    ["c5", "Códigos de radio", "c5", "c5Tile", "c5Tile"],
     ["fa", "Lo pidieron y no hay", "fa", "faTile", "faTile"],
     ["flota", "Vehículos", "flota", "flTile", "flTile"],
     ["capac", "Capacitación", "capac", "capTile", "capTile"],
