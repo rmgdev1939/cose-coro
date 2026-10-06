@@ -765,6 +765,26 @@
   .ed-dropbar-in{max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:10px;}
   .ed-drop-q{font-size:0.9rem; color:var(--ink); line-height:1.4;}
   .ed-dropbar .ed-act-row .btn{flex:1;}
+  /* Precio y disponibilidad: buscador simple con escáner */
+  .pr-search{display:flex; gap:8px; align-items:stretch;}
+  .pr-search input{flex:1; min-width:0; font-size:1rem;}
+  .pr-scan{display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .pr-scan svg{width:20px; height:20px;}
+  .pr-lista{display:flex; flex-direction:column;}
+  .pr-row{display:block; width:100%; text-align:left; font:inherit; color:inherit; background:none; border:0; border-bottom:1px solid var(--line); padding:11px 2px; cursor:pointer;}
+  .pr-row .pr-n{font-weight:700; font-size:0.9rem; color:var(--ink); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .pr-row .pr-m{display:flex; justify-content:space-between; gap:8px; margin-top:3px; font-size:0.8rem; color:var(--ink-soft);}
+  .pr-row .pr-disp{font-weight:700; color:var(--accent2);}
+  .pr-row .pr-agot{font-weight:700; color:#E5534B;}
+  .pr-row .pr-tot{font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .pr-det{padding:4px 2px 12px; border-bottom:1px solid var(--line);}
+  .pr-det .pr-code{font-size:0.76rem; color:var(--ink-soft); font-family:"IBM Plex Mono", ui-monospace, monospace;}
+  .pr-acts{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+  .pr-cam{position:fixed; inset:0; z-index:10000; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .pr-cam video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .pr-cam-frame{position:relative; width:78%; max-width:360px; aspect-ratio:2/1; border:3px solid #fff; border-radius:14px; box-shadow:0 0 0 9999px rgba(0,0,0,.45);}
+  .pr-cam-msg{position:relative; color:#fff; font-weight:700; margin:16px 20px; text-align:center;}
+  .pr-cam .btn{position:relative; margin-bottom:calc(20px + env(safe-area-inset-bottom));}
   /* Profit: existencia y precio en los resultados */
   .pf-box{margin-top:8px; padding:9px 10px; width:100%; box-sizing:border-box; border-radius:10px; background:var(--surface-2); display:flex; flex-direction:column; gap:6px;}
   .pf-hay{font-weight:800; font-size:0.86rem; color:var(--accent2);}
@@ -1624,6 +1644,15 @@
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
 
+  <button class="tool-tile tile-precio" id="prTile" data-target="precio" hidden>
+      <span class="tool-icon" style="color:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Precio y disponibilidad</span>
+        <span class="tool-sub">Busca por nombre o escanea el código de barras</span>
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
   <button class="tool-tile tile-mapa" data-target="mapa">
       <span class="tool-icon" style="color:var(--accent)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
@@ -1684,6 +1713,32 @@
 
   <button class="cap-link" id="capTile" type="button" hidden>Capacitación (opcional) · <span id="capTileSub">lecciones cortas</span></button>
 
+</div>
+
+<div class="screen" id="screen-precio" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Precio y disponibilidad</p>
+  <form class="pr-search" id="prForm" role="search" novalidate>
+    <input type="search" id="prQ" class="hist-search" placeholder="Nombre o código del producto" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto por nombre o código">
+    <button class="btn primary pr-scan" id="prScan" type="button" aria-label="Escanear código de barras con la cámara">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>
+      Escanear
+    </button>
+  </form>
+  <p class="smap-note" id="prInfo" style="margin:6px 2px 8px;"></p>
+  <div id="prLista" class="pr-lista"></div>
+</div>
+
+<div class="pr-cam" id="prCam" hidden role="dialog" aria-label="Escanear código de barras">
+  <video id="prVideo" playsinline muted></video>
+  <div class="pr-cam-frame" aria-hidden="true"></div>
+  <p class="pr-cam-msg" id="prCamMsg">Apunta al código de barras del producto</p>
+  <button class="btn" id="prCamClose" type="button">Cerrar</button>
 </div>
 
 <div class="screen" id="screen-mapa" hidden>
@@ -2948,7 +3003,7 @@
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo"), precio: $("screen-precio")
   };
   var headerTags = {
     home: "Inicio",
@@ -2982,7 +3037,8 @@
     faltantes: "Lo pidieron y no hay",
     codigos: "Códigos de radio · Autoservicio",
     flota: "Vehículos",
-    vehiculo: "Vehículos"
+    vehiculo: "Vehículos",
+    precio: "Precio y disponibilidad"
   };
 
   function showScreen(name, pushHash){
@@ -7342,7 +7398,7 @@
   // bloque "Hay X · Base / IVA / Total" para un resultado de búsqueda
   function bloque(a, nombre){
     var w = el("div", "pf-box");
-    w.appendChild(el("div", "pf-hay", "Hay " + hay(a.h)));
+    w.appendChild(el("div", "pf-hay", "Disponible: " + hay(a.h)));
     var pr = precio(a);
     if (!pr){ w.appendChild(el("div", "pf-sin", "Sin precio 05 en Profit")); return w; }
     var g = el("div", "pf-grid");
@@ -7411,9 +7467,10 @@
     start: function(ctx){
       if (X && X.uid === ctx.uid){ X.me = ctx.me; pintarAgotados(); return; }
       X = ctx; DS = {};
+      if ($("prTile")) $("prTile").hidden = false;
       pintarAgotados();
     },
-    stop: function(){ X = null; DS = {}; lsBorrar(); var c = $("agCard"); if (c) c.hidden = true; },
+    stop: function(){ X = null; DS = {}; lsBorrar(); var c = $("agCard"); if (c) c.hidden = true; if ($("prTile")) $("prTile").hidden = true; },
     cargar: cargar,
     listo: function(col){ return !!(DS[col] && DS[col].items); },
     datos: function(col){ return DS[col] || null; },
@@ -7422,6 +7479,192 @@
     precio: precio, bloque: bloque, hace: hace,
     onChange: function(fn){ subs.push(fn); }
   };
+})();
+</script>
+
+<script>
+// ============================================================================
+// PRECIO Y DISPONIBILIDAD (pantalla "precio"): buscador simple, aparte del mapa,
+// para ver rápido si hay y cuánto cuesta. Busca por nombre o código y escanea el
+// código de barras con la cámara (BarcodeDetector del teléfono; en iPhone, que no
+// lo trae, se carga ZXing desde jsDelivr solo al abrir la cámara).
+// Usa los datos de Profit de window.coseProfit.
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function norm(s){ s = String(s).toLowerCase(); try{ s = s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){} return s.replace(/ñ/g, "n"); }
+  function sinCeros(c){ return String(c || "").replace(/[^0-9a-z]/gi, "").replace(/^0+/, "").toUpperCase(); }
+  function money(n){ return n.toLocaleString("es-VE", { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function P(){ return window.coseProfit; }
+  var abierto = null, LIM = 50, timer = null;
+
+  function fuentes(){
+    var out = [], st = P() && P().datos("profit"), ag = P() && P().puedeAgotados() ? P().datos("profitAgotados") : null;
+    if (st && st.items) out.push({ items:st.items, agot:false });
+    if (ag && ag.items) out.push({ items:ag.items, agot:true });
+    return out;
+  }
+  function cargar(){
+    if (!P() || !P().activo()) return;
+    P().cargar("profit");
+    if (P().puedeAgotados()) P().cargar("profitAgotados");
+  }
+  // código: exacto (sin ceros a la izquierda); también sin el último dígito (dígito de control)
+  function porCodigo(raw){
+    var k = sinCeros(raw), k2 = k.length > 7 ? k.slice(0, -1) : "", hits = [];
+    if (k.length < 4) return hits;
+    fuentes().forEach(function(f){ f.items.forEach(function(a){ var c = sinCeros(a.c); if (c === k || (k2 && c === k2)) hits.push({ a:a, agot:f.agot }); }); });
+    return hits;
+  }
+  function buscar(q){
+    var ws = norm(q).split(/\s+/).filter(function(w){ return w.length >= 2; }), hits = [];
+    if (!ws.length) return hits;
+    var cod = porCodigo(q);
+    if (cod.length) return cod;
+    fuentes().forEach(function(f){
+      f.items.forEach(function(a){
+        var t = a._n || (a._n = norm(a.d + " " + a.c));
+        for (var i = 0; i < ws.length; i++) if (t.indexOf(ws[i]) === -1) return;
+        hits.push({ a:a, agot:f.agot });
+      });
+    });
+    var w0 = ws[0];
+    hits.sort(function(x, y){
+      return (x.agot ? 1 : 0) - (y.agot ? 1 : 0) || (x.a._n.indexOf(w0) === 0 ? 0 : 1) - (y.a._n.indexOf(w0) === 0 ? 0 : 1) || x.a.d.length - y.a.d.length;
+    });
+    return hits;
+  }
+
+  function pintar(){
+    var box = $("prLista"), info = $("prInfo"), q = $("prQ").value.trim();
+    box.innerHTML = "";
+    if (!P() || !P().activo()){ info.textContent = "Entra con tu cuenta para ver precios y disponibilidad."; return; }
+    var st = P().datos("profit");
+    if (!st || !st.items){
+      info.textContent = st && st.err ? "No se pudieron leer los datos de Profit. Revisa tu internet." : "Cargando precios y disponibilidad…";
+      cargar(); return;
+    }
+    var base = st.items.length + " productos disponibles en Coro · datos de Profit " + P().hace(st.actualizado);
+    if (q.length < 2){ info.textContent = base + ". Escribe el nombre o escanea el código."; return; }
+    var hits = buscar(q);
+    info.textContent = hits.length ? (hits.length > LIM ? "Primeros " + LIM + " de " + hits.length + " (escribe más para afinar)" : hits.length + (hits.length === 1 ? " producto" : " productos")) + " · datos de Profit " + P().hace(st.actualizado)
+      : "No aparece con «" + q + "». " + base + ".";
+    if (!hits.length && window.coseFaltantes && window.coseFaltantes.offer) window.coseFaltantes.offer(box, q);
+    if (hits.length === 1) abierto = hits[0].a.c;
+    hits.slice(0, LIM).forEach(function(h){ box.appendChild(fila(h)); if (abierto === h.a.c) box.appendChild(detalle(h)); });
+  }
+  function fila(h){
+    var a = h.a, pr = P().precio(a), r = el("button", "pr-row"); r.type = "button";
+    r.appendChild(el("div", "pr-n", a.d));
+    var m = el("div", "pr-m");
+    m.appendChild(h.agot ? el("span", "pr-agot", "Agotado") : el("span", "pr-disp", "Disponible: " + (Math.round((+a.h || 0) * 100) / 100).toLocaleString("es-VE")));
+    if (pr) m.appendChild(el("span", "pr-tot", "$" + money(pr.total) + (pr.exento ? "" : " c/IVA")));
+    r.appendChild(m);
+    r.setAttribute("aria-expanded", String(abierto === a.c));
+    r.addEventListener("click", function(){ abierto = abierto === a.c ? null : a.c; pintar(); });
+    return r;
+  }
+  function detalle(h){
+    var a = h.a, d = el("div", "pr-det");
+    d.appendChild(el("div", "pr-code", "Código " + a.c));
+    if (!h.agot) d.appendChild(P().bloque(a, a.d));
+    else {
+      var pr = P().precio(a);
+      d.appendChild(el("p", "smap-note", "Hoy no hay en Coro." + (pr ? " Precio 05: $" + money(pr.base) + " + IVA." : "")));
+    }
+    var acts = el("div", "pr-acts");
+    if (!h.agot){
+      var vm = el("button", "btn", "Ver en el mapa"); vm.type = "button";
+      vm.addEventListener("click", function(){
+        window.coseApp.showScreen("mapa");
+        var s = $("mapaSearch"); if (s){ s.value = a.d.split(/\s+/).slice(0, 4).join(" "); s.dispatchEvent(new Event("input")); }
+      });
+      acts.appendChild(vm);
+    } else {
+      var lp = el("button", "btn", "Lo pidieron y no hay"); lp.type = "button";
+      lp.addEventListener("click", function(){ window.coseApp.showScreen("faltantes"); var f = $("faProd"); if (f){ f.value = a.d.slice(0, 80); f.focus(); } });
+      acts.appendChild(lp);
+    }
+    d.appendChild(acts);
+    return d;
+  }
+
+  // --- cámara: escanear el código de barras --------------------------------------
+  var stream = null, raf = null, zx = null, zxCtl = null, zxCarga = null;
+  var FORMATOS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "itf", "qr_code"];
+  function msg(t){ $("prCamMsg").textContent = t; }
+  function leido(valor){
+    cerrarCamara();
+    try { if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
+    var v = String(valor || "").trim();
+    $("prQ").value = v;
+    abierto = null;
+    var hits = porCodigo(v);
+    if (hits.length) abierto = hits[0].a.c;
+    pintar();
+    if (!hits.length) $("prInfo").textContent = "El código " + v + " no aparece en Profit (Coro). Prueba buscando por nombre.";
+  }
+  function abrirCamara(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ alert("Este teléfono no deja usar la cámara desde la app. Escribe el código a mano."); return; }
+    cargar();
+    $("prCam").hidden = false;
+    msg("Apunta al código de barras del producto");
+    var video = $("prVideo");
+    if ("BarcodeDetector" in window){
+      navigator.mediaDevices.getUserMedia({ video:{ facingMode:"environment" }, audio:false }).then(function(s){
+        stream = s; video.srcObject = s; return video.play();
+      }).then(function(){
+        return window.BarcodeDetector.getSupportedFormats ? window.BarcodeDetector.getSupportedFormats() : FORMATOS;
+      }).then(function(sup){
+        var det = new window.BarcodeDetector({ formats:FORMATOS.filter(function(f){ return sup.indexOf(f) !== -1; }) });
+        var busy = false;
+        (function loop(){
+          if (!stream) return;
+          if (!busy && video.readyState >= 2){
+            busy = true;
+            det.detect(video).then(function(r){ busy = false; if (r && r.length && stream) leido(r[0].rawValue); }, function(){ busy = false; });
+          }
+          raf = setTimeout(loop, 180);
+        })();
+      }).catch(function(){ msg("No se pudo abrir la cámara. Revisa el permiso de cámara del navegador."); });
+      return;
+    }
+    // iPhone y otros sin BarcodeDetector: ZXing (se carga solo esta vez)
+    msg("Abriendo la cámara…");
+    if (!zxCarga) zxCarga = new Promise(function(ok, no){
+      var sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/zxing-browser.min.js";
+      sc.onload = function(){ ok(window.ZXingBrowser); }; sc.onerror = function(){ zxCarga = null; no(); };
+      document.head.appendChild(sc);
+    });
+    zxCarga.then(function(Z){
+      if ($("prCam").hidden) return;
+      zx = zx || new Z.BrowserMultiFormatReader();
+      msg("Apunta al código de barras del producto");
+      return zx.decodeFromConstraints({ video:{ facingMode:"environment" } }, video, function(res, err, ctl){
+        zxCtl = ctl;
+        if (res) leido(res.getText());
+      }).then(function(ctl){ zxCtl = ctl; if ($("prCam").hidden) cerrarCamara(); });
+    }).catch(function(){ msg("No se pudo abrir la cámara (revisa el permiso o tu internet)."); });
+  }
+  function cerrarCamara(){
+    $("prCam").hidden = true;
+    clearTimeout(raf); raf = null;
+    if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; }
+    if (zxCtl){ try{ zxCtl.stop(); }catch(e){} zxCtl = null; }
+    var v = $("prVideo"); try{ v.pause(); v.srcObject = null; }catch(e){}
+  }
+
+  $("prForm").addEventListener("submit", function(e){ e.preventDefault(); clearTimeout(timer); abierto = null; pintar(); $("prQ").blur(); });
+  $("prQ").addEventListener("input", function(){ clearTimeout(timer); abierto = null; timer = setTimeout(pintar, 150); });
+  $("prScan").addEventListener("click", abrirCamara);
+  $("prCamClose").addEventListener("click", cerrarCamara);
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !$("prCam").hidden) cerrarCamara(); });
+  new MutationObserver(function(){ if (!$("screen-precio").hidden){ cargar(); pintar(); } else cerrarCamara(); })
+    .observe($("screen-precio"), { attributes:true, attributeFilter:["hidden"] });
+  if (window.coseProfit) window.coseProfit.onChange(function(){ if (!$("screen-precio").hidden) pintar(); });
 })();
 </script>
 
@@ -8330,8 +8573,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v52" → 52). Subir los dos juntos en cada versión.
-  var APP_BUILD = 52;
+  // sw.js ("coseimpa-cosecoro-v53" → 53). Subir los dos juntos en cada versión.
+  var APP_BUILD = 53;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
