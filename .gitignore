@@ -72,3 +72,7 @@ node_modules/
 node_modules/
 tests/node_modules/
 *-debug.log
+
+# Lo que se publica (lo arma tools/publicar/publicar.mjs)
+dist/
+tools/publicar/node_modules/

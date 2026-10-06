@@ -1,7 +1,7 @@
 {
   "hosting": [
     {
-      "public": "public",
+      "public": "dist",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -27,10 +27,13 @@
           ]
         }
       ],
-      "site": "cosecoro-coro"
+      "site": "cosecoro-coro",
+      "predeploy": [
+        "node tools/publicar/publicar.mjs"
+      ]
     },
     {
-      "public": "public",
+      "public": "dist",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -56,7 +59,10 @@
           ]
         }
       ],
-      "site": "cosecoro"
+      "site": "cosecoro",
+      "predeploy": [
+        "node tools/publicar/publicar.mjs"
+      ]
     }
   ],
   "firestore": {

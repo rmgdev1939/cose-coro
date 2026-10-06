@@ -1,0 +1,7 @@
+{
+  "name": "cosecoro-publicar",
+  "private": true,
+  "type": "module",
+  "description": "Arma dist/ (lo que se publica) con el JavaScript comprimido y revuelto",
+  "devDependencies": { "terser": "^5.36.0" }
+}

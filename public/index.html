@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head>
+<!doctype html><!-- Cose Coro © 2026 Rafael Morín. Todos los derechos reservados. Prohibida su copia, modificación o uso sin autorización escrita. --><html lang="es"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cose Coro</title>
@@ -508,7 +508,8 @@
     padding-block:6px calc(24px + env(safe-area-inset-bottom,0px));
   }
   footer .company{color:var(--ink-soft); font-weight:600;}
-  footer .ft{display:flex; align-items:center; justify-content:center; gap:5px; color:var(--ink-soft); opacity:0.5; font-weight:600; font-size:0.62rem; letter-spacing:0.02em;}
+  footer .ft-copy{flex-basis:100%; text-align:center; font-weight:500;}
+  footer .ft{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:5px; color:var(--ink-soft); opacity:0.5; font-weight:600; font-size:0.62rem; letter-spacing:0.02em;}
   footer .ft-mark{width:11px; height:11px;}
   footer .dl-btn{display:inline-flex; align-items:center; gap:6px; margin:0 auto 8px; padding:7px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font:inherit; font-size:0.78rem; font-weight:600; cursor:pointer;}
   footer .dl-btn svg{width:15px; height:15px;}
@@ -2929,6 +2930,7 @@
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
     <span id="appVersion">CC/1.0</span>
+    <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
 
@@ -8573,8 +8575,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v53" → 53). Subir los dos juntos en cada versión.
-  var APP_BUILD = 53;
+  // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
+  var APP_BUILD = 54;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------

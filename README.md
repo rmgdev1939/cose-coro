@@ -25,7 +25,9 @@ App (PWA) para el personal de la sucursal Coro de Coseimpa: calculadoras de mate
 npx -y firebase-tools@14 deploy --only hosting,firestore:rules,database
 ```
 
-Antes de publicar: subir la versión en `public/index.html` (`appVersion`) y en `public/sw.js` (`CACHE`).
+Antes de publicar: subir `CACHE` en `public/sw.js` y `APP_BUILD` en `public/index.html` (mismo número).
+
+Lo que se publica sale de `dist/`, no de `public/`: antes de cada deploy de hosting, `tools/publicar/publicar.mjs` (predeploy en `firebase.json`) copia `public/` a `dist/` con el JavaScript comprimido y revuelto y el aviso de derechos de autor. El código legible queda solo en `public/` y en este repositorio privado.
 
 ## Probar las reglas de seguridad
 
