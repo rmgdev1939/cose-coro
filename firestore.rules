@@ -437,6 +437,25 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ---------------- Profit (existencia y precio, solo lectura) --------------
+    // Los escribe SOLO la cuenta del puente (tools en el iMac de la tienda, que
+    // lee Profit con un usuario de solo lectura). Nadie más escribe aquí.
+    function puente() { return request.auth != null && request.auth.uid == "PUENTE_UID_PENDIENTE"; }
+    function puenteDoc(d) {
+      return (d.keys().hasOnly(["datos", "n", "hash", "actualizado"]) && d.datos is string && d.n is int && d.hash is string && d.actualizado is timestamp)
+        || (d.keys().hasOnly(["grupos", "total", "actualizado", "almacenes", "precio"]) && d.grupos is map && d.total is int && d.actualizado is timestamp);
+    }
+    // Con existencia y precio 05 (público): todos los trabajadores aprobados
+    match /profit/{doc} {
+      allow read: if verified();
+      allow write: if puente() && puenteDoc(request.resource.data);
+    }
+    // Agotados ("los vendíamos y no hay"): Compras, Gerencia y administración
+    match /profitAgotados/{doc} {
+      allow read: if comprasVer();
+      allow write: if puente() && puenteDoc(request.resource.data);
+    }
+
     match /monitor/{doc} {
       allow read: if admin();
       allow write: if false;
