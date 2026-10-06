@@ -765,6 +765,16 @@
   .ed-dropbar-in{max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:10px;}
   .ed-drop-q{font-size:0.9rem; color:var(--ink); line-height:1.4;}
   .ed-dropbar .ed-act-row .btn{flex:1;}
+  /* Profit: existencia y precio en los resultados */
+  .pf-box{margin-top:8px; padding:9px 10px; width:100%; box-sizing:border-box; border-radius:10px; background:var(--surface-2); display:flex; flex-direction:column; gap:6px;}
+  .pf-hay{font-weight:800; font-size:0.86rem; color:var(--accent2);}
+  .pf-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; text-align:center;}
+  .pf-l{font-size:0.66rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
+  .pf-usd{font-size:0.92rem; font-weight:700; color:var(--ink);}
+  .pf-bs{font-size:0.7rem; color:var(--ink-soft);}
+  .pf-sin{font-size:0.76rem; color:var(--ink-soft);}
+  .pf-copy{align-self:flex-start;}
+  .sug-tag.pf-agot{background:color-mix(in srgb, #E5534B 18%, var(--surface)); color:var(--ink);}
   .mapa-cat-h{margin:14px 2px 6px; font-size:0.74rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em;}
   .mapa-hit.mapa-cat .m{font-size:0.86rem;}
   .ed-bulk .card-title{line-height:1.3;}
@@ -2622,6 +2632,13 @@
     <select id="faFiltro" class="hist-search" aria-label="Filtrar lista" style="margin-bottom:8px;"><option value="pendiente">Pendientes</option><option value="pedido">Pedidos</option><option value="descartado">Descartados</option><option value="todos">Todos</option></select>
     <div id="faLista"></div>
   </section>
+  <section class="card" id="agCard" hidden>
+    <div class="card-title"><span>Agotados en Profit</span></div>
+    <p class="smap-note" style="margin:0 0 8px;">Los vendíamos y hoy no hay en Coro. No salen en el mapa; cuando vuelve a haber, regresan solos.</p>
+    <input type="search" id="agFind" class="hist-search" placeholder="Buscar en agotados…" autocomplete="off" aria-label="Buscar en agotados" style="margin-bottom:6px;">
+    <p class="smap-note" id="agInfo" style="margin:0 0 6px;"></p>
+    <div id="agLista"></div>
+  </section>
   <section class="card">
     <div class="card-title">Lo que yo anoté</div>
     <div id="faMios"></div>
@@ -3476,8 +3493,13 @@
   var mapCloud = null; // { z } cuando el mapa viene de la nube (modo Firebase)
   function buildMapData(){
     var src = mapCloud ? mapCloud.z : ((mapImported && mapImported.z) ? mapImported.z : MAP_BUILTIN);
-    var z = {};
-    Object.keys(src).forEach(function(k){ if (Array.isArray(src[k]) && src[k].length) z[k] = src[k].slice(); });
+    var z = {}, C = window.coseCatalogo;
+    // lo que según Profit hoy no hay en Coro no ocupa lugar en el mapa (se esconde, no se borra)
+    Object.keys(src).forEach(function(k){
+      if (!Array.isArray(src[k]) || !src[k].length) return;
+      var it = C && C.oculto ? src[k].filter(function(t){ return !C.oculto(t); }) : src[k].slice();
+      if (it.length) z[k] = it;
+    });
     Object.keys(NAME_ITEMS).forEach(function(k){
       var arr = z[k] || [];
       NAME_ITEMS[k].forEach(function(n){ if (arr.map(norm).indexOf(norm(n)) === -1) arr.unshift(n); });
@@ -3757,6 +3779,16 @@
     document.querySelectorAll("#mapaList .mapa-hit").forEach(function(r){ r.classList.toggle("sel", r === rowEl); });
     drawRoute(info);
   }
+  // agotados de Profit que coinciden con la búsqueda (solo Compras, Gerencia y admin)
+  function agBuscar(raw){
+    var P = window.coseProfit;
+    if (!P || !P.puedeAgotados()) return [];
+    var d = P.datos("profitAgotados");
+    if (!d || !d.items){ P.cargar("profitAgotados"); return []; }
+    var ws = norm(raw).split(/\s+/).filter(function(w){ return w.length >= 2; });
+    if (!ws.length) return [];
+    return d.items.filter(function(a){ var t = norm(a.d + " " + a.c); return ws.every(function(w){ return t.indexOf(w) !== -1; }); });
+  }
   function renderMapa(){
     var raw = ($("mapaSearch").value || "").trim();
     var q = norm(raw);
@@ -3776,7 +3808,8 @@
       return z.items.some(function(it){ return itemMatches(it, terms); });
     });
     var cat = !pm && window.coseCatalogo ? window.coseCatalogo.buscar(raw, terms, 25) : null;
-    if (!matches.length && !(cat && (cat.loading || cat.hits.length))){
+    var ag = !pm ? agBuscar(raw) : [];
+    if (!matches.length && !ag.length && !(cat && (cat.loading || cat.hits.length))){
       list.innerHTML = '<div class="dash-empty">No aparece en las zonas ya cargadas. Puede estar en una zona que aún falta — pregunta en el mostrador.</div>';
       if (window.coseFaltantes) window.coseFaltantes.offer(list, raw);
       missTimer = setTimeout(function(){ recordMiss(raw.toLowerCase()); }, 1500);
@@ -3820,7 +3853,10 @@
     if (cat && cat.hits.length){
       var hh = document.createElement("div");
       hh.className = "mapa-cat-h";
-      hh.textContent = "Del catálogo de coseimpa.com · " + (cat.total > cat.hits.length ? cat.hits.length + " de " + cat.total + " (escribe más para afinar)" : cat.total);
+      var PFd = window.coseCatalogo.conProfit() ? window.coseProfit.datos("profit") : null;
+      hh.textContent = (PFd ? "Con existencia en Coro · " : "Del catálogo de coseimpa.com · ") +
+        (cat.total > cat.hits.length ? cat.hits.length + " de " + cat.total + " (escribe más para afinar)" : cat.total) +
+        (PFd ? " · datos de Profit " + window.coseProfit.hace(PFd.actualizado) : "");
       list.appendChild(hh);
       cat.hits.forEach(function(p){
         var info = p.code ? zoneInfo(p.code) : null;
@@ -3836,6 +3872,7 @@
         s.appendChild(document.createTextNode((info ? info.t + " · " + info.s : "Todavía sin lugar en el mapa") + " "));
         var tag = document.createElement("span"); tag.className = "sug-tag"; tag.textContent = info ? "ubicación sugerida" : "por ubicar"; s.appendChild(tag);
         row.querySelector(".r").textContent = info ? "↳ " + info.r : "↳ Pregunta en el mostrador. Quien edita el mapa puede ubicarlo.";
+        if (p.pf) row.querySelector(".txt").appendChild(window.coseProfit.bloque(p.pf, p.nombre));
         if (info) row.addEventListener("click", function(){
           selectResult(info, row);
           setZoom(true);
@@ -3845,6 +3882,30 @@
         list.appendChild(row);
         if (!firstRow && info){ firstRow = row; firstInfo = info; }
       });
+    }
+    // Compras, Gerencia y administración: también los agotados (sin lugar en el mapa)
+    {
+      {
+        if (ag.length){
+          var ah = document.createElement("div");
+          ah.className = "mapa-cat-h";
+          ah.textContent = "Agotados en Profit · " + ag.length + " (solo lo ven Compras, Gerencia y administración)";
+          list.appendChild(ah);
+          ag.slice(0, 10).forEach(function(a){
+            var row = document.createElement("div");
+            row.className = "hist-item mapa-hit mapa-cat";
+            row.innerHTML = '<div class="txt"><div class="m"></div><div class="s"></div></div>';
+            row.querySelector(".m").textContent = a.d;
+            var s = row.querySelector(".s");
+            var tag = document.createElement("span"); tag.className = "sug-tag pf-agot"; tag.textContent = "Agotado"; s.appendChild(tag);
+            s.appendChild(document.createTextNode(" Código " + a.c + (a.p != null ? " · P5 $" + a.p.toFixed(2) : "")));
+            var b = document.createElement("button"); b.type = "button"; b.className = "hist-copybtn"; b.textContent = "Lo pidieron y no hay";
+            b.addEventListener("click", function(){ window.coseApp.showScreen("faltantes"); var f = $("faProd"); if (f){ f.value = a.d.slice(0, 80); f.focus(); } });
+            row.appendChild(b);
+            list.appendChild(row);
+          });
+        }
+      }
     }
     if (firstInfo){
       selectResult(firstInfo, firstRow);
@@ -3918,7 +3979,8 @@
       buildStoreMap();
       renderMapa();
     },
-    refresh: function(){ if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); }
+    refresh: function(){ if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); },
+    rebuild: function(){ buildMapData(); buildStoreMap(); if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); }
   };
 
   // --- buscador del inicio: lleva directo al mapa --------------------------
@@ -7206,6 +7268,165 @@
 
 <script>
 // ============================================================================
+// PROFIT (window.coseProfit): existencia y precio de Profit Plus, que sube el
+// puente del iMac de la tienda (tools: cosecoro-profit/puente.mjs, cada hora).
+//   profit/meta + g00..g31: artículos CON existencia en Coro, precio 05 (público,
+//     sin IVA) y tipo de IVA. Lo leen todos los trabajadores aprobados.
+//   profitAgotados/meta + a00..a07: los que no hay ("los vendíamos y no hay").
+//     Solo Compras, Gerencia y el administrador (lo exige la regla).
+// Se carga solo cuando alguien busca o abre Agotados, y se guarda en el teléfono:
+// después solo baja los grupos que cambiaron (cuida el plan gratis).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var X = null, DS = {}, subs = [];
+  var TTL = 20 * 60000;          // cada cuánto se revisa si hay datos nuevos
+  var IVA = 0.16;
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  function lsBorrar(){ try{ Object.keys(localStorage).forEach(function(k){ if (k.indexOf("cc_pf_") === 0) localStorage.removeItem(k); }); }catch(e){} }
+  function puedeAgotados(me){ return !!me && (me.role === "admin" || me.cargo === "Compras" || me.cargo === "Gerencia"); }
+  function notify(col){ subs.forEach(function(fn){ try{ fn(col); }catch(e){} }); }
+
+  function cargar(col, forzar){
+    var d = DS[col] || (DS[col] = {});
+    if (!X || (col === "profitAgotados" && !puedeAgotados(X.me))) return Promise.resolve(null);
+    if (d.loading) return d.loading;
+    if (d.items && !forzar && Date.now() - d.at < TTL) return Promise.resolve(d);
+    var F = X.F, uid0 = X.uid;
+    d.loading = F.getDoc(F.doc(X.db, col, "meta")).then(function(ms){
+      if (!ms.exists()) return null;
+      var meta = ms.data(), gr = meta.grupos || {}, ids = Object.keys(gr).sort();
+      return Promise.all(ids.map(function(id){
+        var key = "cc_pf_" + col + "_" + id, c = lsGet(key);
+        if (c && c.h === gr[id]) return c.d;
+        return F.getDoc(F.doc(X.db, col, id)).then(function(s){
+          var v = s.exists() ? s.data() : null, arr = [];
+          try{ arr = v ? JSON.parse(v.datos || "[]") : []; }catch(e){}
+          if (v) lsSet(key, { h:v.hash, d:arr });
+          return arr;
+        });
+      })).then(function(parts){
+        if (!X || X.uid !== uid0) return null;
+        var items = [].concat.apply([], parts), by = {};
+        items.forEach(function(a){ by[a.c] = a; });
+        var t = meta.actualizado && meta.actualizado.toMillis ? meta.actualizado.toMillis() : 0;
+        var cambio = !d.items || d.actualizado !== t;
+        d.items = items; d.byCode = by; d.at = Date.now(); d.actualizado = t; d.err = false;
+        if (cambio) notify(col);
+        return d;
+      });
+    }).catch(function(){ d.err = true; return null; }).then(function(r){ d.loading = null; return r; });
+    return d.loading;
+  }
+
+  // --- precio: base (precio 05, sin IVA), IVA 16 % y total, en $ y en Bs --------
+  function tasa(){ var c = lsGet("coseimpa_bcv_cache"); return c && c.rate > 0 ? c.rate : 0; }
+  function money(n){ return n.toLocaleString("es-VE", { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function precio(a){
+    if (!a || a.p == null) return null;
+    var r2 = function(n){ return Math.round(n * 100) / 100; };
+    var base = a.p, iva = a.t === "1" ? r2(base * IVA) : 0, r = tasa();
+    // en Bs, como la app de Coseimpa: base × tasa, y el IVA sobre esa base en Bs
+    var bBs = r ? r2(base * r) : 0, iBs = a.t === "1" ? r2(bBs * IVA) : 0;
+    return { base:base, iva:iva, total:r2(base + iva), exento:a.t !== "1", tasa:r, bs:r ? [bBs, iBs, r2(bBs + iBs)] : null };
+  }
+  function hace(t){
+    if (!t) return "";
+    var m = Math.round((Date.now() - t) / 60000);
+    return m < 2 ? "hace un momento" : m < 60 ? "hace " + m + " min" : m < 1440 ? "hace " + Math.round(m / 60) + " h" : "hace " + Math.round(m / 1440) + " días";
+  }
+  function hay(n){ n = Number(n) || 0; return (Math.round(n * 100) / 100).toLocaleString("es-VE"); }
+  // bloque "Hay X · Base / IVA / Total" para un resultado de búsqueda
+  function bloque(a, nombre){
+    var w = el("div", "pf-box");
+    w.appendChild(el("div", "pf-hay", "Hay " + hay(a.h)));
+    var pr = precio(a);
+    if (!pr){ w.appendChild(el("div", "pf-sin", "Sin precio 05 en Profit")); return w; }
+    var g = el("div", "pf-grid");
+    [["Base", pr.base], [pr.exento ? "IVA (exento)" : "IVA 16 %", pr.iva], ["Total", pr.total]].forEach(function(x, i){
+      var c = el("div", "pf-cell");
+      c.appendChild(el("div", "pf-l", x[0]));
+      c.appendChild(el("div", "pf-usd mono", "$" + money(x[1])));
+      if (pr.bs) c.appendChild(el("div", "pf-bs mono", "Bs " + money(pr.bs[i])));
+      g.appendChild(c);
+    });
+    w.appendChild(g);
+    var b = el("button", "hist-copybtn pf-copy", "Copiar precio"); b.type = "button";
+    b.addEventListener("click", function(e){
+      e.stopPropagation();
+      var t = nombre + "\nTotal: $" + money(pr.total) + (pr.bs ? " (Bs " + money(pr.bs[2]) + ")" : "") +
+        (pr.exento ? " · exento de IVA" : " · IVA incluido") + "\nBase $" + money(pr.base) + " + IVA $" + money(pr.iva);
+      var ok = function(){ b.textContent = "✓ Copiado"; setTimeout(function(){ b.textContent = "Copiar precio"; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function(){});
+    });
+    w.appendChild(b);
+    return w;
+  }
+
+  // --- lista de Agotados (Lo pidieron y no hay → Agotados en Profit) --------------
+  var agFiltro = "", agMostrar = 80;
+  function pintarAgotados(){
+    var card = $("agCard");
+    if (!card) return;
+    var ok = !!X && puedeAgotados(X.me);
+    card.hidden = !ok;
+    if (!ok || $("screen-faltantes").hidden) return;
+    var d = DS.profitAgotados, box = $("agLista");
+    if (!d || !d.items){
+      box.innerHTML = "";
+      box.appendChild(el("p", "c-empty", d && d.err ? "No se pudo leer la lista de Profit. Revisa tu internet." : "Cargando la lista de Profit…"));
+      cargar("profitAgotados");
+      return;
+    }
+    var f = agFiltro ? normTxt(agFiltro) : "";
+    var list = d.items.filter(function(a){ return !f || normTxt(a.d + " " + a.c).indexOf(f) !== -1; })
+      .sort(function(a, b){ return (a.v || "") < (b.v || "") ? -1 : (a.v || "") > (b.v || "") ? 1 : a.d < b.d ? -1 : 1; });
+    $("agInfo").textContent = d.items.length + " artículos sin existencia en Coro · datos de Profit " + hace(d.actualizado) + (f ? " · " + list.length + " con «" + agFiltro + "»" : "");
+    box.innerHTML = "";
+    list.slice(0, agMostrar).forEach(function(a){
+      var r = el("div", "hist-item");
+      var t = el("div", "txt");
+      t.appendChild(el("div", "m", a.d));
+      var pr = precio(a);
+      t.appendChild(el("div", "s", "Código " + a.c + (pr ? " · P5 $" + money(pr.base) : "") + " · " + (a.v ? "con existencia por última vez el " + new Date(a.v + "T12:00:00").toLocaleDateString("es-VE", { day:"numeric", month:"short", year:"numeric" }) : "sin fecha (antes del 6 oct 2026)")));
+      r.appendChild(t);
+      box.appendChild(r);
+    });
+    if (list.length > agMostrar){
+      var more = el("button", "btn", "Ver más (quedan " + (list.length - agMostrar) + ")"); more.type = "button";
+      more.addEventListener("click", function(){ agMostrar += 80; pintarAgotados(); });
+      box.appendChild(more);
+    }
+  }
+  function normTxt(s){ s = String(s).toLowerCase(); try{ s = s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){} return s; }
+  if ($("agFind")) $("agFind").addEventListener("input", function(){ agFiltro = this.value.trim(); agMostrar = 80; pintarAgotados(); });
+  new MutationObserver(function(){ if (!$("screen-faltantes").hidden) pintarAgotados(); })
+    .observe($("screen-faltantes"), { attributes:true, attributeFilter:["hidden"] });
+  subs.push(function(col){ if (col === "profitAgotados") pintarAgotados(); });
+
+  window.coseProfit = {
+    start: function(ctx){
+      if (X && X.uid === ctx.uid){ X.me = ctx.me; pintarAgotados(); return; }
+      X = ctx; DS = {};
+      pintarAgotados();
+    },
+    stop: function(){ X = null; DS = {}; lsBorrar(); var c = $("agCard"); if (c) c.hidden = true; },
+    cargar: cargar,
+    listo: function(col){ return !!(DS[col] && DS[col].items); },
+    datos: function(col){ return DS[col] || null; },
+    puedeAgotados: function(){ return !!X && puedeAgotados(X.me); },
+    activo: function(){ return !!X; },
+    precio: precio, bloque: bloque, hace: hace,
+    onChange: function(fn){ subs.push(fn); }
+  };
+})();
+</script>
+
+<script>
+// ============================================================================
 // CATÁLOGO DE COSEIMPA.COM (window.coseCatalogo): los 8.533 productos de la
 // tienda en línea (catalogo.json, nombres tal como los escribe la página).
 // A cada producto se le sugiere un lugar del mapa: junto a sus parecidos ya
@@ -7218,6 +7439,32 @@
   "use strict";
   var cat = null, loading = null, failed = false, dirty = true;
   var plan = null, porZona = {}, porUbicar = [], subs = [];
+  // cur = la lista con la que se trabaja: con datos de Profit, solo lo que tiene
+  // existencia (los de la página + los que solo están en Profit); sin Profit,
+  // el catálogo de la página completo.
+  var cur = null, curKey = "";
+  function PF(){ var P = window.coseProfit; return P && P.listo("profit") ? P.datos("profit") : null; }
+  function construir(){
+    var st = PF(), key = st ? "pf" + st.actualizado : "web";
+    if (cur && curKey === key) return;
+    var p = [], codes = [];
+    if (st){
+      var by = st.byCode, web = {}, votes = {};
+      cat.p.forEach(function(x){
+        var sku = x[2]; if (!sku) return;
+        web[sku] = true;
+        var a = by[sku]; if (!a) return;
+        p.push([x[0], x[1]]); codes.push(sku);
+        var v = votes[a.l] || (votes[a.l] = {}); v[x[1]] = (v[x[1]] || 0) + 1;
+      });
+      // los que solo están en Profit toman la categoría más común de su línea
+      var lineCat = {};
+      Object.keys(votes).forEach(function(l){ var top = -1, n = 0; Object.keys(votes[l]).forEach(function(k){ if (votes[l][k] > n){ n = votes[l][k]; top = +k; } }); lineCat[l] = top; });
+      st.items.forEach(function(a){ if (!web[a.c]){ p.push([a.d, a.l in lineCat ? lineCat[a.l] : -1]); codes.push(a.c); } });
+    } else cat.p.forEach(function(x){ p.push([x[0], x[1]]); codes.push(x[2] || ""); });
+    cur = { p:p, code:codes, cats:cat.cats, s:p.map(function(x){ return " " + stem(x[0]) + " "; }), n:p.map(function(x){ return norm(x[0]).trim(); }) };
+    curKey = key;
+  }
   function norm(s){ s = String(s).toLowerCase(); try{ s = s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){} return s.replace(/ñ/g, "n"); }
   function stem(s){ return norm(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").map(function(w){ return w.length > 3 ? w.replace(/(es|s)$/, "") : w; }).join(" "); }
   function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
@@ -7241,14 +7488,14 @@
         });
       });
     });
-    var n = cat.p.length, res = new Array(n), votes = {}, i, j;
+    var n = cur.p.length, res = new Array(n), votes = {}, i, j;
     for (i = 0; i < n; i++){
-      var name = cat.s[i], score = {}, best = "", bestS = 0;
+      var name = cur.s[i], score = {}, best = "", bestS = 0;
       for (j = 0; j < terms.length; j++){
         if (terms[j].re.test(name)){ var c = terms[j].code; score[c] = (score[c] || 0) + terms[j].w; if (score[c] > bestS){ bestS = score[c]; best = c; } }
       }
       res[i] = best ? [best, 1] : ["", 0];
-      if (best){ var k = cat.p[i][1]; votes[k] = votes[k] || {}; votes[k][best] = (votes[k][best] || 0) + 1; }
+      if (best){ var k = cur.p[i][1]; votes[k] = votes[k] || {}; votes[k][best] = (votes[k][best] || 0) + 1; }
     }
     var catZone = {};
     Object.keys(votes).forEach(function(k){
@@ -7257,31 +7504,34 @@
       if (topN >= 3 && topN / tot >= 0.25) catZone[k] = top;
     });
     // si el nombre de la categoría es una zona del mapa (ej. "Automotriz"), esa
-    cat.cats.forEach(function(cn, k){
+    cur.cats.forEach(function(cn, k){
       var t = " " + stem(cn) + " ", best = "", bestW = 0;
       terms.forEach(function(x){ if (x.re.test(t) && x.w > bestW){ bestW = x.w; best = x.code; } });
       if (best) catZone[k] = best;
     });
-    for (i = 0; i < n; i++) if (!res[i][0] && catZone[cat.p[i][1]]) res[i] = [catZone[cat.p[i][1]], 2];
+    for (i = 0; i < n; i++) if (!res[i][0] && catZone[cur.p[i][1]]) res[i] = [catZone[cur.p[i][1]], 2];
     // Madera, hierro, mallas, cemento y agregados se guardan afuera, en el patio
     // (pedido de Rafael): nunca se sugiere un rack de la tienda para ellos.
     var patio = {};
-    cat.cats.forEach(function(cn, k){ if (PATIO_CATS.indexOf(stem(cn)) !== -1) patio[k] = true; });
-    for (i = 0; i < n; i++) if (patio[cat.p[i][1]]) res[i] = ["PATIO", 4];
+    cur.cats.forEach(function(cn, k){ if (PATIO_CATS.indexOf(stem(cn)) !== -1) patio[k] = true; });
+    for (i = 0; i < n; i++) if (patio[cur.p[i][1]]) res[i] = ["PATIO", 4];
     return res;
   }
   var PATIO_CATS = ["maderas y carpinteria", "hierro productos procesados", "hierro productos siderurgicos",
     "mallas cercas y alambrados", "cementos agregados y aditivos", "bloques tabelones y tejas"].map(stem);
 
   function compute(){
-    if (!cat || !dirty) return;
+    if (!cat) return;
+    var k0 = curKey;
+    construir();
+    if (!dirty && k0 === curKey) return;
     dirty = false;
     var api = window.coseMapApi, zonas = api ? api.current() : {}, conf = {};
     Object.keys(zonas).forEach(function(code){ zonas[code].forEach(function(it){ conf[norm(it).trim()] = code; }); });
     plan = ubicar(zonas, (api && api.syn) || []);
     porZona = {}; porUbicar = [];
     for (var i = 0; i < plan.length; i++){
-      var c = conf[cat.n[i]];
+      var c = conf[cur.n[i]];
       if (c){ plan[i] = [c, 3]; continue; }
       if (plan[i][0]) (porZona[plan[i][0]] = porZona[plan[i][0]] || []).push(i);
       else porUbicar.push(i);
@@ -7291,44 +7541,60 @@
   function load(){
     if (cat || loading || failed) return loading;
     loading = fetch("catalogo.json").then(function(r){ if (!r.ok) throw new Error("http " + r.status); return r.json(); }).then(function(d){
-      d.s = d.p.map(function(p){ return " " + stem(p[0]) + " "; });
-      d.n = d.p.map(function(p){ return norm(p[0]).trim(); });
+      // nombre de la página → código, para esconder del mapa lo que no hay
+      d.porNombre = {};
+      d.p.forEach(function(p){ if (p[2]) d.porNombre[norm(p[0]).trim()] = p[2]; });
       cat = d; dirty = true; loading = null;
+      if (window.coseProfit && window.coseProfit.activo()) window.coseProfit.cargar("profit");
       if (window.coseMapApi && window.coseMapApi.refresh) window.coseMapApi.refresh();
       notify();
     }).catch(function(){ failed = true; loading = null; notify(); });
     return loading;
   }
-  function item(i){ return { i:i, nombre:cat.p[i][0], code:plan[i][0], tipo:plan[i][1], cat:cat.cats[cat.p[i][1]] || "" }; }
+  function item(i){
+    var st = PF(), art = cur.code[i];
+    return { i:i, nombre:cur.p[i][0], code:plan[i][0], tipo:plan[i][1], cat:cur.cats[cur.p[i][1]] || "", art:art, pf:st && art ? st.byCode[art] || null : null };
+  }
 
   window.coseCatalogo = {
     invalidate: function(){ dirty = true; if (cat) notify(); },
+    // ¿esconder este artículo confirmado del mapa? Sí, si es un producto de la
+    // página que, según Profit, hoy no tiene existencia en Coro (no se borra: vuelve solo)
+    oculto: function(nombre){
+      var st = PF();
+      if (!st || !cat) return false;
+      var sku = cat.porNombre[norm(nombre).trim()];
+      return !!sku && !st.byCode[sku];
+    },
+    conProfit: function(){ return !!PF(); },
     onChange: function(fn){ subs.push(fn); },
     load: load,
     ready: function(){ return !!cat; },
     failed: function(){ return failed; },
-    total: function(){ return cat ? cat.p.length : 0; },
-    nombre: function(i){ return cat && cat.p[i] ? cat.p[i][0] : ""; },
+    total: function(){ return cur ? cur.p.length : 0; },
+    nombre: function(i){ return cur && cur.p[i] ? cur.p[i][0] : ""; },
     // búsqueda: todas las palabras (o un sinónimo) dentro del nombre; lo ya confirmado sale en el mapa normal
     buscar: function(raw, terms, limit){
       if (!cat){ load(); return { loading:!failed, hits:[], total:0 }; }
+      var P = window.coseProfit;
+      if (P && P.activo()) P.cargar("profit"); // trae existencia y precio (si ya pasó su rato)
       compute();
       var words = stem(raw).split(" ").filter(function(w){ return w.length >= 2; });
       if (!words.length) return { hits:[], total:0 };
       // sinónimos solo con una palabra ("poceta" → "inodoro"); con varias, deben estar todas
       var syn = words.length === 1 ? (terms || []).slice(1).map(stem).filter(function(t){ return t.length >= 3; }) : [];
       var hits = [];
-      for (var i = 0; i < cat.s.length; i++){
+      for (var i = 0; i < cur.s.length; i++){
         if (plan[i][1] === 3) continue;
-        var s = cat.s[i], ok = true;
+        var s = cur.s[i], ok = true;
         for (var j = 0; j < words.length; j++) if (s.indexOf(words[j]) === -1){ ok = false; break; }
         if (!ok) for (j = 0; j < syn.length; j++) if (s.indexOf(" " + syn[j]) !== -1){ ok = true; break; }
         if (ok) hits.push(i);
       }
       var w0 = " " + words[0];
       hits.sort(function(a, b){
-        var pa = cat.s[a].indexOf(w0) === 0 ? 0 : 1, pb = cat.s[b].indexOf(w0) === 0 ? 0 : 1;
-        return pa - pb || (plan[a][0] ? 0 : 1) - (plan[b][0] ? 0 : 1) || cat.s[a].length - cat.s[b].length;
+        var pa = cur.s[a].indexOf(w0) === 0 ? 0 : 1, pb = cur.s[b].indexOf(w0) === 0 ? 0 : 1;
+        return pa - pb || (plan[a][0] ? 0 : 1) - (plan[b][0] ? 0 : 1) || cur.s[a].length - cur.s[b].length;
       });
       return { hits:hits.slice(0, limit || 25).map(item), total:hits.length };
     },
@@ -7338,11 +7604,19 @@
     resumen: function(){
       if (!cat) return null;
       compute();
-      var r = { total:cat.p.length, directo:0, categoria:0, patio:0, confirmado:0, porUbicar:porUbicar.length };
+      var r = { total:cur.p.length, directo:0, categoria:0, patio:0, confirmado:0, porUbicar:porUbicar.length };
       plan.forEach(function(x){ if (x[1] === 1) r.directo++; else if (x[1] === 2) r.categoria++; else if (x[1] === 3) r.confirmado++; else if (x[1] === 4) r.patio++; });
       return r;
     }
   };
+  // cuando llegan datos nuevos de Profit: recalcular y volver a pintar el mapa
+  if (window.coseProfit) window.coseProfit.onChange(function(col){
+    if (col === "profitAgotados"){ if (window.coseMapApi && window.coseMapApi.refresh) window.coseMapApi.refresh(); return; }
+    if (col !== "profit") return;
+    dirty = true;
+    if (window.coseMapApi && window.coseMapApi.rebuild) window.coseMapApi.rebuild();
+    if (cat) notify();
+  });
 })();
 </script>
 
@@ -8056,8 +8330,8 @@
     catch(e){ return false; }
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
-  // sw.js ("coseimpa-cosecoro-v50" → 50). Subir los dos juntos en cada versión.
-  var APP_BUILD = 51;
+  // sw.js ("coseimpa-cosecoro-v52" → 52). Subir los dos juntos en cada versión.
+  var APP_BUILD = 52;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -9975,6 +10249,7 @@
       if (window.coseEditor) window.coseEditor.stop();
       if (window.coseMonitor) window.coseMonitor.stop();
       if (window.coseUso) window.coseUso.stop();
+      if (window.coseProfit) window.coseProfit.stop();
       if (window.coseAvisos) window.coseAvisos.stop();
       if (window.coseCapac) window.coseCapac.stop();
       if (window.coseFlota) window.coseFlota.stop();
@@ -9996,6 +10271,7 @@
       if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
       if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:me });
+      if (window.coseProfit) window.coseProfit.start({ db:db, F:F, uid:uid, me:me });
       if (window.cosePush) window.cosePush.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();

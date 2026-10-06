@@ -460,6 +460,25 @@ await t("Rafael no cambia la llave", () => assertFails(setDoc(doc(R, "config", "
 await t("la admin no borra la llave", () => assertFails(deleteDoc(doc(A, "config", "push"))));
 await t("la lista de cargos se sigue leyendo sin sesión", () => assertSucceeds(getDoc(doc(anon, "config", "cargos"))));
 
+console.log("Profit (puente)");
+const PUENTE = readFileSync(DIR + "firestore.rules", "utf8").match(/function puente\(\) \{[^}]*request\.auth\.uid == "([^"]+)"/)[1];
+const PU = env.authenticatedContext(PUENTE, { email: "puente@x.com", email_verified: false }).firestore();
+const grupo = { datos: "[]", n: 0, hash: "abc", actualizado: serverTimestamp() };
+const meta = { grupos: { g00: "abc" }, total: 0, actualizado: serverTimestamp(), almacenes: "A0101,A0201", precio: "05" };
+await t("el puente escribe un grupo", () => assertSucceeds(setDoc(doc(PU, "profit", "g00"), grupo)));
+await t("el puente escribe meta", () => assertSucceeds(setDoc(doc(PU, "profit", "meta"), meta)));
+await t("el puente escribe agotados", () => assertSucceeds(setDoc(doc(PU, "profitAgotados", "a00"), grupo)));
+await t("el puente no mete campos extra", () => assertFails(setDoc(doc(PU, "profit", "g01"), Object.assign({ x: 1 }, grupo))));
+await t("el puente no escribe en el mapa", () => assertFails(setDoc(doc(PU, "mapa", "P1-A-arriba"), { items: [] })));
+await t("el admin no escribe en profit", () => assertFails(setDoc(doc(A, "profit", "g02"), grupo)));
+await t("un trabajador lee profit", () => assertSucceeds(getDoc(doc(B, "profit", "meta"))));
+await t("pendiente no lee profit", () => assertFails(getDoc(doc(D, "profit", "meta"))));
+await t("sin sesión no lee profit", () => assertFails(getDoc(doc(anon, "profit", "meta"))));
+await t("compras lee agotados", () => assertSucceeds(getDoc(doc(as("COM"), "profitAgotados", "a00"))));
+await t("gerencia lee agotados", () => assertSucceeds(getDoc(doc(as("GER"), "profitAgotados", "a00"))));
+await t("el admin lee agotados", () => assertSucceeds(getDoc(doc(A, "profitAgotados", "a00"))));
+await t("ventas no lee agotados", () => assertFails(getDoc(doc(B, "profitAgotados", "a00"))));
+
 console.log("en línea (Realtime Database)");
 const rt = (uid, verified = true) => env.authenticatedContext(uid, { email: uid + "@x.com", email_verified: verified }).database();
 await t("B marca que está en línea", () => assertSucceeds(set(ref(rt("B"), "estado/B"), { on: true, t: Date.now() })));
