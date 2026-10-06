@@ -1156,6 +1156,61 @@
   @media (prefers-reduced-motion:no-preference){
     .result, .card{transition:transform .15s;}
   }
+
+  /* ---------- Acabado profesional (v51) ---------------------------------- */
+  /* Inicio: saludo con la fecha */
+  .home-hello{margin:2px 0 14px;}
+  .home-hello h1{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:1.45rem; line-height:1.15; margin:0; color:var(--ink); letter-spacing:-0.01em;}
+  .home-hello p{margin:3px 0 0; font-size:0.84rem; color:var(--ink-soft);}
+  /* etiqueta de sección (igual que las de las tarjetas) */
+  .sec-lbl{font-size:0.72rem; font-weight:700; letter-spacing:0.09em; text-transform:uppercase; color:var(--ink-soft); margin:6px 0 -4px;}
+  /* Códigos de radio en Inicio: ícono en vez de emoji, 8 en rojo */
+  .c5-home-h{display:inline-flex; align-items:center; gap:7px;}
+  .c5-home-h svg{width:17px; height:17px; color:#D62828;}
+  .c5-home{box-shadow:0 1px 2px var(--shadow);}
+  .c5-num{transition:background .15s, border-color .15s;}
+  .c5-num[data-n="8"]:not(.on){border-color:color-mix(in srgb, #D62828 45%, var(--line)); color:#D62828;}
+  .c5-num[data-n="8"]:not(.on) small{color:#D62828;}
+
+  /* Tarjetas de herramientas: sin raya de color a la izquierda, ícono teñido */
+  .tool-tile{border-left-width:1px; border-left-color:var(--line) !important; box-shadow:0 1px 2px var(--shadow); transition:border-color .15s, box-shadow .15s, transform .15s;}
+  .tool-tile .tool-icon{background:var(--surface-2); background:color-mix(in srgb, currentColor 13%, var(--surface)); border-radius:12px;}
+  .tool-tile.tile-cod .tool-icon{color:#D62828;}
+  .card, .bcv-card{box-shadow:0 1px 2px var(--shadow);}
+  @media (hover:hover){
+    .tool-tile:not(.disabled):hover{border-color:color-mix(in srgb, var(--accent) 55%, var(--line)) !important; box-shadow:0 6px 18px var(--shadow);}
+  }
+
+  /* Preguntas frecuentes: flecha propia en vez del triángulo del navegador */
+  .faq summary{list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:""; flex:none; width:8px; height:8px; border-right:2px solid var(--ink-soft); border-bottom:2px solid var(--ink-soft); transform:rotate(45deg); margin:-4px 4px 0 0; transition:transform .2s;}
+  .faq[open] summary::after{transform:rotate(-135deg); margin-top:4px;}
+  .faq[open] summary{color:var(--accent-ink); color:color-mix(in srgb, var(--accent) 60%, var(--ink));}
+
+  /* Entrada (login): centrada, con marca y fondo suave */
+  .gate{align-items:center; padding:24px 18px;
+    background:radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--brand-orange) 16%, var(--bg)) 0%, var(--bg) 60%);}
+  .gate-card{max-width:400px; border-radius:22px; padding:28px 24px 22px; gap:14px; box-shadow:0 18px 50px var(--shadow);}
+  .gate-brand{flex-direction:column; gap:4px; font-size:1.75rem; margin-bottom:4px;}
+  .gate-brand svg{width:52px; height:52px;}
+  .gate-brand::after{content:"Coseimpa · Sucursal Coro"; font-family:system-ui, -apple-system, "Segoe UI", sans-serif; font-weight:600; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft);}
+  .gate h2{font-size:1.25rem; text-align:center;}
+  .gate #gIntro{text-align:center;}
+  .gate form .btn.primary{padding-top:13px; padding-bottom:13px; font-size:0.98rem; margin-top:2px;}
+  #gateLogin{display:flex; flex-direction:column; gap:4px;}
+  #gateLogin[hidden]{display:none;}
+  #gateLogin .linkbtn{text-align:center; padding:6px 0;}
+  #gForgot{color:var(--ink-soft);}
+  #gateLoading{text-align:center; padding:8px 0;}
+  #gateLoading[hidden]{display:none;}
+
+  @media (min-width:1024px){
+    .home-hello{margin:0;}
+    .home-hello h1{font-size:1.7rem;}
+    #screen-home > .sec-lbl{margin:4px 0 -8px;}
+  }
+  /* ---------------------------------------------------------------------- */
 </style>
 </head>
 <body>
@@ -1219,7 +1274,7 @@
     </svg>
     <span class="brand"><span class="b-cose">Cose</span><span class="b-tool">Coro</span></span>
   </div>
-  <span class="tag" id="headerTag">Sucursal Coro · herramientas</span>
+  <span class="tag" id="headerTag">Inicio</span>
   <button class="chat-chip" id="helpBtn" aria-label="Ayuda y soporte" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
   <button class="chat-chip bell-chip" id="bellBtn" aria-label="Notificaciones" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button>
   <button class="chat-chip" id="chatBtn" aria-label="Chat del equipo" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg><span class="badge" id="chatBtnBadge" hidden></span></button>
@@ -1247,7 +1302,7 @@
   <div class="backbar">
     <button class="backbtn" data-back>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Inicio
     </button>
   </div>
   <p class="dash-greet" id="dashGreet">Hola</p>
@@ -1274,7 +1329,7 @@
     <button class="menu-row" id="dashMonitorBtn" type="button" hidden>Estado del sistema<span class="badge" id="dashMonitorBadge" hidden></span></button>
     <button class="menu-row" id="dashAdminBtn" type="button" hidden>Usuarios y cambios<span class="badge" id="dashAdminBadge" hidden></span></button>
     <button class="menu-row" id="dashReportBtn" type="button">Reporte de uso</button>
-    <button class="menu-row" id="dashSettingsBtn" type="button">⚙️ Ajustes</button>
+    <button class="menu-row" id="dashSettingsBtn" type="button">Ajustes</button>
   </section>
 </div>
 
@@ -1282,7 +1337,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Ajustes</p>
@@ -1357,7 +1412,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Reporte de uso</p>
@@ -1391,7 +1446,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Usuarios y cambios</p>
@@ -1431,7 +1486,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Mi perfil</p>
@@ -1478,7 +1533,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Historial de cotizaciones</p>
@@ -1501,6 +1556,11 @@
 
 <div class="screen" id="screen-home">
 
+  <div class="home-hello" id="homeHello">
+    <h1 id="homeHelloT">Hola</h1>
+    <p id="homeHelloS"></p>
+  </div>
+
   <div class="install-tip" id="installTip">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span>Para instalarla en el teléfono: abre el menú de tu navegador y elige <strong>&ldquo;Agregar a pantalla de inicio&rdquo;</strong> (Android) o <strong>Compartir → Agregar a inicio</strong> (iPhone). Queda como app, sin tienda.</span>
@@ -1508,7 +1568,7 @@
   </div>
 
   <section class="c5-home" id="c5Home" hidden>
-    <div class="c5-home-t"><span>📻 Códigos de radio</span><button type="button" id="c5HomeMas">Ver pedidos</button></div>
+    <div class="c5-home-t"><span class="c5-home-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="15" rx="2"/><path d="M10 7V2"/><path d="M10 12h4M10 16h4"/></svg>Códigos de radio</span><button type="button" id="c5HomeMas">Ver pedidos</button></div>
     <div class="c5-nums" id="c5HomeNums"></div>
     <div class="c5-sent" id="c5Sent" hidden></div>
   </section>
@@ -1542,7 +1602,7 @@
     <button class="btn primary" type="submit">Buscar</button>
   </form>
 
-  <p class="lede">O elige una herramienta.</p>
+  <p class="sec-lbl">Herramientas</p>
 
   <div class="home-list">
     <button class="tool-tile tile-calc" data-target="calculadoras">
@@ -1620,7 +1680,7 @@
   <div class="backbar">
     <button class="backbtn" data-back>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Inicio
     </button>
   </div>
   <p class="lede">Escribe un producto y te digo a qué <strong>pasillo</strong> ir. El punto que parpadea en el mapa marca dónde está.</p>
@@ -2351,7 +2411,7 @@
   <div class="backbar">
     <button class="backbtn" data-back>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Inicio
     </button>
   </div>
   <p class="dash-greet">Cotización de proyecto</p>
@@ -2405,7 +2465,7 @@
   <p class="dash-greet">Ayuda y soporte</p>
   <section class="card">
     <div class="card-title">Preguntas frecuentes</div>
-    <details class="faq"><summary>¿Cómo instalo Cose Coro en mi teléfono?</summary><p>Abre cosecoro-coro.web.app. En Android (Chrome): menú ⋮ → «Agregar a la pantalla principal». En iPhone (Safari): botón Compartir → «Agregar a inicio». Queda como una app más y se actualiza sola.</p></details>
+    <details class="faq"><summary>¿Cómo instalo Cose Coro en mi teléfono?</summary><p>Abre cosecoro.web.app. En Android (Chrome): menú ⋮ → «Agregar a la pantalla principal». En iPhone (Safari): botón Compartir → «Agregar a inicio». Queda como una app más y se actualiza sola.</p></details>
     <details class="faq"><summary>Olvidé mi clave</summary><p>En la pantalla de «Entrar», escribe tu correo y toca «Olvidé mi clave». Te llega un correo de Cose Coro para crear una nueva (revisa también spam).</p></details>
     <details class="faq"><summary>No me llegó el correo de confirmación</summary><p>Revisa la carpeta de spam o promociones. Si no está, entra con tu correo y clave y toca «Reenviar el correo». El remitente es Cose Coro.</p></details>
     <details class="faq"><summary>Mi cuenta dice «en revisión»</summary><p>El administrador tiene que aprobarla. Cuando lo haga, la app se abre sola; no tienes que hacer nada más.</p></details>
@@ -2446,7 +2506,7 @@
   <div class="backbar">
     <button class="backbtn" data-back-dash>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Mi cuenta
     </button>
   </div>
   <p class="dash-greet">Estado del sistema</p>
@@ -2699,7 +2759,7 @@
   <div class="backbar">
     <button class="backbtn" data-back>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Herramientas
+      Inicio
     </button>
   </div>
   <div class="seg-tabs" id="chatTabs" role="tablist">
@@ -2874,7 +2934,7 @@
     chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo")
   };
   var headerTags = {
-    home: "Sucursal Coro · herramientas",
+    home: "Inicio",
     calculadoras: "Calcular materiales",
     ajustes: "Ajustes",
     cieloraso: "Cielo raso · herramienta de campo",
@@ -2882,7 +2942,7 @@
     bloques: "Bloques y cemento",
     piso: "Piso y cerámica",
     onboarding: "Bienvenido",
-    dashboard: "Mi dashboard",
+    dashboard: "Mi cuenta",
     historial: "Historial de cotizaciones",
     reporte: "Reporte de uso",
     mapa: "Buscar en el mapa",
@@ -2914,6 +2974,7 @@
       screens[key].hidden = (key !== name);
     });
     $("headerTag").textContent = headerTags[name] || headerTags.home;
+    if (name === "home") refreshHello();
     window.scrollTo(0, 0);
     if (pushHash !== false){
       // una entrada en el historial por pantalla: el botón Atrás del teléfono
@@ -3000,8 +3061,20 @@
   // calculation to this same per-device activity log
   window.coseLogActivity = logActivity;
 
+  function refreshHello(){
+    var t = $("homeHelloT"), sub = $("homeHelloS");
+    if (!t) return;
+    var name = (getProfileName() || "").trim().split(/\s+/)[0];
+    var now = new Date(), h = now.getHours();
+    var saludo = h < 12 ? "Buenos días" : (h < 19 ? "Buenas tardes" : "Buenas noches");
+    t.textContent = saludo + (name ? ", " + name : "");
+    var f = "";
+    try{ f = now.toLocaleDateString("es-VE", { weekday:"long", day:"numeric", month:"long" }); }catch(e){ f = now.toDateString(); }
+    sub.textContent = f.charAt(0).toUpperCase() + f.slice(1) + " · Sucursal Coro";
+  }
   function refreshProfileChip(){
     var name = getProfileName();
+    refreshHello();
     var initial = name ? name.trim().charAt(0).toUpperCase() : "?";
     var chip = $("profileChip"), dot = chip.querySelector(".dotbadge");
     chip.textContent = initial || "?";
@@ -3018,14 +3091,14 @@
     var hr = Math.floor(min / 60);
     if (hr < 24) return "hace " + hr + " h";
     var d = Math.floor(hr / 24);
-    if (d < 7) return "hace " + d + " día(s)";
+    if (d < 7) return "hace " + d + (d === 1 ? " día" : " días");
     return new Date(ts).toLocaleDateString("es-VE");
   }
 
   function renderDashboard(){
     if (window.coseProfile) window.coseProfile.renderAccount();
     var name = getProfileName() || "Invitado";
-    $("dashGreet").textContent = "Hola, " + name;
+    $("dashGreet").textContent = "Mi cuenta";
     var log = getActivity();
     $("dashTotal").textContent = log.length;
 
@@ -7984,7 +8057,7 @@
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v50" → 50). Subir los dos juntos en cada versión.
-  var APP_BUILD = 50;
+  var APP_BUILD = 51;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -9251,7 +9324,7 @@
     if (verTodo(X.me)) unsubs.push(F.onSnapshot(F.query(F.collection(X.db, "faltantes"), F.orderBy("at", "desc"), F.limit(500)), function(s){
       todos = []; s.forEach(function(d){ var f = d.data({ serverTimestamps:"estimate" }); f.id = d.id; todos.push(f); });
       var pend = {}; todos.forEach(function(f){ if (f.estado === "pendiente") pend[norm(f.producto)] = 1; });
-      $("faTileSub").textContent = Object.keys(pend).length + " producto(s) pendientes por revisar";
+      var nPend = Object.keys(pend).length; $("faTileSub").textContent = nPend ? nPend + (nPend === 1 ? " producto pendiente por revisar" : " productos pendientes por revisar") : "Nada pendiente por revisar";
       paint();
     }, function(){}));
   }
@@ -9564,7 +9637,7 @@
     ["flota", "Vehículos", "flota", "flTile", "flTile"],
     ["capac", "Capacitación", "capac", "capTile", "capTile"],
     ["sec", "Cuenta"],
-    ["dash", "Mi dashboard", "dash", "profileChip"],
+    ["dash", "Mi cuenta", "dash", "profileChip"],
     ["help", "Ayuda y soporte", "help", "helpBtn", null, null, "hdot"]
   ];
   var ACTIVE = { home:"home", calculadoras:"calc", cieloraso:"calc", recubrimientos:"calc", bloques:"calc", piso:"calc", concreto:"calc", techo:"calc", tanque:"calc", proyecto:"calc",
@@ -10021,7 +10094,7 @@
       box.innerHTML = "";
       if (!cloudLoaded){
         box.innerHTML = '<p class="smap-note" style="margin:0;">' + (me && me.role === "admin"
-          ? "El mapa todavía no está en la nube. Súbelo primero desde Dashboard → Usuarios y cambios del mapa."
+          ? "El mapa todavía no está en la nube. Súbelo primero desde Mi cuenta → Usuarios y cambios."
           : "El administrador todavía no ha subido el mapa a la nube. Mientras tanto no se puede editar.") + '</p>';
         $("meForm").hidden = true;
         return;
