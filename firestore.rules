@@ -440,7 +440,7 @@ service cloud.firestore {
     // ---------------- Profit (existencia y precio, solo lectura) --------------
     // Los escribe SOLO la cuenta del puente (tools en el iMac de la tienda, que
     // lee Profit con un usuario de solo lectura). Nadie más escribe aquí.
-    function puente() { return request.auth != null && request.auth.uid == "PUENTE_UID_PENDIENTE"; }
+    function puente() { return request.auth != null && request.auth.uid == "pYoTcWzxM7PiBPiMDwl2KHpre5M2"; }
     function puenteDoc(d) {
       return (d.keys().hasOnly(["datos", "n", "hash", "actualizado"]) && d.datos is string && d.n is int && d.hash is string && d.actualizado is timestamp)
         || (d.keys().hasOnly(["grupos", "total", "actualizado", "almacenes", "precio"]) && d.grupos is map && d.total is int && d.actualizado is timestamp);
