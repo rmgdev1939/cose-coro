@@ -1241,6 +1241,34 @@
     .home-hello h1{font-size:1.7rem;}
     #screen-home > .sec-lbl{margin:4px 0 -8px;}
   }
+  /* ---------------- COSEPF (área Sistema PF: solo ve esta pantalla) ---------- */
+  .pf{position:fixed; inset:0; z-index:150; overflow:auto; color:#eaf6f7; font-family:system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:radial-gradient(120% 80% at 50% -10%, #12507a 0%, #0b2a4a 45%, #071a30 100%);
+    display:flex; align-items:center; justify-content:center; padding:calc(28px + env(safe-area-inset-top,0px)) 16px calc(28px + env(safe-area-inset-bottom,0px));}
+  .pf[hidden]{display:none;}
+  .pf::before{content:""; position:absolute; inset:auto -20% -30% -20%; height:55%; pointer-events:none;
+    background:radial-gradient(60% 60% at 50% 100%, rgba(25,195,181,.28), transparent 70%);}
+  .pf-card{position:relative; width:100%; max-width:440px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:18px;}
+  .pf-logo{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .pf-logo svg{width:76px; height:76px; filter:drop-shadow(0 8px 24px rgba(25,195,181,.35));}
+  .pf-word{font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:3rem; line-height:1; letter-spacing:.01em;}
+  .pf-word .w1{color:#ffffff;} .pf-word .w2{background:linear-gradient(90deg,#19c3b5,#7be0d6); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .pf-sub{font-size:.74rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#8fb8c9;}
+  .pf-badge{display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; background:rgba(255,200,69,.14); border:1px solid rgba(255,200,69,.45); color:#ffd56b; font-weight:700; font-size:.9rem;}
+  .pf-badge i{width:8px; height:8px; border-radius:50%; background:#ffc845; box-shadow:0 0 0 0 rgba(255,200,69,.7); animation:pfPulse 1.8s infinite;}
+  @keyframes pfPulse{70%{box-shadow:0 0 0 10px rgba(255,200,69,0);} 100%{box-shadow:0 0 0 0 rgba(255,200,69,0);}}
+  .pf-hi{margin:0; font-size:1.05rem; color:#d4e9ef; line-height:1.45;}
+  .pf-hi strong{color:#fff;}
+  .pf-timer{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; width:100%;}
+  .pf-u{background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px 4px 10px; backdrop-filter:blur(6px);}
+  .pf-n{display:block; font-family:"Baloo 2", system-ui, sans-serif; font-weight:800; font-size:2.2rem; line-height:1; color:#fff; font-variant-numeric:tabular-nums;}
+  .pf-l{display:block; margin-top:6px; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#8fb8c9;}
+  .pf-date{margin:0; font-size:.86rem; color:#8fb8c9;}
+  .pf-out{margin-top:6px; background:transparent; color:#cfe6ec; border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:10px 22px; font:inherit; font-weight:600; cursor:pointer;}
+  .pf-out:hover{background:rgba(255,255,255,.08);}
+  .pf-foot{font-size:.7rem; color:#5f8499;}
+  @media (max-width:360px){ .pf-word{font-size:2.5rem;} .pf-n{font-size:1.8rem;} .pf-timer{gap:7px;} }
+  @media (prefers-reduced-motion:reduce){ .pf-badge i{animation:none;} }
   /* ---------------------------------------------------------------------- */
 </style>
 </head>
@@ -1292,6 +1320,27 @@
       <p style="margin-top:8px;">Tu cuenta no tiene acceso a Cose Coro. Si crees que es un error, habla con el administrador.</p>
       <button class="btn" id="gLogout2" type="button" style="margin-top:14px; width:100%;">Cerrar sesión</button>
     </div>
+  </div>
+</div>
+
+<div class="pf" id="pfScreen" hidden>
+  <div class="pf-card">
+    <div class="pf-logo">
+      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="#ffc845" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="#19c3b5"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="#ffffff"/><path d="M8 32 Q12 29 16 32 T24 32 T32 32" stroke="#19c3b5" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <div class="pf-word"><span class="w1">COSE</span><span class="w2">PF</span></div>
+      <div class="pf-sub">Coseimpa · Punto Fijo</div>
+    </div>
+    <span class="pf-badge" id="pfBadge"><i></i><span id="pfBadgeTxt">Disponible el 9 de octubre</span></span>
+    <p class="pf-hi" id="pfHi">Hola <strong id="pfName"></strong>. Estamos preparando la app de la sucursal Punto Fijo. Falta muy poco para su lanzamiento.</p>
+    <div class="pf-timer" id="pfTimer" aria-live="off">
+      <div class="pf-u"><span class="pf-n" id="pfD">0</span><span class="pf-l">Días</span></div>
+      <div class="pf-u"><span class="pf-n" id="pfH">00</span><span class="pf-l">Horas</span></div>
+      <div class="pf-u"><span class="pf-n" id="pfM">00</span><span class="pf-l">Min</span></div>
+      <div class="pf-u"><span class="pf-n" id="pfS">00</span><span class="pf-l">Seg</span></div>
+    </div>
+    <p class="pf-date" id="pfDate">Jueves 9 de octubre de 2026 · 12:00 a. m. (hora de Venezuela)</p>
+    <button class="pf-out" id="pfLogout" type="button">Cerrar sesión</button>
+    <div class="pf-foot">Hecho con Cose Coro</div>
   </div>
 </div>
 
@@ -8576,7 +8625,7 @@
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 54;
+  var APP_BUILD = 55;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10303,7 +10352,11 @@
     }
 
     // ---------------- cargos (lista pública, la edita el administrador) ----
-    function cargosNow(){ return cargoList.length ? cargoList : window.coseProfile.defaults; }
+    function cargosNow(){
+      var l = (cargoList.length ? cargoList : window.coseProfile.defaults).slice();
+      if (l.indexOf("Sistema PF") === -1) l.push("Sistema PF"); // área temporal de COSEPF
+      return l;
+    }
     F.onSnapshot(F.doc(db, "config", "cargos"), function(snap){
       var l = snap.exists() && Array.isArray(snap.data().list) ? snap.data().list : [];
       cargoList = l.filter(function(c){ return typeof c === "string" && c.trim(); });
@@ -10386,6 +10439,43 @@
     $("gLogout2").addEventListener("click", logout);
     $("gLogout3").addEventListener("click", logout);
     $("dashLogoutBtn").addEventListener("click", logout);
+    $("pfLogout").addEventListener("click", logout);
+
+    // ---------------- COSEPF (área Sistema PF) --------------------------------
+    // Cuenta regresiva al 9 oct 2026, 12:00 a. m. de Venezuela (UTC-4): igual en
+    // todos los teléfonos. Al llegar a cero solo cambia el mensaje.
+    var PF_CARGO = "Sistema PF", PF_LANZA = Date.UTC(2026, 9, 9, 4, 0, 0), pfTimer = null;
+    function pf2(n){ return (n < 10 ? "0" : "") + n; }
+    function pfTick(){
+      var ms = PF_LANZA - Date.now();
+      if (ms <= 0){
+        clearInterval(pfTimer); pfTimer = null;
+        $("pfTimer").hidden = true; $("pfDate").hidden = true;
+        $("pfBadgeTxt").textContent = "¡Ya disponible!";
+        $("pfHi").innerHTML = "";
+        $("pfHi").appendChild(document.createTextNode("¡Llegó el día, "));
+        var b = document.createElement("strong"); b.textContent = $("pfName").textContent || "compañero"; $("pfHi").appendChild(b);
+        $("pfHi").appendChild(document.createTextNode("! COSEPF ya está lista. En breve se activa en tu cuenta."));
+        return;
+      }
+      var t = Math.floor(ms / 1000);
+      $("pfD").textContent = Math.floor(t / 86400);
+      $("pfH").textContent = pf2(Math.floor(t % 86400 / 3600));
+      $("pfM").textContent = pf2(Math.floor(t % 3600 / 60));
+      $("pfS").textContent = pf2(t % 60);
+    }
+    function pfShow(name){
+      $("pfName").textContent = String(name || "").split(" ")[0];
+      $("pfScreen").hidden = false;
+      document.title = "COSEPF";
+      if (!pfTimer){ pfTick(); if (PF_LANZA > Date.now()) pfTimer = setInterval(pfTick, 1000); }
+    }
+    function pfHide(){
+      if ($("pfScreen").hidden) return;
+      $("pfScreen").hidden = true; document.title = pfTitle;
+      clearInterval(pfTimer); pfTimer = null;
+    }
+    var pfTitle = document.title;
 
     // ---------------- confirmación del correo -------------------------------
     var verTimer = null, resendAt = 0;
@@ -10425,6 +10515,7 @@
     // Decide qué pantalla toca según la sesión, el correo y la cuenta.
     function route(){
       var u = auth.currentUser;
+      pfHide();
       if (!u){ stopVerPoll(); setMode("login"); gateShow("gateLogin"); return; }
       if (!u.emailVerified){
         lock();
@@ -10435,6 +10526,10 @@
       }
       stopVerPoll();
       if (!me){ gateMsg("Cargando tu cuenta…"); return; }
+      // Sistema PF: solo ve la pantalla de COSEPF (las reglas le cierran el resto)
+      if (me.status === "verificado" && me.cargo === PF_CARGO && me.role !== "admin"){
+        lock(); gate.hidden = true; pfShow(me.name); return;
+      }
       if (me.status === "verificado") unlock();
       else {
         lock();
