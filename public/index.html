@@ -1278,7 +1278,7 @@
   .suc-bar .suc-seg button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
   .ver-form{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .ver-form select.adm-cargo{ margin-top:0; padding:8px; font-size:.86rem; }
-  .ver-banner{ position:sticky; top:0; z-index:60; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  .ver-banner{ position:sticky; top:0; z-index:300; /* encima de todo, también de COSEPF */ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
     padding:8px 16px; background:var(--brand-blue); color:#fff; font-size:.88rem; font-weight:600; text-align:center; }
   .ver-banner button{ border:1px solid rgba(255,255,255,.7); background:transparent; color:#fff; font:inherit; border-radius:999px; padding:4px 14px; cursor:pointer; min-height:32px; }
   .adm-ambas{ display:flex; align-items:center; gap:6px; margin-top:6px; font-size:.86rem; color:var(--ink); cursor:pointer; }
@@ -8806,7 +8806,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 59;
+  var APP_BUILD = 60;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10614,6 +10614,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     // antes de salir se guarda el último rato de uso y este equipo deja de
     // recibir los avisos de la cuenta (máximo 1,5 s de espera)
     function logout(){
+      try{ localStorage.removeItem("cosecoro_ver"); }catch(e){} // al salir se quita «Ver como»
       var p = Promise.all([window.coseUso ? window.coseUso.stop() : null, window.cosePush ? window.cosePush.olvidar() : null]);
       Promise.race([p, new Promise(function(r){ setTimeout(r, 1500); })])
         .then(function(){ AU.signOut(auth); }, function(){ AU.signOut(auth); });
