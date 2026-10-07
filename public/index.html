@@ -1276,6 +1276,11 @@
   .suc-bar .suc-seg{ display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--surface); }
   .suc-bar .suc-seg button{ border:0; background:transparent; color:var(--ink); font:inherit; font-weight:600; padding:6px 14px; cursor:pointer; min-height:34px; }
   .suc-bar .suc-seg button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
+  .ver-form{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .ver-form select.adm-cargo{ margin-top:0; padding:8px; font-size:.86rem; }
+  .ver-banner{ position:sticky; top:0; z-index:60; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+    padding:8px 16px; background:var(--brand-blue); color:#fff; font-size:.88rem; font-weight:600; text-align:center; }
+  .ver-banner button{ border:1px solid rgba(255,255,255,.7); background:transparent; color:#fff; font:inherit; border-radius:999px; padding:4px 14px; cursor:pointer; min-height:32px; }
   .adm-ambas{ display:flex; align-items:center; gap:6px; margin-top:6px; font-size:.86rem; color:var(--ink); cursor:pointer; }
   .adm-ambas input{ width:18px; height:18px; }
   .suc-bar strong{ color:var(--ink); }
@@ -1546,6 +1551,16 @@
     <div class="card-title">Esperando aprobación</div>
     <p class="smap-note" style="margin:0 0 6px;">Revisa el área antes de aprobar: Autoservicio e Inventario pueden editar el mapa. Si no es la correcta, cámbiala después en «Usuarios».</p>
     <div id="admPending"></div>
+  </section>
+  <section class="card">
+    <div class="card-title">Ver la app como…</div>
+    <p class="smap-note" style="margin:0 0 6px;">Mira qué ve cada quien según su área, rol y sucursal. Solo cambia lo que ves tú; para volver toca «Salir» en la franja de arriba.</p>
+    <div class="ver-form">
+      <select id="verCargo" class="adm-cargo" aria-label="Área"></select>
+      <select id="verRol" class="adm-cargo" aria-label="Rol" hidden></select>
+      <select id="verSuc" class="adm-cargo" aria-label="Sucursal"></select>
+      <button class="btn primary" type="button" id="verGo">Ver así</button>
+    </div>
   </section>
   <section class="card">
     <div class="card-title">Usuarios</div>
@@ -2990,7 +3005,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.1</span>
+    <span id="appVersion">CC/1.2</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -3062,6 +3077,76 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     pintar();
   }
   window.coseSuc = { LISTA:LISTA, mia:mia, ambas:ambas, vista:vista, col:col, set:set, esPF:function(){ return vista() === "Punto Fijo"; } };
+})();
+</script>
+<script>
+// ============================================================================
+// ROLES y VER COMO
+// window.coseRoles: roles dentro de cada área (users/{uid}.rol, lo pone el
+//   administrador). Por ahora solo Autoservicio; no dan permisos todavía.
+// window.coseVer: el administrador mira la app como otra área/rol/sucursal.
+//   Solo cambia lo que la app le MUESTRA (las reglas lo siguen tratando como
+//   administrador). Se guarda en este teléfono; «Salir» en la franja lo quita.
+// ============================================================================
+(function(){
+  "use strict";
+  var ROLES = { "Autoservicio": ["Caja", "Atención al cliente", "Chequeador", "Asesor de ventas", "Supervisor"] };
+  window.coseRoles = { de:function(cargo){ return ROLES[cargo] || []; } };
+  var KEY = "cosecoro_ver";
+  function leer(){ try{ var v = JSON.parse(localStorage.getItem(KEY) || "null"); return v && typeof v.cargo === "string" ? v : null; }catch(e){ return null; } }
+  function poner(v){ try{ if (v) localStorage.setItem(KEY, JSON.stringify(v)); else localStorage.removeItem(KEY); }catch(e){} location.reload(); }
+  function etiqueta(v){ return [v.cargo || "Sin área", v.rol, v.sucursal].filter(Boolean).join(" · "); }
+  function franja(v){
+    var b = document.getElementById("verBanner");
+    if (!v){ if (b) b.remove(); return; }
+    if (!b){
+      b = document.createElement("div"); b.id = "verBanner"; b.className = "ver-banner"; b.setAttribute("role", "status");
+      document.body.insertBefore(b, document.body.firstChild);
+    }
+    b.innerHTML = "";
+    b.appendChild(document.createTextNode("👁 Viendo como: " + etiqueta(v)));
+    var x = document.createElement("button"); x.type = "button"; x.textContent = "Salir";
+    x.addEventListener("click", function(){ poner(null); });
+    b.appendChild(x);
+  }
+  // Copia de la cuenta con el área, rol y sucursal elegidos (solo si es administrador).
+  function aplicar(me){
+    var v = leer();
+    if (!me || me.role !== "admin" || !v){ franja(null); return me; }
+    var c = {}; Object.keys(me).forEach(function(k){ c[k] = me[k]; });
+    c.role = "empleado"; c.cargo = v.cargo; c.rol = v.rol || ""; c.sucursal = v.sucursal === "Punto Fijo" ? "Punto Fijo" : "Coro"; c.ambas = false; c.verComo = true;
+    franja(v);
+    return c;
+  }
+  function llenar(cargos){
+    var sc = document.getElementById("verCargo"), sr = document.getElementById("verRol"), ss = document.getElementById("verSuc");
+    if (!sc) return;
+    var v = leer() || {}, prev = sc.value || v.cargo || "";
+    sc.innerHTML = "";
+    (cargos || []).forEach(function(c){ var o = document.createElement("option"); o.value = c; o.textContent = c; sc.appendChild(o); });
+    if (prev) sc.value = prev;
+    if (!ss.options.length) window.coseSuc.LISTA.forEach(function(s){ var o = document.createElement("option"); o.value = s; o.textContent = "Sucursal " + s; ss.appendChild(o); });
+    if (v.sucursal) ss.value = v.sucursal;
+    roles(v.rol);
+  }
+  function roles(sel){
+    var sc = document.getElementById("verCargo"), sr = document.getElementById("verRol"), l = window.coseRoles.de(sc.value);
+    sr.innerHTML = ""; sr.hidden = !l.length;
+    if (!l.length) return;
+    var o0 = document.createElement("option"); o0.value = ""; o0.textContent = "Sin rol"; sr.appendChild(o0);
+    l.forEach(function(r){ var o = document.createElement("option"); o.value = r; o.textContent = r; sr.appendChild(o); });
+    if (sel && l.indexOf(sel) !== -1) sr.value = sel;
+  }
+  document.addEventListener("DOMContentLoaded", function(){
+    var sc = document.getElementById("verCargo"), go = document.getElementById("verGo");
+    if (!sc || !go) return;
+    sc.addEventListener("change", function(){ roles(""); });
+    go.addEventListener("click", function(){
+      var sr = document.getElementById("verRol");
+      poner({ cargo:sc.value, rol:sr.hidden ? "" : sr.value, sucursal:document.getElementById("verSuc").value });
+    });
+  });
+  window.coseVer = { aplicar:aplicar, llenar:llenar, activo:function(){ return !!leer(); } };
 })();
 </script>
 <script>
@@ -5763,8 +5848,8 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     msg($("pfMsg"), "Guardando…");
     c.saveProfile({ name:nm, cargo:cargo, phone:phone }).then(function(){
       msg($("pfMsg"), "✓ Cambios guardados en tu cuenta.", "ok");
-    }, function(){
-      msg($("pfMsg"), "No se pudo guardar. Revisa tu internet e inténtalo otra vez.", "err");
+    }, function(e){
+      msg($("pfMsg"), window.coseVer && window.coseVer.activo() ? e.message : "No se pudo guardar. Revisa tu internet e inténtalo otra vez.", "err");
     }).then(function(){ $("pfSave").disabled = false; });
   });
 
@@ -8705,7 +8790,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 57;
+  var APP_BUILD = 58;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10442,6 +10527,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       cargoList = l.filter(function(c){ return typeof c === "string" && c.trim(); });
       if (mode === "register") window.coseProfile.fillCargos($("gCargo"), $("gCargo").value);
       renderCargos();
+      if (window.coseVer) window.coseVer.llenar(cargosNow());
     }, function(){});
 
     // ---------------- acceso -----------------------------------------------
@@ -10607,7 +10693,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       stopVerPoll();
       if (!me){ gateMsg("Cargando tu cuenta…"); return; }
       // Sistema PF: solo ve la pantalla de COSEPF (las reglas le cierran el resto)
-      if (me.status === "verificado" && me.cargo === PF_CARGO && me.role !== "admin"){
+      if (me.status === "verificado" && vm().cargo === PF_CARGO && vm().role !== "admin"){
         lock(); gate.hidden = true; pfShow(me.name); return;
       }
       if (me.status === "verificado") unlock();
@@ -10678,23 +10764,26 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (window.cosePush) window.cosePush.stop();
       window.coseSuc.set(null);
     }
+    // Lo que ve la app: la cuenta real, o la de «Ver como» si el administrador lo eligió.
+    function vm(){ return window.coseVer ? window.coseVer.aplicar(me) : me; }
     function unlock(){
       gate.hidden = true;
-      window.coseSuc.set(me);
+      var ve = vm(); // los módulos reciben la vista («Ver como»); el chat y el perfil, la cuenta real
+      window.coseSuc.set(ve);
       window.coseApp.setProfile(me.name);
       window.coseProfile.cacheLocal(me);
-      var admin = me.role === "admin";
+      var admin = ve.role === "admin";
       if (window.coseChat) window.coseChat.start({ app:app, db:db, F:F, FB:FB, uid:uid, me:me, toast:toast, norm:norm });
-      if (window.coseEditor && !window.coseSuc.esPF()) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
-      if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
-      if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
-      if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
-      if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
-      if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
-      if (window.coseMonitor){ if (me.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:me }); else window.coseMonitor.stop(); }
-      if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:me });
-      if (window.coseProfit) window.coseProfit.start({ db:db, F:F, uid:uid, me:me });
-      if (window.cosePush) window.cosePush.start({ db:db, F:F, uid:uid, me:me, toast:toast });
+      if (window.coseEditor && !window.coseSuc.esPF()) window.coseEditor.start({ db:db, F:F, uid:uid, me:ve, toast:toast, norm:norm });
+      if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
+      if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
+      if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
+      if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:ve, toast:toast, norm:norm });
+      if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
+      if (window.coseMonitor){ if (ve.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:ve }); else window.coseMonitor.stop(); }
+      if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:ve });
+      if (window.coseProfit) window.coseProfit.start({ db:db, F:F, uid:uid, me:ve });
+      if (window.cosePush) window.cosePush.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
       if (unlocked){
         if (admin && !adminWatching) watchAdmin();
         if (!admin && adminWatching) stopAdmin();
@@ -10715,12 +10804,13 @@ window.coseFirma = "CCRMG-6906f309ea2b";
 
     // ---------------- perfil (lo usa "Mi perfil") ----------------------------
     window.coseCloud = {
-      me: function(){ return unlocked && me ? me : null; },
+      me: function(){ return unlocked && me ? vm() : null; },
       emailVerified: function(){ return !!(auth.currentUser && auth.currentUser.emailVerified); },
       cargos: cargosNow,
       saveProfile: function(v){
         var u = auth.currentUser;
         if (!u) return Promise.reject(new Error("sin sesión"));
+        if (window.coseVer && window.coseVer.activo()) return Promise.reject(new Error("Estás en «Ver como». Toca «Salir» arriba para editar tu perfil."));
         return F.updateDoc(F.doc(db, "users", u.uid), { name:v.name, cargo:v.cargo, phone:v.phone, updatedAt:F.serverTimestamp() })
           .then(function(){
             AU.updateProfile(u, { displayName:v.name }).catch(function(){});
@@ -10924,7 +11014,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
               }
             }
             row(ue, u.name + (u.role === "admin" ? " · administrador" : ""),
-              (u.cargo || "sin área") + " · " + window.coseSuc.mia(u) + (u.ambas === true ? " (ve las dos)" : "") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
+              (u.cargo || "sin área") + (u.rol ? " (" + u.rol + ")" : "") + " · " + window.coseSuc.mia(u) + (u.ambas === true ? " (ve las dos)" : "") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
               + (window.coseEditor && window.coseEditor.canEdit(u) ? " · edita el mapa" : ""), btns);
             // cargo: lo cambia el administrador (a otros; el suyo, en Mi perfil)
             if (u.uid !== uid && u.status !== "pendiente"){
@@ -10935,7 +11025,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
               cs.options[0].textContent = "Sin área";
               cs.addEventListener("change", function(){
                 var v = cs.value;
-                F.updateDoc(F.doc(db, "users", u.uid), { cargo:v })
+                F.updateDoc(F.doc(db, "users", u.uid), { cargo:v, rol:"" }) // el rol es de cada área
                   .then(function(){ toast("Área de " + u.name + ": " + (v || "sin área") + " ✓"); },
                         function(){ toast("No se pudo cambiar el área (sin permiso o sin conexión)."); });
               });
@@ -10953,6 +11043,21 @@ window.coseFirma = "CCRMG-6906f309ea2b";
                         function(){ toast("No se pudo cambiar la sucursal (sin permiso o sin conexión)."); });
               });
               last.querySelector(".txt").appendChild(ss);
+              var rl = window.coseRoles.de(u.cargo || "");
+              if (rl.length){
+                var rs = document.createElement("select");
+                rs.className = "adm-cargo";
+                rs.setAttribute("aria-label", "Rol de " + u.name);
+                [""].concat(rl).forEach(function(r){ var o = document.createElement("option"); o.value = r; o.textContent = r ? "Rol: " + r : "Sin rol"; rs.appendChild(o); });
+                rs.value = rl.indexOf(u.rol) !== -1 ? u.rol : "";
+                rs.addEventListener("change", function(){
+                  var v = rs.value;
+                  F.updateDoc(F.doc(db, "users", u.uid), { rol:v })
+                    .then(function(){ toast("Rol de " + u.name + ": " + (v || "sin rol") + " ✓"); },
+                          function(){ toast("No se pudo cambiar el rol (sin permiso o sin conexión)."); });
+                });
+                last.querySelector(".txt").appendChild(rs);
+              }
               var al = document.createElement("label"); al.className = "adm-ambas";
               var ac = document.createElement("input"); ac.type = "checkbox"; ac.checked = u.ambas === true;
               ac.addEventListener("change", function(){

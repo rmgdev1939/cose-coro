@@ -560,6 +560,10 @@ console.log("sucursales");
   await t("admin no pone una sucursal inventada", () => assertFails(updateDoc(doc(A, "users", "U5"), { sucursal: "Caracas" })));
   await t("admin da 'ambas'", () => assertSucceeds(updateDoc(doc(A, "users", "U6"), { ambas: true })));
   await t("admin no pone 'ambas' que no sea sí/no", () => assertFails(updateDoc(doc(A, "users", "U6"), { ambas: "si" })));
+  await t("admin pone un rol (Autoservicio: Caja)", () => assertSucceeds(updateDoc(doc(A, "users", "AUT"), { rol: "Caja" })));
+  await t("admin cambia área y borra el rol a la vez", () => assertSucceeds(updateDoc(doc(A, "users", "U7"), { cargo: "Caja", rol: "" })));
+  await t("nadie se pone su propio rol", () => assertFails(updateDoc(doc(AUTc, "users", "AUT"), { rol: "Supervisor", updatedAt: ts })));
+  await t("el rol no puede ser otra cosa que texto", () => assertFails(updateDoc(doc(A, "users", "AUT"), { rol: 5 })));
   await t("el chat sigue compartido (PF lee perfiles)", () => assertSucceeds(getDoc(doc(PFV, "perfiles", "B"))));
 }
 
