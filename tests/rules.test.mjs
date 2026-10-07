@@ -36,6 +36,7 @@ U.MEC = { name: "Mario Mecánico", role: "empleado", status: "verificado", cargo
 U.GER = { name: "Gina Gerencia", role: "empleado", status: "verificado", cargo: "Gerencia" };
 U.CHO = { name: "Carlos Chofer", role: "empleado", status: "verificado", cargo: "Choferes" };
 U.COM = { name: "Coral Compras", role: "empleado", status: "verificado", cargo: "Compras" };
+U.SPF = { name: "Sergio Sistema PF", role: "empleado", status: "verificado", cargo: "Sistema PF" };
 U[RAFA] = { name: "Rafael Supervisor", role: "admin", status: "verificado" };
 for (let i = 1; i <= 9; i++) U["U" + i] = { name: "Extra " + i, role: "empleado", status: "verificado" };
 
@@ -491,6 +492,25 @@ await t("sin sesión no ve", () => assertFails(rget(ref(env.unauthenticatedConte
 await t("B avisa que está escribiendo", () => assertSucceeds(set(ref(rt("B"), "escribiendo/chat1/B"), Date.now())));
 await t("B no escribe por otro", () => assertFails(set(ref(rt("B"), "escribiendo/chat1/C"), Date.now())));
 await t("nadie escribe fuera de estado", () => assertFails(set(ref(rt("B"), "otra/cosa"), 1)));
+
+console.log("Sistema PF (COSEPF: no ve nada de Cose Coro)");
+{
+  const S = as("SPF");
+  await t("Sistema PF lee su propia cuenta", () => assertSucceeds(getDoc(doc(S, "users", "SPF"))));
+  await t("Sistema PF lee la lista de áreas", () => assertSucceeds(getDoc(doc(S, "config", "cargos"))));
+  await t("Sistema PF no lee Profit", () => assertFails(getDoc(doc(S, "profit", "resumen"))));
+  await t("Sistema PF no lee el mapa", () => assertFails(getDoc(doc(S, "mapa", "z1"))));
+  await t("Sistema PF no lee perfiles", () => assertFails(getDoc(doc(S, "perfiles", "C"))));
+  await t("Sistema PF no lee códigos", () => assertFails(getDocs(collection(S, "codigos"))));
+  await t("Sistema PF no lee avisos", () => assertFails(getDocs(collection(S, "avisos"))));
+  await t("Sistema PF no crea su perfil público", () => assertFails(setDoc(doc(S, "perfiles", "SPF"), { name: "Sergio Sistema PF", cargo: "Sistema PF", icon: "llave", updatedAt: serverTimestamp() })));
+  await t("Sistema PF no se cambia de área", () => assertFails(updateDoc(doc(S, "users", "SPF"), { cargo: "Ventas", updatedAt: serverTimestamp() })));
+  const U4 = as("U4");
+  await t("admin pasa a U4 a Sistema PF", () => assertSucceeds(updateDoc(doc(A, "users", "U4"), { cargo: "Sistema PF" })));
+  await t("U4 en Sistema PF ya no lee perfiles", () => assertFails(getDoc(doc(U4, "perfiles", "B"))));
+  await t("admin devuelve a U4 a Ventas", () => assertSucceeds(updateDoc(doc(A, "users", "U4"), { cargo: "Ventas" })));
+  await t("U4 en Ventas vuelve a leer perfiles", () => assertSucceeds(getDoc(doc(U4, "perfiles", "B"))));
+}
 
 console.log(`\n${pass} ok, ${fail} fallas`);
 await env.cleanup();

@@ -12,7 +12,10 @@ service cloud.firestore {
     function emailOk() { return signedIn() && request.auth.token.email_verified == true; }
     function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
     function hasMe() { return exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
-    function verified() { return emailOk() && hasMe() && me().status == "verificado"; }
+    // El área "Sistema PF" (temporal, COSEPF) no entra a ningún dato de Cose
+    // Coro: solo lee su propia cuenta y la lista de áreas.
+    function verified() { return emailOk() && hasMe() && me().status == "verificado"
+      && (me().role == "admin" || me().get("cargo", "") != "Sistema PF"); }
     function admin() { return verified() && me().role == "admin"; }
     function validProfile(d) {
       return d.name is string && d.name.size() >= 1 && d.name.size() <= 60
