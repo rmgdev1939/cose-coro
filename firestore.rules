@@ -71,7 +71,8 @@ service cloud.firestore {
       // Hay un solo administrador (Rafael): desde la app nadie puede dar ni
       // quitar el rol de admin (el campo role no se puede cambiar).
       allow update: if admin() && request.auth.uid != uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo", "sucursal", "ambas"])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo", "sucursal", "ambas", "rol"])
+        && (!("rol" in request.resource.data) || (request.resource.data.rol is string && request.resource.data.rol.size() <= 40))
         && (!("cargo" in request.resource.data) || (request.resource.data.cargo is string && request.resource.data.cargo.size() <= 40))
         && (!("sucursal" in request.resource.data) || request.resource.data.sucursal in ["Coro", "Punto Fijo"])
         && (!("ambas" in request.resource.data) || request.resource.data.ambas is bool)
