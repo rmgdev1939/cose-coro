@@ -17,6 +17,13 @@ service cloud.firestore {
     function verified() { return emailOk() && hasMe() && me().status == "verificado"
       && (me().role == "admin" || me().get("cargo", "") != "Sistema PF"); }
     function admin() { return verified() && me().role == "admin"; }
+    // Sucursales: cada quien ve solo la suya (Coro si no tiene). Las dos las
+    // ven el administrador y quien él marque con "ambas". Los datos de Punto
+    // Fijo van en colecciones con "PF" al final (codigosPF, faltantesPF…).
+    function suc() { return me().get("sucursal", "Coro"); }
+    function ambas() { return me().role == "admin" || me().get("ambas", false) == true; }
+    function enSuc(s) { return verified() && (ambas() || suc() == s); }
+    function sucDe(col) { return col.matches(".*PF") ? "Punto Fijo" : "Coro"; }
     function validProfile(d) {
       return d.name is string && d.name.size() >= 1 && d.name.size() <= 60
         && (!("cargo" in d) || (d.cargo is string && d.cargo.size() <= 40))
@@ -64,8 +71,10 @@ service cloud.firestore {
       // Hay un solo administrador (Rafael): desde la app nadie puede dar ni
       // quitar el rol de admin (el campo role no se puede cambiar).
       allow update: if admin() && request.auth.uid != uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo"])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo", "sucursal", "ambas"])
         && (!("cargo" in request.resource.data) || (request.resource.data.cargo is string && request.resource.data.cargo.size() <= 40))
+        && (!("sucursal" in request.resource.data) || request.resource.data.sucursal in ["Coro", "Punto Fijo"])
+        && (!("ambas" in request.resource.data) || request.resource.data.ambas is bool)
         && request.resource.data.status in ["verificado", "bloqueado"]
         && (request.resource.data.status != "verificado" || resource.data.emailVerified == true);
       allow delete: if false;
@@ -84,9 +93,10 @@ service cloud.firestore {
     }
 
     // Mapa de la tienda: una zona por documento
+    // (por ahora solo existe el de Coro; el de Punto Fijo viene después)
     match /mapa/{zone} {
-      allow read: if verified();
-      allow write: if mapEditor()
+      allow read: if enSuc("Coro");
+      allow write: if mapEditor() && enSuc("Coro")
         && request.resource.data.keys().hasOnly(["items", "updatedAt", "updatedBy", "updatedByName"])
         && request.resource.data.items is list
         && request.resource.data.items.size() <= 300
@@ -97,7 +107,7 @@ service cloud.firestore {
     // Registro de cambios del mapa: se agrega, nunca se edita ni se borra
     match /mapaLog/{id} {
       allow read: if admin();
-      allow create: if mapEditor()
+      allow create: if mapEditor() && enSuc("Coro")
         && request.resource.data.keys().hasOnly(["zone", "action", "item", "by", "byName", "at"])
         && request.resource.data.by == request.auth.uid
         && request.resource.data.at == request.time;
@@ -265,23 +275,24 @@ service cloud.firestore {
         && d.notas is string && d.notas.size() <= 500
         && d.updatedBy == request.auth.uid && d.updatedByName == me().name && d.updatedAt == request.time;
     }
-    match /vehiculos/{id} {
-      allow read: if flotaVer();
-      allow create: if flotaEditar() && vehiculoOk(request.resource.data)
+    match /{col}/{id} {
+      allow read: if col in ["vehiculos", "vehiculosPF"] && flotaVer() && enSuc(sucDe(col));
+      allow create: if col in ["vehiculos", "vehiculosPF"] && enSuc(sucDe(col)) && flotaEditar() && vehiculoOk(request.resource.data)
         && request.resource.data.creadoPor == request.auth.uid
         && request.resource.data.creadoPorNombre == me().name
         && request.resource.data.createdAt == request.time;
-      allow update: if flotaEditar() && vehiculoOk(request.resource.data)
+      allow update: if col in ["vehiculos", "vehiculosPF"] && enSuc(sucDe(col)) && flotaEditar() && vehiculoOk(request.resource.data)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["placa", "tipo", "marca", "modelo", "anio", "color", "km", "estado", "notas", "updatedAt", "updatedBy", "updatedByName"]);
-      allow delete: if admin();
+      allow delete: if col in ["vehiculos", "vehiculosPF"] && admin();
     }
 
     // Mantenimientos de cada vehículo (los registran Mecánicos y el administrador).
-    match /mantenimientos/{id} {
-      allow read: if flotaVer();
-      allow create: if flotaEditar()
+    function vehCol(col) { return sucDe(col) == "Coro" ? "vehiculos" : "vehiculosPF"; }
+    match /{col}/{id} {
+      allow read: if col in ["mantenimientos", "mantenimientosPF"] && flotaVer() && enSuc(sucDe(col));
+      allow create: if col in ["mantenimientos", "mantenimientosPF"] && enSuc(sucDe(col)) && flotaEditar()
         && request.resource.data.keys().hasOnly(["vehiculoId", "placa", "fecha", "tipo", "km", "detalle", "by", "byName", "at"])
-        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/vehiculos/$(request.resource.data.vehiculoId))
+        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/$(vehCol(col))/$(request.resource.data.vehiculoId))
         && request.resource.data.placa is string && request.resource.data.placa.size() <= 12
         && request.resource.data.fecha is string && request.resource.data.fecha.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")
         && request.resource.data.tipo in ["aceite", "cauchos", "frenos", "bateria", "electrico", "motor", "otro"]
@@ -289,16 +300,15 @@ service cloud.firestore {
         && request.resource.data.detalle is string && request.resource.data.detalle.size() <= 500
         && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
         && request.resource.data.at == request.time;
-      allow delete: if admin();
-      allow update: if false;
+      allow delete: if col in ["mantenimientos", "mantenimientosPF"] && admin();
     }
 
     // Revisión diaria del vehículo: la hacen Choferes y Mecánicos (y el administrador).
-    match /revisiones/{id} {
-      allow read: if flotaVer();
-      allow create: if verified() && (me().role == "admin" || me().get("cargo", "") in ["Choferes", "Mecánicos"])
+    match /{col}/{id} {
+      allow read: if col in ["revisiones", "revisionesPF"] && flotaVer() && enSuc(sucDe(col));
+      allow create: if col in ["revisiones", "revisionesPF"] && enSuc(sucDe(col)) && (me().role == "admin" || me().get("cargo", "") in ["Choferes", "Mecánicos"])
         && request.resource.data.keys().hasOnly(["vehiculoId", "placa", "puntos", "fallas", "km", "combustible", "nota", "by", "byName", "at"])
-        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/vehiculos/$(request.resource.data.vehiculoId))
+        && request.resource.data.vehiculoId is string && exists(/databases/$(database)/documents/$(vehCol(col))/$(request.resource.data.vehiculoId))
         && request.resource.data.placa is string && request.resource.data.placa.size() <= 12
         && request.resource.data.puntos is map
         && request.resource.data.fallas is int && request.resource.data.fallas >= 0 && request.resource.data.fallas <= 20
@@ -307,34 +317,34 @@ service cloud.firestore {
         && request.resource.data.nota is string && request.resource.data.nota.size() <= 300
         && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
         && request.resource.data.at == request.time;
-      allow delete: if admin();
-      allow update: if false;
+      allow delete: if col in ["revisiones", "revisionesPF"] && admin();
     }
 
     // "Lo pidieron y no hay": cualquiera lo anota; lo ven y lo marcan Compras,
     // Gerencia y el administrador.
-    match /faltantes/{id} {
-      allow read: if comprasVer() || (verified() && resource.data.by == request.auth.uid);
-      allow create: if verified()
+    match /{col}/{id} {
+      allow read: if col in ["faltantes", "faltantesPF"] && enSuc(sucDe(col))
+        && (comprasVer() || resource.data.by == request.auth.uid);
+      allow create: if col in ["faltantes", "faltantesPF"] && enSuc(sucDe(col))
         && request.resource.data.keys().hasOnly(["producto", "nota", "by", "byName", "at", "estado"])
         && request.resource.data.producto is string && request.resource.data.producto.size() >= 2 && request.resource.data.producto.size() <= 80
         && request.resource.data.nota is string && request.resource.data.nota.size() <= 200
         && request.resource.data.by == request.auth.uid && request.resource.data.byName == me().name
         && request.resource.data.estado == "pendiente"
         && request.resource.data.at == request.time;
-      allow update: if comprasVer()
+      allow update: if col in ["faltantes", "faltantesPF"] && enSuc(sucDe(col)) && comprasVer()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado"])
         && request.resource.data.estado in ["pendiente", "pedido", "descartado"];
-      allow delete: if admin();
+      allow delete: if col in ["faltantes", "faltantesPF"] && admin();
     }
 
     // Códigos de radio del 1 al 8 (el 5: bajar mercancía a chequeo).
     // Lo pide Autoservicio; Autoservicio y el administrador lo aceptan o
     // rechazan; quien lo aceptó lo marca llevado; quien lo pidió lo cancela.
     function autoserv() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Autoservicio"); }
-    match /codigos/{id} {
-      allow read: if verified();
-      allow create: if autoserv()
+    match /{col}/{id} {
+      allow read: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col));
+      allow create: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col)) && autoserv()
         && request.resource.data.keys().hasOnly(["codigo", "pedido", "destino", "nota", "by", "byName", "at", "estado"])
         && (!("destino" in request.resource.data) || (request.resource.data.destino is string && request.resource.data.destino.size() <= 30))
         && request.resource.data.codigo is int && request.resource.data.codigo >= 1 && request.resource.data.codigo <= 8
@@ -344,31 +354,31 @@ service cloud.firestore {
         && request.resource.data.estado == "abierto"
         && request.resource.data.at == request.time;
       // aceptar
-      allow update: if autoserv() && resource.data.estado == "abierto"
+      allow update: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col)) && autoserv() && resource.data.estado == "abierto"
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "tomadoPor", "tomadoPorNombre", "tomadoAt"])
         && request.resource.data.estado == "aceptado"
         && request.resource.data.tomadoPor == request.auth.uid
         && request.resource.data.tomadoPorNombre == me().name
         && request.resource.data.tomadoAt == request.time;
       // rechazar (solo se quita el globo de quien rechaza)
-      allow update: if autoserv() && resource.data.estado == "abierto"
+      allow update: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col)) && autoserv() && resource.data.estado == "abierto"
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["rechazos"])
         && !(request.auth.uid in resource.data.get("rechazos", []))
         && request.resource.data.rechazos == resource.data.get("rechazos", []).concat([request.auth.uid])
         && request.resource.data.rechazos.size() <= 100;
       // lo llevó a chequeo
-      allow update: if verified() && resource.data.estado == "aceptado"
+      allow update: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col)) && resource.data.estado == "aceptado"
         && resource.data.tomadoPor == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "finAt"])
         && request.resource.data.estado == "llevado"
         && request.resource.data.finAt == request.time;
       // cancelar
-      allow update: if verified() && (resource.data.by == request.auth.uid || admin())
+      allow update: if col in ["codigos", "codigosPF"] && enSuc(sucDe(col)) && (resource.data.by == request.auth.uid || admin())
         && resource.data.estado in ["abierto", "aceptado"]
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "finAt"])
         && request.resource.data.estado == "cancelado"
         && request.resource.data.finAt == request.time;
-      allow delete: if admin();
+      allow delete: if col in ["codigos", "codigosPF"] && admin();
     }
 
     // Capacitación: las lecciones aprobadas de cada quien (el total de
@@ -449,13 +459,14 @@ service cloud.firestore {
         || (d.keys().hasOnly(["grupos", "total", "actualizado", "almacenes", "precio"]) && d.grupos is map && d.total is int && d.actualizado is timestamp);
     }
     // Con existencia y precio 05 (público): todos los trabajadores aprobados
+    // (Profit de Coro: solo lo ve quien ve Coro)
     match /profit/{doc} {
-      allow read: if verified();
+      allow read: if enSuc("Coro");
       allow write: if puente() && puenteDoc(request.resource.data);
     }
     // Agotados ("los vendíamos y no hay"): Compras, Gerencia y administración
     match /profitAgotados/{doc} {
-      allow read: if comprasVer();
+      allow read: if comprasVer() && enSuc("Coro");
       allow write: if puente() && puenteDoc(request.resource.data);
     }
 

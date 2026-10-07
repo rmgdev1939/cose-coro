@@ -435,6 +435,10 @@ function start(opts){
     if (!aprobado(c.to) || c.to === c.from) return;
     return repartir("aceptada", "id=" + d.id, aprobado(c.from) ? [c.from] : [], avisoAceptada(d.id, c));
   }
+  // Sucursal del documento (las colecciones de Punto Fijo terminan en "PF") y
+  // si la persona la ve (la suya, o las dos si es admin o tiene "ambas").
+  function sucDoc(d){ return /PF$/.test(d.ref.parent.id) ? "Punto Fijo" : "Coro"; }
+  function veSuc(p, s){ return p.role === "admin" || p.ambas === true || p.sucursal === s; }
   function revision(d, leido){
     const r = d.data() || {};
     if (!(typeof r.fallas === "number" && r.fallas > 0)) return;
@@ -443,7 +447,7 @@ function start(opts){
     if (!aprobado(r.by)) return;
     const destinos = aprobados().filter(u => {
       const p = personas.get(u);
-      return u !== r.by && (p.role === "admin" || p.cargo === "Mecánicos");
+      return u !== r.by && (p.role === "admin" || p.cargo === "Mecánicos") && veSuc(p, sucDoc(d));
     });
     return repartir("revision", "id=" + d.id, destinos, avisoRevision(d.id, r));
   }
@@ -457,7 +461,7 @@ function start(opts){
     if (!aprobado(c.by)) return;
     const destinos = aprobados().filter(u => {
       const p = personas.get(u);
-      return u !== c.by && (p.role === "admin" || p.cargo === "Autoservicio");
+      return u !== c.by && (p.role === "admin" || p.cargo === "Autoservicio") && veSuc(p, sucDoc(d));
     });
     return repartir("codigo", "id=" + d.id, destinos, avisoCodigo(d.id, c));
   }
@@ -506,7 +510,7 @@ function start(opts){
       snap.docChanges().forEach(ch => {
         if (ch.type === "removed"){ personas.delete(ch.doc.id); return; }
         const u = ch.doc.data() || {};
-        personas.set(ch.doc.id, { status: u.status, role: u.role, cargo: u.cargo, name: u.name });
+        personas.set(ch.doc.id, { status: u.status, role: u.role, cargo: u.cargo, name: u.name, sucursal: u.sucursal === "Punto Fijo" ? "Punto Fijo" : "Coro", ambas: u.ambas === true });
       });
       if (!tengoPersonas){ tengoPersonas = true; quizasBase(); }
     });
@@ -537,6 +541,10 @@ function start(opts){
     escuchar("revisiones", db.collection("revisiones").where("at", ">", sinceTs), atender("revisiones", ["added"], revision));
     escuchar("codigos", db.collection("codigos").where("at", ">", sinceTs), atender("codigos", ["added", "modified"], codigo));
     escuchar("codigos-aceptados", db.collection("codigos").where("tomadoAt", ">", sinceTs), atender("codigos-aceptados", ["added", "modified"], codigoAceptado));
+    // Punto Fijo
+    escuchar("revisionesPF", db.collection("revisionesPF").where("at", ">", sinceTs), atender("revisionesPF", ["added"], revision));
+    escuchar("codigosPF", db.collection("codigosPF").where("at", ">", sinceTs), atender("codigosPF", ["added", "modified"], codigo));
+    escuchar("codigos-aceptadosPF", db.collection("codigosPF").where("tomadoAt", ">", sinceTs), atender("codigos-aceptadosPF", ["added", "modified"], codigoAceptado));
   }
 
   // La llave pública va en config/push para que la app pueda activar los avisos.

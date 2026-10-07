@@ -512,6 +512,57 @@ console.log("Sistema PF (COSEPF: no ve nada de Cose Coro)");
   await t("U4 en Ventas vuelve a leer perfiles", () => assertSucceeds(getDoc(doc(U4, "perfiles", "B"))));
 }
 
+console.log("sucursales");
+{
+  // Gente de Punto Fijo (sucursal la pone el administrador) y una gerente que ve las dos
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    const pf = { PFA: ["Pía Autoservicio PF", "Autoservicio"], PFC: ["Pedro Compras PF", "Compras"], PFM: ["Pablo Mecánico PF", "Mecánicos"], PFV: ["Paula Ventas PF", "Ventas"] };
+    for (const [uid, [name, cargo]] of Object.entries(pf)){
+      await setDoc(doc(db, "users", uid), { name, email: uid + "@x.com", cargo, emailVerified: true, status: "verificado", role: "empleado", sucursal: "Punto Fijo" });
+    }
+    await setDoc(doc(db, "users", "AMB"), { name: "Amalia Ambas", email: "AMB@x.com", cargo: "Gerencia", emailVerified: true, status: "verificado", role: "empleado", ambas: true });
+    await setDoc(doc(db, "codigos", "cCoro"), { codigo: 1, pedido: "x", by: "AUT", byName: "Aura Autoservicio", estado: "abierto", nota: "" });
+    await setDoc(doc(db, "codigosPF", "cPF"), { codigo: 1, pedido: "x", by: "PFA", byName: "Pía Autoservicio PF", estado: "abierto", nota: "" });
+    await setDoc(doc(db, "vehiculosPF", "vPF"), { placa: "PF1" });
+    await setDoc(doc(db, "faltantesPF", "fPF"), { producto: "algo", by: "PFV", estado: "pendiente" });
+  });
+  const PFA = as("PFA"), PFC = as("PFC"), PFM = as("PFM"), PFV = as("PFV"), AMB = as("AMB"), AUTc = as("AUT"), COMc = as("COM"), Bc = as("B"), ts = serverTimestamp();
+  const cod = (uid, name) => ({ codigo: 3, pedido: "Apoyo en chequeo", destino: "", nota: "", by: uid, byName: name, at: ts, estado: "abierto" });
+  await t("Autoservicio PF pide un código en Punto Fijo", () => assertSucceeds(addDoc(collection(PFA, "codigosPF"), cod("PFA", "Pía Autoservicio PF"))));
+  await t("Autoservicio PF no pide en Coro", () => assertFails(addDoc(collection(PFA, "codigos"), cod("PFA", "Pía Autoservicio PF"))));
+  await t("Autoservicio Coro no pide en Punto Fijo", () => assertFails(addDoc(collection(AUTc, "codigosPF"), cod("AUT", "Aura Autoservicio"))));
+  await t("Punto Fijo no lee códigos de Coro", () => assertFails(getDoc(doc(PFV, "codigos", "cCoro"))));
+  await t("Coro no lee códigos de Punto Fijo", () => assertFails(getDoc(doc(Bc, "codigosPF", "cPF"))));
+  await t("Punto Fijo lee sus códigos", () => assertSucceeds(getDocs(collection(PFV, "codigosPF"))));
+  await t("Autoservicio Coro no acepta un código de Punto Fijo", () => assertFails(updateDoc(doc(AUTc, "codigosPF", "cPF"), { estado: "aceptado", tomadoPor: "AUT", tomadoPorNombre: "Aura Autoservicio", tomadoAt: ts })));
+  await t("Autoservicio PF acepta el de Punto Fijo", () => assertSucceeds(updateDoc(doc(PFA, "codigosPF", "cPF"), { estado: "aceptado", tomadoPor: "PFA", tomadoPorNombre: "Pía Autoservicio PF", tomadoAt: ts })));
+  await t("quien ve las dos lee códigos de Coro", () => assertSucceeds(getDocs(collection(AMB, "codigos"))));
+  await t("quien ve las dos lee códigos de Punto Fijo", () => assertSucceeds(getDocs(collection(AMB, "codigosPF"))));
+  await t("el admin lee los de Punto Fijo", () => assertSucceeds(getDocs(collection(A, "codigosPF"))));
+  await t("Gerencia sin 'ambas' no lee Punto Fijo", () => assertFails(getDocs(collection(GER, "codigosPF"))));
+  await t("Punto Fijo no lee el mapa de Coro", () => assertFails(getDocs(collection(PFV, "mapa"))));
+  await t("Punto Fijo no lee Profit de Coro", () => assertFails(getDoc(doc(PFV, "profit", "meta"))));
+  await t("Compras PF no lee agotados de Coro", () => assertFails(getDoc(doc(PFC, "profitAgotados", "meta"))));
+  await t("Coro sigue leyendo Profit", () => assertSucceeds(getDoc(doc(Bc, "profit", "meta"))));
+  await t("Ventas PF anota un faltante en Punto Fijo", () => assertSucceeds(addDoc(collection(PFV, "faltantesPF"), { producto: "Codo 1/2", nota: "", by: "PFV", byName: "Paula Ventas PF", at: ts, estado: "pendiente" })));
+  await t("Ventas PF no anota en Coro", () => assertFails(addDoc(collection(PFV, "faltantes"), { producto: "Codo 1/2", nota: "", by: "PFV", byName: "Paula Ventas PF", at: ts, estado: "pendiente" })));
+  await t("Compras PF ve los faltantes de Punto Fijo", () => assertSucceeds(getDocs(collection(PFC, "faltantesPF"))));
+  await t("Compras Coro no ve los de Punto Fijo", () => assertFails(getDocs(collection(COMc, "faltantesPF"))));
+  await t("Compras PF marca uno pedido", () => assertSucceeds(updateDoc(doc(PFC, "faltantesPF", "fPF"), { estado: "pedido" })));
+  await t("Mecánico PF ve vehículos de Punto Fijo", () => assertSucceeds(getDocs(collection(PFM, "vehiculosPF"))));
+  await t("Mecánico PF no ve los de Coro", () => assertFails(getDocs(collection(PFM, "vehiculos"))));
+  await t("Mecánico PF registra mantenimiento en Punto Fijo", () => assertSucceeds(addDoc(collection(PFM, "mantenimientosPF"), { vehiculoId: "vPF", placa: "PF1", fecha: "2026-10-08", tipo: "aceite", km: 1000, detalle: "", by: "PFM", byName: "Pablo Mecánico PF", at: ts })));
+  await t("mantenimiento PF de un vehículo que no es de PF falla", () => assertFails(addDoc(collection(PFM, "mantenimientosPF"), { vehiculoId: "noexiste", placa: "X", fecha: "2026-10-08", tipo: "aceite", km: 1000, detalle: "", by: "PFM", byName: "Pablo Mecánico PF", at: ts })));
+  await t("PF no se cambia de sucursal solo", () => assertFails(updateDoc(doc(PFV, "users", "PFV"), { sucursal: "Coro", updatedAt: ts })));
+  await t("PF no se da 'ambas' solo", () => assertFails(updateDoc(doc(PFV, "users", "PFV"), { ambas: true, updatedAt: ts })));
+  await t("admin cambia la sucursal de alguien", () => assertSucceeds(updateDoc(doc(A, "users", "U5"), { sucursal: "Punto Fijo" })));
+  await t("admin no pone una sucursal inventada", () => assertFails(updateDoc(doc(A, "users", "U5"), { sucursal: "Caracas" })));
+  await t("admin da 'ambas'", () => assertSucceeds(updateDoc(doc(A, "users", "U6"), { ambas: true })));
+  await t("admin no pone 'ambas' que no sea sí/no", () => assertFails(updateDoc(doc(A, "users", "U6"), { ambas: "si" })));
+  await t("el chat sigue compartido (PF lee perfiles)", () => assertSucceeds(getDoc(doc(PFV, "perfiles", "B"))));
+}
+
 console.log(`\n${pass} ok, ${fail} fallas`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);

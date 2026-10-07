@@ -1271,6 +1271,17 @@
   @media (max-width:360px){ .pf-word{font-size:2.5rem;} .pf-n{font-size:1.8rem;} .pf-timer{gap:7px;} }
   @media (prefers-reduced-motion:reduce){ .pf-badge i{animation:none;} }
   /* ---------------------------------------------------------------------- */
+  /* Sucursal (Coro / Punto Fijo) */
+  .suc-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:-4px 0 14px; font-size:.86rem; color:var(--ink-soft); }
+  .suc-bar .suc-seg{ display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--surface); }
+  .suc-bar .suc-seg button{ border:0; background:transparent; color:var(--ink); font:inherit; font-weight:600; padding:6px 14px; cursor:pointer; min-height:34px; }
+  .suc-bar .suc-seg button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); }
+  .adm-ambas{ display:flex; align-items:center; gap:6px; margin-top:6px; font-size:.86rem; color:var(--ink); cursor:pointer; }
+  .adm-ambas input{ width:18px; height:18px; }
+  .suc-bar strong{ color:var(--ink); }
+  /* Punto Fijo todavía no tiene mapa ni Profit */
+  body.suc-pf [data-target="mapa"], body.suc-pf [data-target="precio"], body.suc-pf #editorTile,
+  body.suc-pf .home-search, body.suc-pf .home-search-lbl{ display:none !important; }
 </style>
 </head>
 <body>
@@ -1285,7 +1296,7 @@
     <div id="gateLogin" hidden>
       <form id="gForm" novalidate>
         <h2 id="gTitle">Entrar</h2>
-        <p id="gIntro">Solo para trabajadores de la sucursal Coro.</p>
+        <p id="gIntro">Solo para trabajadores de Coseimpa (Coro y Punto Fijo).</p>
         <div id="gNameRow" hidden><label for="gName">Nombre y apellido</label><input type="text" id="gName" class="hist-search" autocomplete="name" maxlength="60"></div>
         <div id="gCargoRow" hidden><label for="gCargo">Área</label><select id="gCargo"></select></div>
         <div><label for="gEmail">Correo</label><input type="email" id="gEmail" class="hist-search" autocomplete="email" inputmode="email"></div>
@@ -2979,7 +2990,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span>CoseCoro</span>
-    <span id="appVersion">CC/1.0</span>
+    <span id="appVersion">CC/1.1</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -2990,6 +3001,68 @@
 // Marca de agua de Cose Coro (Rafael Morín): un código único que sigue en lo
 // publicado. Si aparece en otra app, es copia de esta. No quitar ni cambiar.
 window.coseFirma = "CCRMG-6906f309ea2b";
+</script>
+<script>
+// ============================================================================
+// SUCURSAL (window.coseSuc): Coro o Punto Fijo. Cada quien ve solo la suya
+// (users/{uid}.sucursal; sin campo = Coro). El administrador y quien él marque
+// con "ambas" eligen cuál ver en Inicio. Los datos de Punto Fijo van en las
+// colecciones con "PF" al final: col("codigos") → "codigosPF". Las reglas lo exigen.
+// ============================================================================
+(function(){
+  "use strict";
+  var KEY = "cosecoro_suc", me = null, antes = null;
+  var LISTA = ["Coro", "Punto Fijo"];
+  function mia(m){ return m && m.sucursal === "Punto Fijo" ? "Punto Fijo" : "Coro"; }
+  function ambas(m){ return !!m && (m.role === "admin" || m.ambas === true); }
+  function vista(){
+    if (!me) return "Coro";
+    if (!ambas(me)) return mia(me);
+    var v = null; try{ v = localStorage.getItem(KEY); }catch(e){}
+    return v === "Punto Fijo" ? "Punto Fijo" : (v === "Coro" ? "Coro" : mia(me));
+  }
+  function col(n){ return vista() === "Punto Fijo" ? n + "PF" : n; }
+  function pintar(){
+    var bar = document.getElementById("sucBar");
+    if (!bar){
+      var h = document.getElementById("homeHello");
+      if (!h) return;
+      bar = document.createElement("div"); bar.id = "sucBar"; bar.className = "suc-bar";
+      h.parentNode.insertBefore(bar, h.nextSibling);
+    }
+    bar.innerHTML = "";
+    bar.hidden = !me;
+    if (!me) return;
+    if (!ambas(me)){
+      bar.appendChild(document.createTextNode("Sucursal "));
+      var b = document.createElement("strong"); b.textContent = vista(); bar.appendChild(b);
+      return;
+    }
+    bar.appendChild(document.createTextNode("Ver sucursal:"));
+    var seg = document.createElement("span"); seg.className = "suc-seg"; seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Sucursal que ves");
+    LISTA.forEach(function(s){
+      var bt = document.createElement("button"); bt.type = "button"; bt.textContent = s;
+      bt.setAttribute("aria-pressed", vista() === s ? "true" : "false");
+      bt.addEventListener("click", function(){ if (vista() !== s) cambiar(s); });
+      seg.appendChild(bt);
+    });
+    bar.appendChild(seg);
+  }
+  // Cambiar de sucursal recarga la app: así todo vuelve a leer la colección correcta.
+  function cambiar(s){
+    try{ localStorage.setItem(KEY, s); }catch(e){}
+    location.reload();
+  }
+  function set(m){
+    me = m || null;
+    var v = me ? vista() : null;
+    if (antes && v && v !== antes){ location.reload(); return; } // el administrador le cambió la sucursal
+    if (v) antes = v;
+    document.body.classList.toggle("suc-pf", v === "Punto Fijo");
+    pintar();
+  }
+  window.coseSuc = { LISTA:LISTA, mia:mia, ambas:ambas, vista:vista, col:col, set:set, esPF:function(){ return vista() === "Punto Fijo"; } };
+})();
 </script>
 <script>
 // Botón «Descargar la app» del pie: usa la instalación del navegador si la
@@ -7406,6 +7479,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function cargar(col, forzar){
     var d = DS[col] || (DS[col] = {});
     if (!X || (col === "profitAgotados" && !puedeAgotados(X.me))) return Promise.resolve(null);
+    if (window.coseSuc && window.coseSuc.esPF()) return Promise.resolve(null); // Profit de Punto Fijo: todavía no
     if (d.loading) return d.loading;
     if (d.items && !forzar && Date.now() - d.at < TTL) return Promise.resolve(d);
     var F = X.F, uid0 = X.uid;
@@ -8631,7 +8705,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 56;
+  var APP_BUILD = 57;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -9695,7 +9769,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     var p = {}, fallas = 0;
     PUNTOS.forEach(function(x){ var ok = puntos[x[0]] !== false; p[x[0]] = ok; if (!ok) fallas++; });
     $("rvSave").disabled = true;
-    F.addDoc(F.collection(X.db, "revisiones"), { vehiculoId:v.id, placa:v.placa, puntos:p, fallas:fallas, km:kmv, combustible:$("rvComb").value,
+    F.addDoc(F.collection(X.db, window.coseSuc.col("revisiones")), { vehiculoId:v.id, placa:v.placa, puntos:p, fallas:fallas, km:kmv, combustible:$("rvComb").value,
       nota:$("rvNota").value.trim().slice(0, 300), by:X.uid, byName:X.me.name, at:F.serverTimestamp() })
       .then(function(){ msg.className = "pf-msg ok"; msg.textContent = fallas ? "✓ Enviada. Los mecánicos ven las fallas." : "✓ Enviada: todo bien."; puntos = {}; paintPuntos(); $("rvNota").value = ""; },
             function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
@@ -9709,7 +9783,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f)){ msg.className = "pf-msg err"; msg.textContent = "Elige la fecha."; return; }
     if (!(kmv >= 0)){ msg.className = "pf-msg err"; msg.textContent = "Revisa el kilometraje."; return; }
     $("mtSave").disabled = true;
-    F.addDoc(F.collection(X.db, "mantenimientos"), { vehiculoId:v.id, placa:v.placa, fecha:f, tipo:$("mtTipo").value, km:kmv,
+    F.addDoc(F.collection(X.db, window.coseSuc.col("mantenimientos")), { vehiculoId:v.id, placa:v.placa, fecha:f, tipo:$("mtTipo").value, km:kmv,
       detalle:$("mtDet").value.trim().slice(0, 500), by:X.uid, byName:X.me.name, at:F.serverTimestamp() })
       .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Mantenimiento registrado."; $("mtDet").value = ""; },
             function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo guardar. Revisa tu internet."; })
@@ -9735,10 +9809,10 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     var p;
     if (editId){
       if (anio === null) data.anio = F.deleteField();
-      p = F.updateDoc(F.doc(X.db, "vehiculos", editId), data);
+      p = F.updateDoc(F.doc(X.db, window.coseSuc.col("vehiculos"), editId), data);
     } else {
       data.creadoPor = X.uid; data.creadoPorNombre = X.me.name; data.createdAt = F.serverTimestamp();
-      p = F.addDoc(F.collection(X.db, "vehiculos"), data);
+      p = F.addDoc(F.collection(X.db, window.coseSuc.col("vehiculos")), data);
     }
     // con internet lento, la app guarda el cambio en el teléfono y lo envía sola al reconectar
     var slow = setTimeout(function(){
@@ -9758,7 +9832,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (!ver) return;
     X = ctx;
     $("flTile").hidden = false;
-    unsub = X.F.onSnapshot(X.F.collection(X.db, "vehiculos"), function(snap){
+    unsub = X.F.onSnapshot(X.F.collection(X.db, window.coseSuc.col("vehiculos")), function(snap){
       list = [];
       snap.forEach(function(d){ var v = d.data(); v.id = d.id; list.push(v); });
       list.sort(function(a, b){ return a.placa < b.placa ? -1 : 1; });
@@ -9766,11 +9840,11 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       paint();
     }, function(){});
     var F = X.F;
-    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, "mantenimientos"), F.orderBy("at", "desc"), F.limit(200)), function(snap){
+    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, window.coseSuc.col("mantenimientos")), F.orderBy("at", "desc"), F.limit(200)), function(snap){
       mants = []; snap.forEach(function(d){ var m = d.data({ serverTimestamps:"estimate" }); m.id = d.id; mants.push(m); });
       paintDetalle();
     }, function(){}));
-    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, "revisiones"), F.orderBy("at", "desc"), F.limit(100)), function(snap){
+    unsubs2.push(F.onSnapshot(F.query(F.collection(X.db, window.coseSuc.col("revisiones")), F.orderBy("at", "desc"), F.limit(100)), function(snap){
       if (!firstRev && puedeEditar(X.me)) snap.docChanges().forEach(function(ch){
         var r = ch.doc.data();
         if (ch.type === "added" && r.fallas > 0 && r.by !== X.uid) X.toast("⚠️ " + r.placa + ": revisión con fallas de " + r.byName);
@@ -9858,7 +9932,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
         x.addEventListener("click", function(){
           x.disabled = true;
           var bt = X.F.writeBatch(X.db);
-          o.docs.forEach(function(f){ if (f.estado !== b[0]) bt.update(X.F.doc(X.db, "faltantes", f.id), { estado:b[0] }); });
+          o.docs.forEach(function(f){ if (f.estado !== b[0]) bt.update(X.F.doc(X.db, window.coseSuc.col("faltantes"), f.id), { estado:b[0] }); });
           bt.commit().catch(function(){ X.toast("No se pudo cambiar. Revisa tu internet."); x.disabled = false; });
         });
         bb.appendChild(x);
@@ -9872,7 +9946,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     var prod = $("faProd").value.trim().replace(/\s+/g, " ").slice(0, 80), msg = $("faMsg");
     if (prod.length < 2){ msg.className = "pf-msg err"; msg.textContent = "Escribe qué buscó el cliente."; return; }
     $("faSend").disabled = true;
-    X.F.addDoc(X.F.collection(X.db, "faltantes"), { producto:prod, nota:$("faNota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:X.F.serverTimestamp(), estado:"pendiente" })
+    X.F.addDoc(X.F.collection(X.db, window.coseSuc.col("faltantes")), { producto:prod, nota:$("faNota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:X.F.serverTimestamp(), estado:"pendiente" })
       .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Anotado: " + prod + ". Compras lo verá."; $("faProd").value = ""; $("faNota").value = ""; },
             function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo anotar. Revisa tu internet."; })
       .then(function(){ $("faSend").disabled = false; });
@@ -9890,12 +9964,12 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     X = ctx;
     $("faTile").hidden = false;
     var F = X.F;
-    unsubs.push(F.onSnapshot(F.query(F.collection(X.db, "faltantes"), F.where("by", "==", X.uid)), function(s){
+    unsubs.push(F.onSnapshot(F.query(F.collection(X.db, window.coseSuc.col("faltantes")), F.where("by", "==", X.uid)), function(s){
       mios = []; s.forEach(function(d){ var f = d.data({ serverTimestamps:"estimate" }); f.id = d.id; mios.push(f); });
       mios.sort(function(a, b){ return ms(b.at) - ms(a.at); });
       paint();
     }, function(){}));
-    if (verTodo(X.me)) unsubs.push(F.onSnapshot(F.query(F.collection(X.db, "faltantes"), F.orderBy("at", "desc"), F.limit(500)), function(s){
+    if (verTodo(X.me)) unsubs.push(F.onSnapshot(F.query(F.collection(X.db, window.coseSuc.col("faltantes")), F.orderBy("at", "desc"), F.limit(500)), function(s){
       todos = []; s.forEach(function(d){ var f = d.data({ serverTimestamps:"estimate" }); f.id = d.id; todos.push(f); });
       var pend = {}; todos.forEach(function(f){ if (f.estado === "pendiente") pend[norm(f.producto)] = 1; });
       var nPend = Object.keys(pend).length; $("faTileSub").textContent = nPend ? nPend + (nPend === 1 ? " producto pendiente por revisar" : " productos pendientes por revisar") : "Nada pendiente por revisar";
@@ -9960,7 +10034,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function dest(c){ return c.destino || "Chequeo"; }
   function nom(s){ return String(s || "").split(" ")[0]; }
   function F(){ return X.F; }
-  function ref(id){ return F().doc(X.db, "codigos", id); }
+  function ref(id){ return F().doc(X.db, window.coseSuc.col("codigos"), id); }
   function fallo(){ X.toast("No se pudo. Revisa tu internet."); }
 
   function alerta(c){
@@ -10035,7 +10109,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function contar(){
     if (!X || !F().getCountFromServer) return;
     var mine = X;
-    F().getCountFromServer(F().query(F().collection(X.db, "codigos"), F().where("tomadoPor", "==", X.uid), F().where("estado", "==", "llevado"), F().where("codigo", "==", 5))).then(function(s){
+    F().getCountFromServer(F().query(F().collection(X.db, window.coseSuc.col("codigos")), F().where("tomadoPor", "==", X.uid), F().where("estado", "==", "llevado"), F().where("codigo", "==", 5))).then(function(s){
       if (X !== mine) return;
       var n = s.data().count, p = window.coseChat && window.coseChat.people()[X.uid];
       if (p && +(p.c5 || 0) === n) return;
@@ -10074,7 +10148,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (!CON_TEXTO[cod] && ped.length < 2) ped = nombre(cod) || "Código " + cod;
     if (ped.length < 2){ msg.className = "pf-msg err"; msg.textContent = "Escribe qué hay que bajar."; return; }
     $("c5Send").disabled = true;
-    F().addDoc(F().collection(X.db, "codigos"), { codigo:cod, pedido:ped, destino:$("c5Dest").value.slice(0, 30), nota:$("c5Nota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
+    F().addDoc(F().collection(X.db, window.coseSuc.col("codigos")), { codigo:cod, pedido:ped, destino:$("c5Dest").value.slice(0, 30), nota:$("c5Nota").value.trim().slice(0, 200), by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
       .then(function(){ msg.className = "pf-msg ok"; msg.textContent = "✓ Código " + cod + " enviado a tus compañeros de Autoservicio. Aquí abajo ves quién lo acepta."; $("c5Ped").value = ""; $("c5Nota").value = ""; $("c5Dest").value = "Chequeo"; elegir(5); },
             function(){ msg.className = "pf-msg err"; msg.textContent = "No se pudo enviar. Revisa tu internet."; })
       .then(function(){ $("c5Send").disabled = false; });
@@ -10110,7 +10184,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (CON_TEXTO[n]){ open(); elegir(n); setTimeout(function(){ $("c5Ped").focus(); }, 50); return; }
     btn.disabled = true;
     var bar = $("c5Sent");
-    F().addDoc(F().collection(X.db, "codigos"), { codigo:n, pedido:NOMBRES[n], destino:LUGAR[n], nota:"", by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
+    F().addDoc(F().collection(X.db, window.coseSuc.col("codigos")), { codigo:n, pedido:NOMBRES[n], destino:LUGAR[n], nota:"", by:X.uid, byName:X.me.name, at:F().serverTimestamp(), estado:"abierto" })
       .then(function(r){
         bar.innerHTML = ""; bar.appendChild(el("span", "", "✓ Código " + n + " enviado"));
         var u = el("button", "", "Deshacer"); u.type = "button";
@@ -10130,7 +10204,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function escuchar(){
     if (unsub){ try{ unsub(); }catch(e){} }
     var desde = F().Timestamp.fromMillis(Date.now() - 86400000);
-    unsub = F().onSnapshot(F().query(F().collection(X.db, "codigos"), F().where("at", ">=", desde)), function(s){
+    unsub = F().onSnapshot(F().query(F().collection(X.db, window.coseSuc.col("codigos")), F().where("at", ">=", desde)), function(s){
       var antes = {}; lista.forEach(function(c){ antes[c.id] = c; });
       lista = []; s.forEach(function(d){ var c = d.data({ serverTimestamps:"estimate" }); c.id = d.id; lista.push(c); });
       lista.sort(function(a, b){ return ms(b.at) - ms(a.at); });
@@ -10377,7 +10451,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       $("gTitle").textContent = reg ? "Crear cuenta" : "Entrar";
       $("gIntro").textContent = reg
         ? "Te enviaremos un correo para confirmar que es tuyo, y el administrador aprueba la cuenta. Cose Coro guarda tu nombre, área y correo, los cambios que hagas en el mapa, tus mensajes del chat (son de trabajo y la administración puede revisarlos) y estadísticas de uso de la app para mejorarla."
-        : "Solo para trabajadores de la sucursal Coro.";
+        : "Solo para trabajadores de Coseimpa (Coro y Punto Fijo).";
       $("gNameRow").hidden = !reg;
       $("gCargoRow").hidden = !reg;
       $("gPass2Row").hidden = !reg;
@@ -10602,14 +10676,16 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (window.coseFaltantes) window.coseFaltantes.stop();
       if (window.coseCodigos) window.coseCodigos.stop();
       if (window.cosePush) window.cosePush.stop();
+      window.coseSuc.set(null);
     }
     function unlock(){
       gate.hidden = true;
+      window.coseSuc.set(me);
       window.coseApp.setProfile(me.name);
       window.coseProfile.cacheLocal(me);
       var admin = me.role === "admin";
       if (window.coseChat) window.coseChat.start({ app:app, db:db, F:F, FB:FB, uid:uid, me:me, toast:toast, norm:norm });
-      if (window.coseEditor) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
+      if (window.coseEditor && !window.coseSuc.esPF()) window.coseEditor.start({ db:db, F:F, uid:uid, me:me, toast:toast, norm:norm });
       if (window.coseAvisos) window.coseAvisos.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:me, toast:toast });
       if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:me, toast:toast });
@@ -10632,7 +10708,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       $("dashLogoutBtn").hidden = false;
       $("mapImport").hidden = true;
       // la edición del mapa ahora es el Editor del mapa (solo cargos autorizados)
-      watchMap();
+      if (!window.coseSuc.esPF()) watchMap(); // Punto Fijo todavía no tiene mapa
       if (admin){ $("dashAdminBtn").hidden = false; watchAdmin(); }
       if (window.coseApp.current() === "dashboard") window.coseProfile.renderAccount();
     }
@@ -10848,7 +10924,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
               }
             }
             row(ue, u.name + (u.role === "admin" ? " · administrador" : ""),
-              (u.cargo || "sin área") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
+              (u.cargo || "sin área") + " · " + window.coseSuc.mia(u) + (u.ambas === true ? " (ve las dos)" : "") + " · " + u.email + (u.phone ? " · " + u.phone : "") + " · " + (STATUS_LABEL[u.status] || u.status)
               + (window.coseEditor && window.coseEditor.canEdit(u) ? " · edita el mapa" : ""), btns);
             // cargo: lo cambia el administrador (a otros; el suyo, en Mi perfil)
             if (u.uid !== uid && u.status !== "pendiente"){
@@ -10864,6 +10940,29 @@ window.coseFirma = "CCRMG-6906f309ea2b";
                         function(){ toast("No se pudo cambiar el área (sin permiso o sin conexión)."); });
               });
               last.querySelector(".txt").appendChild(cs);
+              // sucursal y permiso de ver las dos (lo da solo el administrador)
+              var ss = document.createElement("select");
+              ss.className = "adm-cargo";
+              ss.setAttribute("aria-label", "Sucursal de " + u.name);
+              window.coseSuc.LISTA.forEach(function(sv){ var o = document.createElement("option"); o.value = sv; o.textContent = "Sucursal " + sv; ss.appendChild(o); });
+              ss.value = window.coseSuc.mia(u);
+              ss.addEventListener("change", function(){
+                var v = ss.value;
+                F.updateDoc(F.doc(db, "users", u.uid), { sucursal:v })
+                  .then(function(){ toast("Sucursal de " + u.name + ": " + v + " ✓"); },
+                        function(){ toast("No se pudo cambiar la sucursal (sin permiso o sin conexión)."); });
+              });
+              last.querySelector(".txt").appendChild(ss);
+              var al = document.createElement("label"); al.className = "adm-ambas";
+              var ac = document.createElement("input"); ac.type = "checkbox"; ac.checked = u.ambas === true;
+              ac.addEventListener("change", function(){
+                var v = ac.checked;
+                F.updateDoc(F.doc(db, "users", u.uid), { ambas:v })
+                  .then(function(){ toast(u.name + (v ? " ahora ve las dos sucursales ✓" : " ve solo su sucursal ✓")); },
+                        function(){ ac.checked = !v; toast("No se pudo cambiar (sin permiso o sin conexión)."); });
+              });
+              al.appendChild(ac); al.appendChild(document.createTextNode(" Ve las dos sucursales"));
+              last.querySelector(".txt").appendChild(al);
             }
           });
       }, function(){ toast("No se pudo leer la lista de usuarios."); });
