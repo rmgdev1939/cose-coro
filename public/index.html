@@ -1226,7 +1226,7 @@
   .gate-card{max-width:400px; border-radius:22px; padding:28px 24px 22px; gap:14px; box-shadow:0 18px 50px var(--shadow);}
   .gate-brand{flex-direction:column; gap:4px; font-size:1.75rem; margin-bottom:4px;}
   .gate-brand svg{width:52px; height:52px;}
-  .gate-brand::after{content:"Coseimpa · Sucursal Coro"; font-family:system-ui, -apple-system, "Segoe UI", sans-serif; font-weight:600; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft);}
+  .gate-brand::after{content:"Coseimpa · Coro y Punto Fijo"; font-family:system-ui, -apple-system, "Segoe UI", sans-serif; font-weight:600; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft);}
   .gate h2{font-size:1.25rem; text-align:center;}
   .gate #gIntro{text-align:center;}
   .gate form .btn.primary{padding-top:13px; padding-bottom:13px; font-size:0.98rem; margin-top:2px;}
@@ -1284,7 +1284,12 @@
   .adm-ambas{ display:flex; align-items:center; gap:6px; margin-top:6px; font-size:.86rem; color:var(--ink); cursor:pointer; }
   .adm-ambas input{ width:18px; height:18px; }
   .suc-bar strong{ color:var(--ink); }
+  /* Marca COSE PF (Punto Fijo): techo amarillo y PF turquesa, como la pantalla de COSEPF */
+  body.suc-pf header.top .brand .b-tool, body.suc-pf .side-brand .b2{ color:#19c3b5; }
+  body.suc-pf header.top .mark path, body.suc-pf .side-brand svg path{ stroke:#ffc845; }
+  body.suc-pf header.top .mark rect, body.suc-pf .side-brand svg rect{ fill:#19c3b5; }
   /* Punto Fijo todavía no tiene mapa ni Profit */
+  body.suc-pf [data-side="mapa"], body.suc-pf [data-side="precio"],
   body.suc-pf [data-target="mapa"], body.suc-pf [data-target="precio"], body.suc-pf #editorTile,
   body.suc-pf .home-search, body.suc-pf .home-search-lbl{ display:none !important; }
 </style>
@@ -3004,7 +3009,7 @@
   </div>
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
-    <span>CoseCoro</span>
+    <span id="ftName">CoseCoro</span>
     <span id="appVersion">CC/1.2</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
@@ -3068,15 +3073,26 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     try{ localStorage.setItem(KEY, s); }catch(e){}
     location.reload();
   }
+  // Nombre y marca según la sucursal que se ve: CoseCoro o CosePF.
+  var TITULO = document.title;
+  function marca(){
+    var pf = !!me && vista() === "Punto Fijo", nom = pf ? "PF" : "Coro";
+    Array.prototype.forEach.call(document.querySelectorAll("header.top .brand .b-tool, .side-brand .b2"), function(e){ e.textContent = nom; });
+    Array.prototype.forEach.call(document.querySelectorAll(".side-brand small"), function(e){ e.textContent = "Sucursal " + (pf ? "Punto Fijo" : "Coro"); });
+    var ft = document.getElementById("ftName"); if (ft) ft.textContent = "Cose" + nom;
+    var sf = document.querySelector(".side-foot"); if (sf) sf.textContent = sf.textContent.replace(/^Cose(Coro|PF)/, "Cose" + nom);
+    var hs = document.getElementById("homeHelloS"); if (hs) hs.textContent = hs.textContent.replace(/Sucursal (Coro|Punto Fijo)$/, "Sucursal " + (pf ? "Punto Fijo" : "Coro"));
+    if (document.title === TITULO || /^Cose ?PF$/.test(document.title)) document.title = pf ? "Cose PF" : TITULO;
+  }
   function set(m){
     me = m || null;
     var v = me ? vista() : null;
     if (antes && v && v !== antes){ location.reload(); return; } // el administrador le cambió la sucursal
     if (v) antes = v;
     document.body.classList.toggle("suc-pf", v === "Punto Fijo");
-    pintar();
+    pintar(); marca();
   }
-  window.coseSuc = { LISTA:LISTA, mia:mia, ambas:ambas, vista:vista, col:col, set:set, esPF:function(){ return vista() === "Punto Fijo"; } };
+  window.coseSuc = { LISTA:LISTA, mia:mia, ambas:ambas, vista:vista, col:col, set:set, marca:marca, esPF:function(){ return vista() === "Punto Fijo"; } };
 })();
 </script>
 <script>
@@ -3358,7 +3374,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     t.textContent = saludo + (name ? ", " + name : "");
     var f = "";
     try{ f = now.toLocaleDateString("es-VE", { weekday:"long", day:"numeric", month:"long" }); }catch(e){ f = now.toDateString(); }
-    sub.textContent = f.charAt(0).toUpperCase() + f.slice(1) + " · Sucursal Coro";
+    sub.textContent = f.charAt(0).toUpperCase() + f.slice(1) + " · Sucursal " + (window.coseSuc ? window.coseSuc.vista() : "Coro");
   }
   function refreshProfileChip(){
     var name = getProfileName();
@@ -8790,7 +8806,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 58;
+  var APP_BUILD = 59;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10380,12 +10396,13 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   var brand = document.createElement("button");
   brand.type = "button"; brand.className = "side-brand";
   brand.innerHTML = '<svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="var(--brand-orange)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="var(--brand-green)"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="var(--brand-blue)"/></svg><span><span class="b1">Cose</span><span class="b2">Coro</span><small>Sucursal Coro</small></span>';
+  if (window.coseSuc) window.coseSuc.marca();
   brand.addEventListener("click", function(){ window.coseApp.showScreen("home"); });
   nav.appendChild(brand);
   ITEMS.forEach(function(it){
     if (it[0] === "sec"){ var h = document.createElement("div"); h.className = "side-sec"; h.textContent = it[1]; nav.appendChild(h); els["sec" + it[1]] = h; return; }
     var b = document.createElement("button");
-    b.type = "button"; b.className = "side-item";
+    b.type = "button"; b.className = "side-item"; b.setAttribute("data-side", it[0]);
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + I[it[2]] + '</svg>';
     b.appendChild(document.createTextNode(it[1]));
     b.addEventListener("click", function(){
