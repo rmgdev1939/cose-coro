@@ -1361,6 +1361,7 @@
       <div class="pf-u"><span class="pf-n" id="pfS">00</span><span class="pf-l">Seg</span></div>
     </div>
     <p class="pf-date" id="pfDate">Jueves 9 de octubre de 2026 · 12:00 a. m. (hora de Venezuela)</p>
+    <button class="pf-out" id="pfVerSalir" type="button" hidden style="margin-bottom:10px;">👁 Salir de esta vista (administrador)</button>
     <button class="pf-out" id="pfLogout" type="button">Cerrar sesión</button>
     <div class="pf-foot">Hecho con Cose Coro</div>
   </div>
@@ -10624,6 +10625,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     $("gLogout3").addEventListener("click", logout);
     $("dashLogoutBtn").addEventListener("click", logout);
     $("pfLogout").addEventListener("click", logout);
+    $("pfVerSalir").addEventListener("click", function(){ try{ localStorage.removeItem("cosecoro_ver"); }catch(e){} location.reload(); });
 
     // ---------------- COSEPF (área Sistema PF) --------------------------------
     // Cuenta regresiva al 9 oct 2026, 12:00 a. m. de Venezuela (UTC-4): igual en
@@ -10712,7 +10714,10 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (!me){ gateMsg("Cargando tu cuenta…"); return; }
       // Sistema PF: solo ve la pantalla de COSEPF (las reglas le cierran el resto)
       if (me.status === "verificado" && vm().cargo === PF_CARGO && vm().role !== "admin"){
-        lock(); gate.hidden = true; pfShow(me.name); return;
+        lock(); gate.hidden = true; pfShow(me.name);
+        // solo el administrador en «Ver como» (su cuenta real) ve este botón
+        $("pfVerSalir").hidden = !(me.role === "admin" && window.coseVer && window.coseVer.activo());
+        return;
       }
       if (me.status === "verificado") unlock();
       else {
