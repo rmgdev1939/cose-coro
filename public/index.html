@@ -2611,7 +2611,7 @@
   <p class="dash-greet">Ayuda y soporte</p>
   <section class="card">
     <div class="card-title">Preguntas frecuentes</div>
-    <details class="faq"><summary>¿Cómo instalo CoseApp en mi teléfono?</summary><p>Abre cosecoro.web.app. En Android (Chrome): menú ⋮ → «Agregar a la pantalla principal». En iPhone (Safari): botón Compartir → «Agregar a inicio». Queda como una app más y se actualiza sola.</p></details>
+    <details class="faq"><summary>¿Cómo instalo CoseApp en mi teléfono?</summary><p>Abre coseimpa.web.app. En Android (Chrome): menú ⋮ → «Agregar a la pantalla principal». En iPhone (Safari): botón Compartir → «Agregar a inicio». Queda como una app más y se actualiza sola.</p></details>
     <details class="faq"><summary>Olvidé mi clave</summary><p>En la pantalla de «Entrar», escribe tu correo y toca «Olvidé mi clave». Te llega un correo de CoseApp para crear una nueva (revisa también spam).</p></details>
     <details class="faq"><summary>No me llegó el correo de confirmación</summary><p>Revisa la carpeta de spam o promociones. Si no está, entra con tu correo y clave y toca «Reenviar el correo». El remitente es CoseApp.</p></details>
     <details class="faq"><summary>Mi cuenta dice «en revisión»</summary><p>El administrador tiene que aprobarla. Cuando lo haga, la app se abre sola; no tienes que hacer nada más.</p></details>
@@ -3003,13 +3003,13 @@
       <button type="button" data-dl="android" aria-pressed="true">Android</button>
       <button type="button" data-dl="iphone" aria-pressed="false">iPhone</button>
     </div>
-    <ol data-dl-pasos="android"><li>Abre <strong>cosecoro.web.app</strong> en Chrome.</li><li>Toca el menú <strong>⋮</strong> (arriba a la derecha).</li><li>Elige <strong>«Instalar app»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</li></ol>
-    <ol data-dl-pasos="iphone" hidden><li>Abre <strong>cosecoro.web.app</strong> en Safari.</li><li>Toca <strong>Compartir</strong> (el cuadrito con la flecha).</li><li>Elige <strong>«Agregar a inicio»</strong> y luego <strong>Agregar</strong>.</li><li>Abre CoseApp desde el ícono nuevo.</li></ol>
+    <ol data-dl-pasos="android"><li>Abre <strong>coseimpa.web.app</strong> en Chrome.</li><li>Toca el menú <strong>⋮</strong> (arriba a la derecha).</li><li>Elige <strong>«Instalar app»</strong> o <strong>«Agregar a la pantalla principal»</strong>.</li></ol>
+    <ol data-dl-pasos="iphone" hidden><li>Abre <strong>coseimpa.web.app</strong> en Safari.</li><li>Toca <strong>Compartir</strong> (el cuadrito con la flecha).</li><li>Elige <strong>«Agregar a inicio»</strong> y luego <strong>Agregar</strong>.</li><li>Abre CoseApp desde el ícono nuevo.</li></ol>
   </div>
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span id="ftName">CoseApp</span>
-    <span id="appVersion">CA/1.3</span>
+    <span id="appVersion">CA/1.4</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -6088,7 +6088,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       ["Versión", ($("appVersion") || {}).textContent || "CC/1.0"],
       ["Conexión", navigator.onLine ? "En línea" : "Sin conexión"],
       ["Instalada como app", installed ? "Sí" : "No (se usa desde el navegador)"],
-      ["Dirección", "cosecoro.web.app"]
+      ["Dirección", "coseimpa.web.app"]
     ];
     var info = $("stInfo"); info.innerHTML = "";
     rows.forEach(function(r){
@@ -8802,7 +8802,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 61;
+  var APP_BUILD = 62;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------

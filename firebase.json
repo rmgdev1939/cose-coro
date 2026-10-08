@@ -63,6 +63,38 @@
       "predeploy": [
         "node tools/publicar/publicar.mjs"
       ]
+    },
+    {
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "headers": [
+        {
+          "source": "/",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "**/*.@(html|js|json)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        }
+      ],
+      "site": "coseimpa",
+      "predeploy": [
+        "node tools/publicar/publicar.mjs"
+      ]
     }
   ],
   "firestore": {
