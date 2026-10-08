@@ -1,6 +1,6 @@
 # Notas para trabajar en Cose Coro
 
-- La app se llama **CoseApp** (antes Cose Coro; la dirección cosecoro.web.app y los nombres de datos `cosecoro_*` se quedan igual). Etiqueta de versión "CA/1.x".
+- La app se llama **CoseApp** (antes Cose Coro; la dirección principal es coseimpa.web.app desde 2026-10-08; cosecoro.web.app y cosecoro-coro.web.app siguen publicando lo mismo; los nombres de datos `cosecoro_*` se quedan igual). Etiqueta de versión "CA/1.x".
 - El dueño es Rafael: no es técnico. Respóndele en español, corto y sencillo.
 - Es un proyecto personal: no mezclarlo con otros proyectos.
 - Toda la app vive en `public/index.html`, un solo archivo con varios bloques `<script>` independientes. El bloque "MODO NUBE (Firebase)" maneja cuentas y mapa; "CHAT DEL EQUIPO" es `window.coseChat`; "EDITOR DEL MAPA" es `window.coseEditor`. Seguir el estilo del archivo: ES5, sin librerías y sin paso de compilación.
