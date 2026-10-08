@@ -215,6 +215,8 @@
   .smap-inner svg .hatch{stroke:var(--line); stroke-width:6;}
   .smap-inner svg .pas{fill:transparent;}
   .smap-inner svg .pas.hit{fill:var(--accent); opacity:.28;}
+  .smap-inner svg .rack.hit, .smap-inner svg .shelf.hit{fill:var(--accent); opacity:.6;}
+  .smap-inner svg text.t-rk{font-size:15px; font-weight:700; fill:var(--ink-soft);}
   .smap-inner svg .walkway{fill:var(--accent-soft); opacity:.55;}
   .smap-inner svg .desk{fill:var(--ok-bg); stroke:var(--accent2); stroke-width:1.2; vector-effect:non-scaling-stroke;}
   .smap-inner svg .mat-in{fill:var(--accent2); opacity:.22;}
@@ -1286,10 +1288,8 @@
   body.suc-pf header.top .brand .b-tool, body.suc-pf .side-brand .b2{ color:#19c3b5; }
   body.suc-pf header.top .mark path, body.suc-pf .side-brand svg path{ stroke:#ffc845; }
   body.suc-pf header.top .mark rect, body.suc-pf .side-brand svg rect{ fill:#19c3b5; }
-  /* Punto Fijo todavía no tiene mapa ni Profit */
-  body.suc-pf [data-side="mapa"], body.suc-pf [data-side="precio"],
-  body.suc-pf [data-target="mapa"], body.suc-pf [data-target="precio"], body.suc-pf #editorTile,
-  body.suc-pf .home-search, body.suc-pf .home-search-lbl{ display:none !important; }
+  /* Punto Fijo todavía no tiene Profit (precios) ni el Editor del mapa de Coro */
+  body.suc-pf [data-side="precio"], body.suc-pf [data-target="precio"], body.suc-pf #editorTile{ display:none !important; }
 </style>
 </head>
 <body>
@@ -3009,7 +3009,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span id="ftName">CoseApp</span>
-    <span id="appVersion">CA/1.4</span>
+    <span id="appVersion">CA/1.5</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -3775,6 +3775,14 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   var MAP_DATA = [];
   var mapCloud = null; // { z } cuando el mapa viene de la nube (modo Firebase)
   function buildMapData(){
+    if (pfMode){
+      // Punto Fijo: lo que dice el plano, salvo los lugares que ya se editaron (mapaPF)
+      MAP_DATA = PF_ORDER.map(function(k){
+        var it = mapCloudPF && Array.isArray(mapCloudPF[k]) ? mapCloudPF[k] : PF_SEED[k];
+        return { code:k, items:it.slice() };
+      }).filter(function(z){ return z.items.length; });
+      return;
+    }
     var src = mapCloud ? mapCloud.z : ((mapImported && mapImported.z) ? mapImported.z : MAP_BUILTIN);
     var z = {}, C = window.coseCatalogo;
     // lo que según Profit hoy no hay en Coro no ocupa lugar en el mapa (se esconde, no se borra)
@@ -3833,6 +3841,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     "PATIO":{x:800,y:1046, t:"Patio (afuera)", s:"Fuera de la tienda", r:"Está en el patio, afuera: pregunta en el mostrador o en despacho.", via:[[800,1032],[800,1046]]}
   };
   function zoneInfo(code){
+    if (pfMode) return zoneInfoPF(code);
     var m = /^P(\d)(D?)-(A|B)(?:-(arriba|abajo))?$/.exec(code);
     if (m){
       var n = +m[1], right = !!m[2], cara = m[3], lvl = m[4] || "";
@@ -3857,7 +3866,143 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     return FIXED_POS[code] || null;
   }
 
+  // --- plano de PUNTO FIJO (viewBox 1300 x 760) ------------------------------
+  // Sale del plano a mano que mandó Rafael (2026-10-08). Racks 1 a 11 de la
+  // pared de los baños (izquierda) hacia la entrada; "fondo" = mitad de arriba
+  // (salida de emergencia), "frente" = mitad de abajo (cajas). Los artículos de
+  // cada lugar son los que dice el plano; lo que se edita va a mapaPF.
+  var pfMode = false, mapCloudPF = null;
+  var PF_W = 1300, PF_H = 760, PF_ENTRY = [800, 742];
+  var PF_CX = [0, 150, 240, 330, 420, 510, 620, 740, 830, 920, 1010, 1100];
+  var PF_FONDO = [90, 270], PF_FRENTE = [310, 480], PF_CALLE = 516;
+  // [rack, fondo o frente, rótulo corto en el plano, artículos]
+  var PF_RACKS = [
+    [1, "FONDO", "Aguas negras", ["Aguas negras (A.N.)"]],
+    [1, "FRENTE", "Aguas negras", ["Aguas negras (A.N.)"]],
+    [2, "FONDO", "Conex. agua fría", ["Conexiones agua fría"]],
+    [2, "FRENTE", "Conex. AB · Válvulas", ["Conexiones AB", "Válvulas"]],
+    [3, "FONDO", "Cerrajería · Electric.", ["Cerrajería", "Candados", "Conexiones de electricidad"]],
+    [3, "FRENTE", "PP · Grifería", ["PP", "Grifería"]],
+    [4, "FONDO", "Lijas · Pinturas", ["Lijas", "Pinturas", "Adhesivos"]],
+    [4, "FRENTE", "Brochas · Thinner", ["Brochas", "Thinner", "Selladores"]],
+    [5, "FONDO", "Sherwin · Esmaltes", ["Sherwin Williams (SHW)", "Esmaltes"]],
+    [5, "FRENTE", "Herrería · Guantes", ["Herrería", "Guantes"]],
+    [6, "FRENTE", "Seguridad · Lucería", ["Seguridad", "Lucería"]],
+    [7, "FRENTE", "Mercury · Breakers", ["Mercury", "Protección y eléctrico", "Breakers", "Tomacorrientes"]],
+    [8, "FONDO", "Stihl · Mondaine", ["Stihl", "Mondaine"]],
+    [8, "FRENTE", "Jardinería · Discos", ["Jardinería", "Abrasivos", "Discos"]],
+    [9, "FONDO", "", []],
+    [9, "FRENTE", "Decoración · Vitrina", ["Decoración", "Vitrina"]],
+    [10, "FONDO", "Baños · Bombas", ["Baños", "Bombas"]],
+    [10, "FRENTE", "Vulcan · Tobos", ["Vulcan", "Tobos", "Paletas"]],
+    [11, "FRENTE", "Herr. manuales · Truper", ["Herramientas manuales", "Truper", "Grama plástica"]]
+  ];
+  var PF_GOND = [["F-G1", "", []], ["F-G2", "Promaker", ["Promaker"]], ["F-G3", "B&D · Pretul", ["Black & Decker", "Pretul"]], ["F-G4", "Vitrina", ["Vitrina"]]];
+  var PF_INFO = {}, PF_SEED = {}, PF_ORDER = [];
+  (function(){
+    var cal = PF_CALLE, E = PF_ENTRY[0];
+    function add(code, label, items, info){ info.label = label; PF_INFO[code] = info; PF_SEED[code] = items; PF_ORDER.push(code); }
+    PF_RACKS.forEach(function(r){
+      var n = r[0], fondo = r[1] === "FONDO", y = fondo ? (PF_FONDO[0] + PF_FONDO[1]) / 2 : (PF_FRENTE[0] + PF_FRENTE[1]) / 2;
+      var x = PF_CX[n], ax = x + 45;
+      add("F" + n + "-" + r[1], "Rack " + n + " · " + (fondo ? "fondo" : "frente"), r[3], {
+        x:x, y:y, n:n, pas:"F" + n + "-" + r[1], pasl:"F" + n, rot:r[2],
+        t:"Rack " + n + " · " + (fondo ? "fondo" : "frente"),
+        s:fondo ? "Mitad de atrás, hacia la salida de emergencia" : "Mitad de adelante, hacia las cajas",
+        r:"Entra, camina a la " + (x < E ? "izquierda" : "derecha") + " hasta el rack " + n + " y sube por su pasillo" + (fondo ? " hasta el fondo." : "."),
+        via:[[E, cal], [ax, cal], [ax, y], [x, y]] });
+    });
+    add("F1-MEDIO", "Rack 1 · entre fondo y frente", ["Conexiones AB", "Llaves", "Tubo", "Conexiones polietileno"], {
+      x:150, y:290, n:1, pas:"F1-MEDIO", t:"Rack 1 · entre fondo y frente", s:"Entre las dos mitades del rack 1",
+      r:"Entra, camina a la izquierda hasta el rack 1 y sube hasta la mitad.", via:[[E, cal], [100, cal], [100, 290], [150, 290]] });
+    add("F-PARED-IZQ", "Pared izquierda", ["Tubos", "Hidro"], {
+      x:48, y:300, t:"Pared izquierda", s:"Estante de la pared larga, junto al rack 1",
+      r:"Entra, camina a la izquierda hasta el final y sube junto a la pared.", via:[[E, cal], [90, cal], [90, 300], [48, 300]] });
+    add("F-PARED-DER", "Pared derecha", ["Bosch", "Dewalt", "Makita"], {
+      x:1252, y:380, t:"Pared derecha", s:"Estante de la pared derecha",
+      r:"Entra, camina a la derecha hasta la pared.", via:[[E, cal], [1190, cal], [1190, 380], [1252, 380]] });
+    add("F-PARED-ENT", "Pared de la entrada", ["Black & Decker", "Vulcan"], {
+      x:1115, y:728, t:"Pared de la entrada", s:"Estante junto a la entrada, a la derecha",
+      r:"Al entrar, a la derecha, pegado a la pared.", via:[[E, 704], [1115, 704]] });
+    add("F-WADFOAM", "Junto a las cajas", ["Wadfoam"], {
+      x:195, y:560, t:"Junto a las cajas", s:"Estante a la izquierda de las cajas",
+      r:"Entra, camina a la izquierda pasando las cajas.", via:[[E, cal], [195, cal], [195, 560]] });
+    PF_GOND.forEach(function(g, i){
+      var gy = 552 + 36 * i;
+      add(g[0], "Góndola " + (i + 1) + " del frente", g[2], {
+        x:1005, y:gy, rot:g[1], t:"Góndola " + (i + 1) + " del frente", s:"Góndolas junto a la entrada, a la derecha",
+        r:"Al entrar, a la derecha: las góndolas frente a la entrada.", via:[[E, gy - 18], [1005, gy - 18]] });
+    });
+  })();
+  function zoneInfoPF(code){ return PF_INFO[code] || null; }
+
+  function buildStoreMapPF(){
+    var o = [], W = PF_W, H = PF_H;
+    o.push('<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plano de la tienda Coseimpa Punto Fijo">');
+    o.push('<defs><pattern id="smTile" width="44" height="44" patternUnits="userSpaceOnUse"><path class="tile" d="M44 0 H0 V44"/></pattern></defs>');
+    o.push('<rect class="floor" x="20" y="20" width="1260" height="720"/><rect x="20" y="20" width="1260" height="720" fill="url(#smTile)"/>');
+    // calle de adelante (por donde se camina desde la entrada)
+    o.push('<rect class="walkway" x="70" y="' + (PF_CALLE - 22) + '" width="1160" height="44" rx="10"/>');
+    function shelf(x, y, w, h, pas){
+      o.push('<rect class="shd" x="' + (x + 4) + '" y="' + (y + 5) + '" width="' + w + '" height="' + h + '" rx="4"/>');
+      o.push('<rect class="rack"' + (pas ? ' data-pas="' + pas + '"' : '') + ' x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>');
+    }
+    function vtext(x, y, t){
+      if (t) o.push('<text class="t-rk" x="' + x + '" y="' + y + '" text-anchor="middle" transform="rotate(-90 ' + x + ' ' + y + ')">' + esc(t) + '</text>');
+    }
+    PF_ORDER.forEach(function(code){
+      var z = PF_INFO[code];
+      if (/^F\d+-(FONDO|FRENTE)$/.test(code)){
+        var fondo = /FONDO$/.test(code), y1 = fondo ? PF_FONDO[0] : PF_FRENTE[0], y2 = fondo ? PF_FONDO[1] : PF_FRENTE[1];
+        shelf(z.x - 22, y1, 44, y2 - y1, code);
+        vtext(z.x + 6, (y1 + y2) / 2, z.rot);
+      }
+    });
+    shelf(128, 283, 44, 14, "F1-MEDIO");
+    // número de cada rack, en la calle de adelante
+    for (var n = 1; n <= 11; n++){
+      if (n === 6) continue;
+      o.push('<g class="pbadge" data-pasl="F' + n + '"><circle cx="' + PF_CX[n] + '" cy="' + (PF_CALLE - 4) + '" r="16"/>' +
+        '<text x="' + PF_CX[n] + '" y="' + (PF_CALLE + 4) + '" text-anchor="middle" style="font-size:22px">' + n + '</text></g>');
+    }
+    // mostrador en U (lugar del rack 6 de atrás)
+    o.push('<path class="thin" d="M580 100 V250 H660 V100 M580 100 H598 V232 H642 V100 H660"/>');
+    o.push('<text class="t-sm" x="620" y="290" text-anchor="middle">mostrador</text>');
+    // paredes con estantes
+    o.push('<rect class="shelf" data-pas="F-PARED-IZQ" x="40" y="70" width="16" height="500" rx="3"/>');
+    vtext(78, 320, "Tubos · Hidro");
+    o.push('<rect class="shelf" data-pas="F-PARED-DER" x="1244" y="70" width="16" height="620" rx="3"/>');
+    vtext(1230, 380, "Bosch · Dewalt · Makita");
+    o.push('<rect class="shelf" data-pas="F-PARED-ENT" x="1000" y="720" width="232" height="14" rx="3"/>');
+    o.push('<text class="t-rk" x="1115" y="712" text-anchor="middle">Black &amp; Decker · Vulcan</text>');
+    o.push('<rect class="shelf" data-pas="F-WADFOAM" x="130" y="553" width="130" height="14" rx="3"/>');
+    o.push('<text class="t-rk" x="195" y="590" text-anchor="middle">Wadfoam</text>');
+    // góndolas del frente
+    PF_GOND.forEach(function(g, i){
+      var gy = 552 + 36 * i;
+      shelf(880, gy - 11, 250, 22, g[0]);
+      if (g[1]) o.push('<text class="t-rk" x="1005" y="' + (gy + 5) + '" text-anchor="middle">' + esc(g[1]) + '</text>');
+    });
+    // cajas
+    [[310, 560], [380, 560], [450, 560], [310, 620], [380, 620], [450, 620]].forEach(function(b){
+      o.push('<rect class="desk" x="' + b[0] + '" y="' + b[1] + '" width="52" height="40" rx="8"/>');
+    });
+    o.push('<text class="t-sm" x="406" y="688" text-anchor="middle">cajas</text>');
+    // paredes, puertas y baños
+    o.push('<path class="wall" d="M20 20 H560 M700 20 H1280 V740 H900 M700 740 H500 M380 740 H20 V20"/>');
+    o.push('<text class="t-door out" x="630" y="50" text-anchor="middle" style="font-size:18px">SALIDA DE EMERGENCIA</text>');
+    o.push('<text class="t-door out" x="440" y="728" text-anchor="middle">SALIDA</text>');
+    o.push('<rect class="mat-in" x="748" y="722" width="104" height="30" rx="8"/>');
+    o.push('<text class="t-door" x="800" y="706" text-anchor="middle">ENTRADA</text>');
+    o.push('<text class="t-sm" x="70" y="720" text-anchor="middle">baños</text>');
+    o.push('<g id="smapRoute"></g>');
+    o.push('</svg>');
+    $("smapInner").innerHTML = o.join("");
+    $("smapFams").innerHTML = "";
+  }
+
   function buildStoreMap(){
+    if (pfMode){ MAP_W = PF_W; MAP_H = PF_H; ENTRY = PF_ENTRY; buildStoreMapPF(); return; }
     var o = [];
     o.push('<svg viewBox="0 0 ' + MAP_W + ' ' + MAP_H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plano de la tienda Coseimpa Coro">');
     o.push('<defs>' +
@@ -3990,7 +4135,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     $("smapInner").appendChild(p);
     if (info.pas){
       var r = $("smapInner").querySelector('[data-pas="' + info.pas + '"]');
-      var t = $("smapInner").querySelector('[data-pasl="' + info.pas + '"]');
+      var t = $("smapInner").querySelector('[data-pasl="' + (info.pasl || info.pas) + '"]');
       if (r) r.classList.add("hit");
       if (t) t.classList.add("hit");
     }
@@ -4085,13 +4230,13 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       return;
     }
     var terms = expandTerms(q);
-    var pm = /^pasillo\s*(\d)$/.exec(q);
+    var pm = pfMode ? null : /^pasillo\s*(\d)$/.exec(q);
     var matches = MAP_DATA.filter(function(z){
       if (pm){ var zm = /^P(\d)/.exec(z.code); return zm && zm[1] === pm[1]; }
       return z.items.some(function(it){ return itemMatches(it, terms); });
     });
-    var cat = !pm && window.coseCatalogo ? window.coseCatalogo.buscar(raw, terms, 25) : null;
-    var ag = !pm ? agBuscar(raw) : [];
+    var cat = !pm && !pfMode && window.coseCatalogo ? window.coseCatalogo.buscar(raw, terms, 25) : null;
+    var ag = !pm && !pfMode ? agBuscar(raw) : [];
     if (!matches.length && !ag.length && !(cat && (cat.loading || cat.hits.length))){
       list.innerHTML = '<div class="dash-empty">No aparece en las zonas ya cargadas. Puede estar en una zona que aún falta — pregunta en el mostrador.</div>';
       if (window.coseFaltantes) window.coseFaltantes.offer(list, raw);
@@ -4262,6 +4407,14 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       buildStoreMap();
       renderMapa();
     },
+    // Punto Fijo: otro plano y sus datos (z = mapaPF de la nube, o null)
+    usarPF: function(z){
+      pfMode = true; mapCloudPF = z || null;
+      buildMapData(); buildStoreMap();
+      if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa();
+    },
+    pfZonas: function(){ return PF_ORDER.map(function(k){ return { code:k, label:PF_INFO[k].label }; }); },
+    pfItems: function(k){ return (mapCloudPF && Array.isArray(mapCloudPF[k]) ? mapCloudPF[k] : (PF_SEED[k] || [])).slice(); },
     refresh: function(){ if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); },
     rebuild: function(){ buildMapData(); buildStoreMap(); if (!$("screen-mapa").hidden || ($("mapaSearch").value || "").trim()) renderMapa(); }
   };
@@ -8802,7 +8955,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 62;
+  var APP_BUILD = 63;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10815,7 +10968,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       $("dashLogoutBtn").hidden = false;
       $("mapImport").hidden = true;
       // la edición del mapa ahora es el Editor del mapa (solo cargos autorizados)
-      if (!window.coseSuc.esPF()) watchMap(); // Punto Fijo todavía no tiene mapa
+      if (window.coseSuc.esPF()) watchMapPF(); else watchMap();
       if (admin){ $("dashAdminBtn").hidden = false; watchAdmin(); }
       if (window.coseApp.current() === "dashboard") window.coseProfile.renderAccount();
     }
@@ -10894,6 +11047,29 @@ window.coseFirma = "CCRMG-6906f309ea2b";
         renderEditor();
       }, function(){ $("meMsg").textContent = "No se pudo leer el mapa de la nube (sin permiso o sin conexión)."; }));
     }
+    // Punto Fijo: su plano y la colección mapaPF. Se edita con la tarjeta
+    // sencilla «Agregar o quitar artículos» (el Editor del mapa es de Coro).
+    var mapPF = false;
+    function watchMapPF(){
+      mapPF = true;
+      var sel = $("meZone");
+      sel.innerHTML = "";
+      window.coseMapApi.pfZonas().forEach(function(z){
+        var o = document.createElement("option"); o.value = z.code; o.textContent = z.label; sel.appendChild(o);
+      });
+      $("mapEditCard").hidden = !(window.coseEditor && window.coseEditor.canEdit(vm()));
+      unsubs.push(F.onSnapshot(F.collection(db, "mapaPF"), function(snap){
+        var z = {};
+        snap.forEach(function(d){ var it = d.data().items; if (Array.isArray(it)) z[d.id] = it.slice(); });
+        cloudLoaded = true;
+        window.coseMapApi.usarPF(z);
+        renderEditor();
+      }, function(){ $("meMsg").textContent = "No se pudo leer el mapa de la nube (sin permiso o sin conexión)."; }));
+      window.coseMapApi.usarPF(null);
+      cloudLoaded = true;
+      renderEditor();
+    }
+    function zoneItems(code){ return mapPF ? window.coseMapApi.pfItems(code) : (cloudZ[code] || []); }
     var pendingRemove = null;
     function renderEditor(){
       var code = $("meZone").value, box = $("meItems");
@@ -10906,7 +11082,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
         return;
       }
       $("meForm").hidden = false;
-      var items = cloudZ[code] || [];
+      var items = zoneItems(code);
       if (!items.length){ box.innerHTML = '<span class="smap-note" style="margin:0;">Esta zona no tiene artículos todavía.</span>'; }
       items.forEach(function(it){
         var chip = document.createElement("span");
@@ -10926,11 +11102,16 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       });
     }
     function writeZone(code, item, action){
-      var ref = F.doc(db, "mapa", code);
+      var ref = F.doc(db, mapPF ? "mapaPF" : "mapa", code);
       var op = action === "agregó" ? F.arrayUnion(item) : F.arrayRemove(item);
+      // en Punto Fijo un lugar sin editar trae lo del plano: se guarda la lista completa
+      if (mapPF){
+        var all = zoneItems(code);
+        op = action === "agregó" ? all.concat([item]) : all.filter(function(t){ return t !== item; });
+      }
       F.setDoc(ref, { items:op, updatedAt:F.serverTimestamp(), updatedBy:uid, updatedByName:me.name }, { merge:true })
         .catch(function(){ toast("No se pudo guardar el cambio (sin permiso)."); });
-      F.addDoc(F.collection(db, "mapaLog"), { zone:code, action:action, item:item, by:uid, byName:me.name, at:F.serverTimestamp() })
+      F.addDoc(F.collection(db, mapPF ? "mapaLogPF" : "mapaLog"), { zone:code, action:action, item:item, by:uid, byName:me.name, at:F.serverTimestamp() })
         .catch(function(){});
       $("meMsg").textContent = (action === "agregó" ? "✓ Agregado: " : "✓ Quitado: ") + item + ". Todos lo ven al instante.";
     }
@@ -10940,7 +11121,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       var v = $("meNew").value.trim().replace(/\s+/g, " ").slice(0, 80);
       if (!v) return;
       var code = $("meZone").value;
-      var exists = (cloudZ[code] || []).some(function(it){ return norm(it) === norm(v); });
+      var exists = zoneItems(code).some(function(it){ return norm(it) === norm(v); });
       if (exists){ $("meMsg").textContent = "Ese artículo ya está en esta zona."; return; }
       $("meNew").value = "";
       writeZone(code, v, "agregó");
