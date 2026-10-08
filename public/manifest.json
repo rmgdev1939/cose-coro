@@ -1,7 +1,7 @@
 {
-  "name": "Cose Coro",
-  "short_name": "Cose Coro",
-  "description": "Herramientas de la sucursal Coro de Coseimpa: calculadoras de materiales, mapa de la tienda y tasa BCV.",
+  "name": "CoseApp",
+  "short_name": "CoseApp",
+  "description": "Herramientas de Coseimpa (Coro y Punto Fijo): calculadoras de materiales, mapa de la tienda, códigos, chat y tasa BCV.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F6F5F1",

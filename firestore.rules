@@ -17,11 +17,11 @@ service cloud.firestore {
     function verified() { return emailOk() && hasMe() && me().status == "verificado"
       && (me().role == "admin" || me().get("cargo", "") != "Sistema PF"); }
     function admin() { return verified() && me().role == "admin"; }
-    // Sucursales: cada quien ve solo la suya (Coro si no tiene). Las dos las
-    // ven el administrador y quien él marque con "ambas". Los datos de Punto
+    // Sucursales: cada quien ve solo la suya (Coro si no tiene). Las dos solo
+    // las ve el administrador (Rafael lo decidió así). Los datos de Punto
     // Fijo van en colecciones con "PF" al final (codigosPF, faltantesPF…).
     function suc() { return me().get("sucursal", "Coro"); }
-    function ambas() { return me().role == "admin" || me().get("ambas", false) == true; }
+    function ambas() { return me().role == "admin"; }
     function enSuc(s) { return verified() && (ambas() || suc() == s); }
     function sucDe(col) { return col.matches(".*PF") ? "Punto Fijo" : "Coro"; }
     function validProfile(d) {
@@ -71,11 +71,10 @@ service cloud.firestore {
       // Hay un solo administrador (Rafael): desde la app nadie puede dar ni
       // quitar el rol de admin (el campo role no se puede cambiar).
       allow update: if admin() && request.auth.uid != uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo", "sucursal", "ambas", "rol"])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "verifiedAt", "verifiedBy", "cargo", "sucursal", "rol"])
         && (!("rol" in request.resource.data) || (request.resource.data.rol is string && request.resource.data.rol.size() <= 40))
         && (!("cargo" in request.resource.data) || (request.resource.data.cargo is string && request.resource.data.cargo.size() <= 40))
         && (!("sucursal" in request.resource.data) || request.resource.data.sucursal in ["Coro", "Punto Fijo"])
-        && (!("ambas" in request.resource.data) || request.resource.data.ambas is bool)
         && request.resource.data.status in ["verificado", "bloqueado"]
         && (request.resource.data.status != "verificado" || resource.data.emailVerified == true);
       allow delete: if false;

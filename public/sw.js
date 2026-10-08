@@ -1,4 +1,4 @@
-const CACHE = "coseimpa-cosecoro-v60";
+const CACHE = "coseimpa-cosecoro-v61";
 const ASSETS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -93,7 +93,7 @@ self.addEventListener("push", (event) => {
     }
   }
   if (data === null || typeof data !== "object") data = { b: texto(data) };
-  const title = texto(data.t) || "Cose Coro";
+  const title = texto(data.t) || "CoseApp";
   const body = texto(data.b);
   const tag = texto(data.tag);
   const go = texto(data.go);

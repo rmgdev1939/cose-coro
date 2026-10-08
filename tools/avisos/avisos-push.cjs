@@ -1,4 +1,4 @@
-// Avisos con la app cerrada (notificaciones push) de Cose Coro.
+// Avisos con la app cerrada (notificaciones push) de CoseApp.
 //
 // Mira la base de datos (chats, avisos, soporte, solicitudes de compañero y
 // revisiones de la flota) y manda un aviso al teléfono de cada persona que lo
@@ -436,9 +436,9 @@ function start(opts){
     return repartir("aceptada", "id=" + d.id, aprobado(c.from) ? [c.from] : [], avisoAceptada(d.id, c));
   }
   // Sucursal del documento (las colecciones de Punto Fijo terminan en "PF") y
-  // si la persona la ve (la suya, o las dos si es admin o tiene "ambas").
+  // si la persona la ve (la suya, o las dos si es el administrador).
   function sucDoc(d){ return /PF$/.test(d.ref.parent.id) ? "Punto Fijo" : "Coro"; }
-  function veSuc(p, s){ return p.role === "admin" || p.ambas === true || p.sucursal === s; }
+  function veSuc(p, s){ return p.role === "admin" || p.sucursal === s; }
   function revision(d, leido){
     const r = d.data() || {};
     if (!(typeof r.fallas === "number" && r.fallas > 0)) return;
@@ -510,7 +510,7 @@ function start(opts){
       snap.docChanges().forEach(ch => {
         if (ch.type === "removed"){ personas.delete(ch.doc.id); return; }
         const u = ch.doc.data() || {};
-        personas.set(ch.doc.id, { status: u.status, role: u.role, cargo: u.cargo, name: u.name, sucursal: u.sucursal === "Punto Fijo" ? "Punto Fijo" : "Coro", ambas: u.ambas === true });
+        personas.set(ch.doc.id, { status: u.status, role: u.role, cargo: u.cargo, name: u.name, sucursal: u.sucursal === "Punto Fijo" ? "Punto Fijo" : "Coro" });
       });
       if (!tengoPersonas){ tengoPersonas = true; quizasBase(); }
     });
