@@ -92,6 +92,19 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
     }
 
+    // Presupuesto de las calculadoras: qué artículo de Profit va con cada
+    // material ({ map: { material: código } }). Lo leen las personas
+    // aprobadas; solo el administrador lo cambia.
+    match /config/presupuesto {
+      allow get: if verified();
+      allow write: if admin()
+        && request.resource.data.keys().hasOnly(["map", "updatedBy", "updatedAt"])
+        && request.resource.data.map is map
+        && request.resource.data.map.size() <= 400
+        && request.resource.data.updatedBy == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+    }
+
     // Mapa de la tienda: una zona por documento
     // (por ahora solo existe el de Coro; el de Punto Fijo viene después)
     match /mapa/{zone} {

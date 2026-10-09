@@ -225,6 +225,15 @@ await t("la admin no le quita el rol a otro admin", () => assertFails(updateDoc(
 await t("nadie se nombra administrador a sí mismo", () => assertFails(updateDoc(doc(C, "users", "C"), { role: "admin", updatedAt: serverTimestamp() })));
 await t("la admin aún aprueba o quita acceso", () => assertSucceeds(updateDoc(doc(A, "users", "C"), { status: "bloqueado" })));
 
+console.log("presupuesto de las calculadoras (Profit)");
+const pres = (by, map = { "saco(s) de cemento 42,5 kg": "CEM001" }) => ({ map, updatedBy: by, updatedAt: serverTimestamp() });
+await t("la admin elige el artículo de Profit para todos", () => assertSucceeds(setDoc(doc(A, "config", "presupuesto"), pres("A"))));
+await t("un empleado lee las elecciones", () => assertSucceeds(getDoc(doc(INV, "config", "presupuesto"))));
+await t("un pendiente no las lee", () => assertFails(getDoc(doc(D, "config", "presupuesto"))));
+await t("un empleado no las cambia", () => assertFails(setDoc(doc(INV, "config", "presupuesto"), pres("INV"))));
+await t("la admin no firma a nombre de otro", () => assertFails(setDoc(doc(A, "config", "presupuesto"), pres("B"))));
+await t("ni agrega campos extra", () => assertFails(setDoc(doc(A, "config", "presupuesto"), Object.assign(pres("A"), { x: 1 }))));
+
 console.log("estado del sistema");
 await env.withSecurityRulesDisabled(async (ctx) => { await setDoc(doc(ctx.firestore(), "monitor", "resumen"), { today: { reads: 1 } }); });
 await t("la admin ve el estado del sistema", () => assertSucceeds(getDoc(doc(A, "monitor", "resumen"))));
