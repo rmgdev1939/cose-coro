@@ -1349,6 +1349,12 @@
       <p style="margin-top:8px;">Tu cuenta no tiene acceso a CoseApp. Si crees que es un error, habla con el administrador.</p>
       <button class="btn" id="gLogout2" type="button" style="margin-top:14px; width:100%;">Cerrar sesión</button>
     </div>
+    <div id="gateSoloTel" hidden>
+      <h2>📱 Usa tu teléfono</h2>
+      <p style="margin-top:8px;">Hola <strong id="gTelName"></strong>. Tu cuenta de CoseApp está habilitada solo para el teléfono. Abre la app desde tu celular para seguir trabajando.</p>
+      <p style="margin-top:8px; font-size:.86rem; color:var(--ink-soft);">Si necesitas usarla en una computadora, habla con el administrador.</p>
+      <button class="btn" id="gLogout3" type="button" style="margin-top:14px; width:100%;">Cerrar sesión</button>
+    </div>
   </div>
 </div>
 
@@ -9131,7 +9137,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 64;
+  var APP_BUILD = 65;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10796,7 +10802,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   var gate = $("cloudGate");
   gate.hidden = false;
 
-  var GATES = ["gateLoading","gateLogin","gateVerify","gatePending","gateBlocked"];
+  var GATES = ["gateLoading","gateLogin","gateVerify","gatePending","gateBlocked","gateSoloTel"];
   function gateShow(which){
     GATES.forEach(function(id){ $(id).hidden = (id !== which); });
     gate.hidden = false;
@@ -10947,6 +10953,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     $("gLogout1").addEventListener("click", logout);
     $("gLogout2").addEventListener("click", logout);
     $("gLogout3").addEventListener("click", logout);
+    $("gLogout3").addEventListener("click", logout);
     $("dashLogoutBtn").addEventListener("click", logout);
     $("pfLogout").addEventListener("click", logout);
     $("pfVerSalir").addEventListener("click", function(){ try{ localStorage.removeItem("cosecoro_ver"); }catch(e){} location.reload(); });
@@ -10986,6 +10993,18 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       clearInterval(pfTimer); pfTimer = null;
     }
     var pfTitle = document.title;
+
+    // ---------------- Solo teléfono (users.soloTel, lo pone el administrador) --
+    // Una app web no puede saber con certeza qué aparato es: se toma como
+    // teléfono o tableta lo que lo dice el navegador o tiene pantalla táctil.
+    // Frena el uso normal desde una computadora (no es un candado perfecto).
+    function esTelefono(){
+      var ua = navigator.userAgent || "";
+      if (/Android|iPhone|iPad|iPod|Mobile|Mobi/i.test(ua)) return true;
+      var tactil = (navigator.maxTouchPoints || 0) > 0;
+      var dedo = window.matchMedia && window.matchMedia("(pointer:coarse)").matches;
+      return tactil && dedo;
+    }
 
     // ---------------- confirmación del correo -------------------------------
     var verTimer = null, resendAt = 0;
@@ -11041,6 +11060,12 @@ window.coseFirma = "CCRMG-6906f309ea2b";
         lock(); gate.hidden = true; pfShow(me.name);
         // solo el administrador en «Ver como» (su cuenta real) ve este botón
         $("pfVerSalir").hidden = !(me.role === "admin" && window.coseVer && window.coseVer.activo());
+        return;
+      }
+      // Solo teléfono: en computadora ve un aviso (el administrador nunca)
+      if (me.status === "verificado" && me.soloTel === true && me.role !== "admin" && !esTelefono()){
+        lock(); $("gTelName").textContent = String(me.name || "").split(" ")[0];
+        gateShow("gateSoloTel");
         return;
       }
       if (me.status === "verificado") unlock();
@@ -11418,6 +11443,19 @@ window.coseFirma = "CCRMG-6906f309ea2b";
                         function(){ toast("No se pudo cambiar la sucursal (sin permiso o sin conexión)."); });
               });
               last.querySelector(".txt").appendChild(ss);
+              // solo teléfono: no puede entrar desde una computadora
+              var ts = document.createElement("select");
+              ts.className = "adm-cargo";
+              ts.setAttribute("aria-label", "Dónde usa la app " + u.name);
+              [["", "Teléfono y computadora"], ["1", "📱 Solo teléfono"]].forEach(function(tv){ var o = document.createElement("option"); o.value = tv[0]; o.textContent = tv[1]; ts.appendChild(o); });
+              ts.value = u.soloTel === true ? "1" : "";
+              ts.addEventListener("change", function(){
+                var v = ts.value === "1";
+                F.updateDoc(F.doc(db, "users", u.uid), { soloTel:v })
+                  .then(function(){ toast(u.name + ": " + (v ? "solo teléfono" : "teléfono y computadora") + " ✓"); },
+                        function(){ toast("No se pudo cambiar (sin permiso o sin conexión)."); });
+              });
+              last.querySelector(".txt").appendChild(ts);
               var rl = window.coseRoles.de(u.cargo || "");
               if (rl.length){
                 var rs = document.createElement("select");
