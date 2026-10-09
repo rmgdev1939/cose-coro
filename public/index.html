@@ -570,6 +570,15 @@
   .price-total .v small{display:block; font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:0.78rem; font-weight:600; color:var(--ink-soft);}
   .price-note{font-size:0.72rem; color:var(--ink-soft);}
   .price-note.warn{color:var(--est-fg);}
+  .price-row .pfm{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 8px; font-size:0.72rem; color:var(--ink-soft);}
+  .price-row .pfm .n{color:var(--ok-fg); font-weight:600; min-width:0; overflow-wrap:anywhere;}
+  .price-row .pfm.sin .n{color:var(--ink-soft); font-weight:400;}
+  .price-row .pfm button{border:none; background:none; padding:0; font:inherit; color:var(--accent); text-decoration:underline; cursor:pointer;}
+  .price-row .pfx{grid-column:1 / -1; display:flex; flex-direction:column; gap:4px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:8px;}
+  .price-row .pfx input{width:100%; text-align:left; font-family:inherit; font-size:0.85rem; font-weight:400; border-bottom:1px solid var(--line); padding:4px 2px;}
+  .price-row .pfx button{text-align:left; border:none; background:none; padding:6px 2px; font:inherit; font-size:0.78rem; color:var(--ink); cursor:pointer; border-bottom:1px solid var(--line);}
+  .price-row .pfx button:last-child{border-bottom:none;}
+  .price-row .pfx button b{font-family:"IBM Plex Mono", ui-monospace, monospace;}
   .proj-banner{display:grid; grid-template-columns:1fr auto; align-items:center; gap:2px 10px; width:100%; text-align:left; font-family:inherit; cursor:pointer;
     background:var(--ok-bg); color:var(--ok-fg); border:1px solid var(--accent2); border-radius:14px; padding:12px 14px;}
   .proj-banner .pb-t{font-family:"Baloo 2", system-ui, sans-serif; font-weight:700; font-size:1rem;}
@@ -3009,7 +3018,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span id="ftName">CoseApp</span>
-    <span id="appVersion">CA/1.5</span>
+    <span id="appVersion">CA/1.6</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -5584,10 +5593,60 @@ window.coseFirma = "CCRMG-6906f309ea2b";
 // cada material se recuerda en este teléfono para la próxima cotización.
 // Arriba de los precios, "No olvides ofrecer" sugiere complementos de cada
 // trabajo; al tocarlos se suman a la lista (1 und) y aceptan precio.
+// Con Profit (Coro): cada material se busca solo entre los artículos con
+// existencia y toma su precio 05 + IVA. Debajo se ve qué artículo de Profit se
+// usó y se puede Cambiar (buscar otro) o Quitar; la elección se recuerda en el
+// teléfono. Escribir un precio a mano manda sobre Profit para ese material.
 // ============================================================================
 (function(){
   "use strict";
   var PRICE_KEY = "cosecoro_precios_usd";
+  var PFMAP_KEY = "cosecoro_profit_map"; // { clave material: código Profit | "-" (a mano) }
+  var pfMap = {};
+  try{ pfMap = JSON.parse(localStorage.getItem(PFMAP_KEY) || "{}") || {}; }catch(e){ pfMap = {}; }
+  function savePfMap(){ try{ localStorage.setItem(PFMAP_KEY, JSON.stringify(pfMap)); }catch(e){} }
+  function PFd(){
+    var P = window.coseProfit;
+    if (!P || !P.activo() || (window.coseSuc && window.coseSuc.esPF())) return null;
+    var d = P.datos("profit");
+    return d && d.items ? d : null;
+  }
+  function norm(s){ s = String(s || "").toLowerCase(); try{ s = s.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){} return s; }
+  // palabras que no ayudan a encontrar el artículo
+  var VACIAS = /^(de|del|la|el|los|las|y|con|para|por|en|a|s|es|x|m|m3|kg|cm|und|lamina|laminas|saco|sacos|tramo|tramos|pieza|piezas|caja|cajas|galon|galones|rollo|rollos|barra|barras|unidad|unidades|pega|friso|cara|caras|aprox|sellado|bordes)$/;
+  function palabras(s){
+    return norm(s).replace(/(\d),(\d)/g, "$1.$2").replace(/m³/g, "m3").split(/[^a-z0-9.]+/)
+      .map(function(w){ return w.replace(/^\.+|\.+$/g, ""); })
+      .filter(function(w){ return w && !VACIAS.test(w) && !(w.length < 3 && !/\d/.test(w)); })
+      .map(function(w){ return /\d/.test(w) ? w : w.replace(/(es|s)$/, ""); });
+  }
+  // artículos de Profit ordenados por parecido con el texto
+  function buscar(texto, d, max){
+    var q = palabras(texto);
+    if (!q.length) return [];
+    var res = [];
+    d.items.forEach(function(a){
+      if (a.p == null) return;
+      var w = palabras(a.d), hit = 0, pal = 0;
+      q.forEach(function(t){
+        var ok = w.some(function(x){ return x === t || (t.length > 3 && x.indexOf(t) === 0) || (x.length > 3 && t.indexOf(x) === 0); });
+        if (ok){ hit++; if (!/\d/.test(t)) pal++; }
+      });
+      if (pal) res.push({ a:a, s:hit / q.length - w.length * 0.005 });
+    });
+    res.sort(function(x, y){ return y.s - x.s; });
+    return res.slice(0, max || 8);
+  }
+  // el artículo de Profit para un material: el elegido, o el más parecido (si se parece bastante)
+  function pfFor(it, d){
+    var el = window.coseProfit.elegidos() || {};
+    var m = pfMap[it.key] || el[it.key];
+    if (m === "-") return null;
+    if (m) return d.byCode[m] ? { a:d.byCode[m], elegido:true } : null;
+    var r = buscar(it.busca, d, 1)[0];
+    return r && r.s >= 0.5 ? { a:r.a, elegido:false } : null;
+  }
+  function pfPrecio(a){ var pr = window.coseProfit.precio(a); return pr ? pr.total : 0; }
   var BCV_KEY = "coseimpa_bcv_cache";
   var SEP = "--------------------------------";
   var MARK = "\n" + SEP + "\nPrecios (USD)";
@@ -5643,9 +5702,19 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       var desc = m[2].trim();
       var isExtra = Object.keys(EXTRAS).some(function(k){ return EXTRAS[k].indexOf(desc) !== -1; });
       var key = (clean(desc) + (product && !isExtra ? " | " + product.trim() : "")).toLowerCase();
-      out.push({ qty:parseQty(m[1]), qtyText:m[1], desc:desc, key:key });
+      out.push({ qty:parseQty(m[1]), qtyText:m[1], desc:desc, key:key, busca:clean(desc) + (product && !isExtra ? " " + product : "") });
     });
     return out;
+  }
+
+  // trae los datos de Profit y las elecciones la primera vez que hacen falta
+  var rebuilds = [], escuchando = false;
+  function cargaPf(){
+    var P = window.coseProfit;
+    if (!P) return;
+    if (!escuchando){ escuchando = true; P.onChange(function(col){ if (col === "profit" || col === "presupuesto") rebuilds.forEach(function(fn){ fn(); }); }); }
+    if (!P.activo() || (window.coseSuc && window.coseSuc.esPF())) return;
+    P.cargar("profit"); P.cargarElegidos();
   }
 
   document.querySelectorAll(".list-card").forEach(function(card){
@@ -5692,14 +5761,21 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     var noteEl = box.querySelector(".price-note");
     var items = [], sig = "", applying = false;
 
+    // precio que vale para un material: Profit (P5 + IVA) o el escrito a mano
+    function precioDe(it){
+      var d = PFd(), pf = d && pfMap[it.key] !== "-" ? pfFor(it, d) : null;
+      if (pf){ var t = pfPrecio(pf.a); if (t) return { p:t, pf:pf }; }
+      return { p:prices[it.key] || 0, pf:null };
+    }
     function block(){
-      var lines = [], total = 0;
+      var lines = [], total = 0, conPf = false;
       items.forEach(function(it){
-        var p = prices[it.key] || 0;
+        var x = precioDe(it), p = x.p;
         if (!p) return;
         var sub = Math.round(it.qty * p * 100) / 100;
         total += sub;
-        lines.push(it.qtyText + " × " + usd(p) + " = " + usd(sub) + "  " + clean(it.desc));
+        if (x.pf) conPf = true;
+        lines.push(it.qtyText + " × " + usd(p) + " = " + usd(sub) + "  " + (x.pf ? x.pf.a.d + " (cód. " + x.pf.a.c + ")" : clean(it.desc)));
       });
       if (!lines.length) return { text:"", total:0 };
       var r = bcv();
@@ -5709,6 +5785,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
           "\n(tasa BCV " + r.rate.toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:2}) +
           " Bs/USD del " + new Date(r.fetchedAt).toLocaleDateString("es-VE") + ")";
       }
+      if (conPf) text += "\nPrecios con IVA incluido.";
       text += "\nPrecios sujetos a cambio y a disponibilidad.";
       return { text:text, total:total, rate:r };
     }
@@ -5730,6 +5807,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     }
     function buildRows(){
       rowsEl.innerHTML = "";
+      var d = PFd();
       items.forEach(function(it, i){
         var row = document.createElement("div");
         row.className = "price-row";
@@ -5741,24 +5819,92 @@ window.coseFirma = "CCRMG-6906f309ea2b";
         row.querySelector(".t").textContent = it.desc;
         var input = row.querySelector("input"), st = row.querySelector(".st");
         function showSub(){
-          var p = prices[it.key] || 0;
+          var p = precioDe(it).p;
           st.textContent = p ? it.qtyText + " × " + usd(p) + " = " + usd(Math.round(it.qty * p * 100) / 100) : "";
           st.hidden = !p;
         }
-        if (prices[it.key]) input.value = prices[it.key].toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:2});
+        var x = precioDe(it);
+        if (x.p) input.value = x.p.toLocaleString("es-VE", {minimumFractionDigits:2, maximumFractionDigits:2});
         showSub();
         input.addEventListener("input", function(){
           var p = parsePrice(input.value);
           if (p) prices[it.key] = p; else delete prices[it.key];
           savePrices();
+          // escribir a mano manda sobre Profit para este material
+          if (d && pfMap[it.key] !== "-"){ pfMap[it.key] = "-"; savePfMap(); var m = row.querySelector(".pfm"); if (m) pintarPfm(m); }
           showSub();
           apply();
         });
         rowsEl.appendChild(row);
+        if (d){
+          var pfm = document.createElement("div");
+          row.insertBefore(pfm, st);
+          pintarPfm(pfm);
+        }
+        // debajo: qué artículo de Profit se usó, con Cambiar / Quitar
+        function pintarPfm(pfm){
+          var y = precioDe(it);
+          pfm.className = "pfm" + (y.pf ? "" : " sin");
+          pfm.innerHTML = "";
+          var n = document.createElement("span"); n.className = "n";
+          n.textContent = y.pf ? "Profit: " + y.pf.a.d + " · hay " + (Math.round((Number(y.pf.a.h) || 0) * 100) / 100).toLocaleString("es-VE") + (y.pf.elegido ? "" : " (sugerido)")
+            : pfMap[it.key] === "-" ? "Precio a mano" : "Sin artículo de Profit";
+          pfm.appendChild(n);
+          var b = document.createElement("button"); b.type = "button";
+          b.textContent = y.pf ? "Cambiar" : "Buscar en Profit";
+          b.addEventListener("click", function(){ abrirPicker(pfm); });
+          pfm.appendChild(b);
+          if (y.pf){
+            var q = document.createElement("button"); q.type = "button"; q.textContent = "Quitar";
+            q.addEventListener("click", function(){ elegir("-"); });
+            pfm.appendChild(q);
+          }
+        }
+        function elegir(code){
+          pfMap[it.key] = code; savePfMap();
+          if (window.coseProfit.esAdmin()) window.coseProfit.elegirParaTodos(it.key, code);
+          if (code === "-"){ delete prices[it.key]; savePrices(); }
+          buildRows(); apply();
+        }
+        function abrirPicker(pfm){
+          var old = row.querySelector(".pfx");
+          if (old){ old.remove(); return; }
+          var box = document.createElement("div"); box.className = "pfx";
+          var q = document.createElement("input"); q.type = "search"; q.value = it.busca;
+          q.setAttribute("aria-label", "Buscar artículo en Profit");
+          var res = document.createElement("div");
+          box.appendChild(q); box.appendChild(res);
+          function pinta(){
+            res.innerHTML = "";
+            buscar(q.value, d, 8).forEach(function(r){
+              var o = document.createElement("button"); o.type = "button";
+              o.innerHTML = "<b></b> · <span></span>";
+              o.querySelector("b").textContent = usd(pfPrecio(r.a));
+              o.querySelector("span").textContent = r.a.d + " · hay " + (Math.round((Number(r.a.h) || 0) * 100) / 100).toLocaleString("es-VE");
+              o.addEventListener("click", function(){ elegir(r.a.c); });
+              res.appendChild(o);
+            });
+            var man = document.createElement("button"); man.type = "button";
+            man.textContent = "Ninguno: escribo el precio a mano";
+            man.addEventListener("click", function(){ elegir("-"); });
+            res.appendChild(man);
+            if (window.coseProfit.esAdmin()){
+              var nota = document.createElement("span"); nota.className = "price-note";
+              nota.textContent = "Lo que elijas queda para todos los trabajadores.";
+              res.appendChild(nota);
+            }
+          }
+          q.addEventListener("input", pinta);
+          pinta();
+          row.insertBefore(box, st);
+          q.focus();
+        }
       });
     }
+    rebuilds.push(function(){ if (items.length){ buildRows(); apply(); } });
     function refresh(force){
       if (applying) return;
+      cargaPf();
       buildChips();
       var base = stripBlock(pre.textContent);
       var next = itemsOf(base + extraText());
@@ -7844,20 +7990,50 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     .observe($("screen-faltantes"), { attributes:true, attributeFilter:["hidden"] });
   subs.push(function(col){ if (col === "profitAgotados") pintarAgotados(); });
 
+  // --- presupuesto: qué artículo de Profit corresponde a cada material de las
+  // calculadoras. config/presupuesto { map:{ clave: código } }: lo eligen el
+  // administrador para todos (la regla lo exige); cada teléfono puede cambiarlo
+  // solo para sí (eso lo guarda la calculadora en el teléfono).
+  var EL = null, elCargando = null;
+  function cargarElegidos(){
+    if (!X) return Promise.resolve(null);
+    if (EL) return Promise.resolve(EL);
+    if (elCargando) return elCargando;
+    var F = X.F, uid0 = X.uid;
+    elCargando = F.getDoc(F.doc(X.db, "config", "presupuesto")).then(function(s){
+      if (!X || X.uid !== uid0) return null;
+      EL = (s.exists() && s.data().map) || {};
+      notify("presupuesto");
+      return EL;
+    }).catch(function(){ return null; }).then(function(r){ elCargando = null; return r; });
+    return elCargando;
+  }
+  function elegirParaTodos(clave, codigo){
+    if (!X || !X.me || X.me.role !== "admin" || !EL) return Promise.resolve(false);
+    var m = {};
+    Object.keys(EL).forEach(function(k){ m[k] = EL[k]; });
+    if (codigo) m[clave] = codigo; else delete m[clave];
+    var F = X.F;
+    return F.setDoc(F.doc(X.db, "config", "presupuesto"), { map:m, updatedBy:X.uid, updatedAt:F.serverTimestamp() })
+      .then(function(){ EL = m; return true; }, function(){ return false; });
+  }
+
   window.coseProfit = {
     start: function(ctx){
       if (X && X.uid === ctx.uid){ X.me = ctx.me; pintarAgotados(); return; }
-      X = ctx; DS = {};
+      X = ctx; DS = {}; EL = null;
       if ($("prTile")) $("prTile").hidden = false;
       pintarAgotados();
     },
-    stop: function(){ X = null; DS = {}; lsBorrar(); var c = $("agCard"); if (c) c.hidden = true; if ($("prTile")) $("prTile").hidden = true; },
+    stop: function(){ X = null; DS = {}; EL = null; lsBorrar(); var c = $("agCard"); if (c) c.hidden = true; if ($("prTile")) $("prTile").hidden = true; },
     cargar: cargar,
     listo: function(col){ return !!(DS[col] && DS[col].items); },
     datos: function(col){ return DS[col] || null; },
     puedeAgotados: function(){ return !!X && puedeAgotados(X.me); },
     activo: function(){ return !!X; },
     precio: precio, bloque: bloque, hace: hace,
+    cargarElegidos: cargarElegidos, elegidos: function(){ return EL; },
+    elegirParaTodos: elegirParaTodos, esAdmin: function(){ return !!X && !!X.me && X.me.role === "admin"; },
     onChange: function(fn){ subs.push(fn); }
   };
 })();
@@ -8955,7 +9131,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 63;
+  var APP_BUILD = 64;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
