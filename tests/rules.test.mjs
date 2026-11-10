@@ -585,6 +585,48 @@ console.log("sucursales");
   await t("el chat sigue compartido (PF lee perfiles)", () => assertSucceeds(getDoc(doc(PFV, "perfiles", "B"))));
 }
 
+console.log("conteo de inventario");
+{
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await setDoc(doc(db, "users", "PFI"), { name: "Pili Inventario PF", email: "PFI@x.com", cargo: "Inventario", emailVerified: true, status: "verificado", role: "empleado", sucursal: "Punto Fijo" });
+    await setDoc(doc(db, "users", "PFW"), { name: "Wil Ventas PF", email: "PFW@x.com", cargo: "Ventas", emailVerified: true, status: "verificado", role: "empleado", sucursal: "Punto Fijo" });
+    await setDoc(doc(db, "users", "CV"), { name: "Carla", email: "CV@x.com", cargo: "Ventas", emailVerified: true, status: "verificado", role: "empleado" });
+    await setDoc(doc(db, "users", "BV"), { name: "Beto", email: "BV@x.com", cargo: "Ventas", emailVerified: true, status: "verificado", role: "empleado" });
+    await setDoc(doc(db, "users", "IV"), { name: "Iván Inventario", email: "IV@x.com", cargo: "Inventario", emailVerified: true, status: "verificado", role: "empleado" });
+  });
+  const INVc = as("IV"), Cc = as("CV"), Bc = as("BV"), Ac = as("A"), PFI = as("PFI"), PFW = as("PFW"), ts = serverTimestamp();
+  const nueva = (por, porN, a, aN, extra = {}) => Object.assign({ nombre: "Pasillo 3", items: [{ c: "001", d: "Tornillo" }, { c: "002", d: "Clavo" }],
+    asignado: a, asignadoNombre: aN, creadoPor: por, creadoPorNombre: porN, creadoAt: ts, estado: "contando", conteo: {}, avance: 0, ronda: 1 }, extra);
+  await t("Inventario manda una planilla a C", () => assertSucceeds(setDoc(doc(INVc, "conteos", "k1"), nueva("IV", "Iván Inventario", "CV", "Carla"))));
+  await t("Ventas no crea planillas", () => assertFails(setDoc(doc(Bc, "conteos", "k2"), nueva("BV", "Beto", "CV", "Carla"))));
+  await t("no se crea con conteo ya lleno", () => assertFails(setDoc(doc(INVc, "conteos", "k3"), nueva("IV", "Iván Inventario", "CV", "Carla", { conteo: { "0": 5 } }))));
+  await t("no se manda a alguien pendiente", () => assertFails(setDoc(doc(INVc, "conteos", "k4"), nueva("IV", "Iván Inventario", "D", "Dani"))));
+  await t("Coro no manda a alguien de Punto Fijo", () => assertFails(setDoc(doc(INVc, "conteos", "k5"), nueva("IV", "Iván Inventario", "PFW", "Wil"))));
+  await t("C lee su planilla", () => assertSucceeds(getDoc(doc(Cc, "conteos", "k1"))));
+  await t("C busca sus planillas", () => assertSucceeds(getDocs(query(collection(Cc, "conteos"), where("asignado", "==", "CV")))));
+  await t("B no lee la planilla de C", () => assertFails(getDoc(doc(Bc, "conteos", "k1"))));
+  await t("B no lista todas", () => assertFails(getDocs(collection(Bc, "conteos"))));
+  await t("Inventario lista todas", () => assertSucceeds(getDocs(collection(INVc, "conteos"))));
+  await t("C anota cantidades", () => assertSucceeds(updateDoc(doc(Cc, "conteos", "k1"), { conteo: { "0": 12 }, avance: 1 })));
+  await t("C no cambia los productos", () => assertFails(updateDoc(doc(Cc, "conteos", "k1"), { items: [{ c: "9", d: "x" }] })));
+  await t("C no la aprueba", () => assertFails(updateDoc(doc(Cc, "conteos", "k1"), { estado: "aprobado" })));
+  await t("B no anota en la de C", () => assertFails(updateDoc(doc(Bc, "conteos", "k1"), { conteo: { "0": 1 }, avance: 1 })));
+  await t("Inventario no la devuelve si no se entregó", () => assertFails(updateDoc(doc(INVc, "conteos", "k1"), { estado: "contando", recontar: [0], revisadoPor: "IV", revisadoPorNombre: "Iván Inventario", revisadoAt: ts })));
+  await t("C la entrega", () => assertSucceeds(updateDoc(doc(Cc, "conteos", "k1"), { conteo: { "0": 12, "1": 0 }, avance: 2, estado: "entregado", entregadoAt: ts })));
+  await t("C ya no la cambia entregada", () => assertFails(updateDoc(doc(Cc, "conteos", "k1"), { conteo: { "0": 99, "1": 0 } })));
+  await t("Inventario la devuelve para recontar", () => assertSucceeds(updateDoc(doc(INVc, "conteos", "k1"), { estado: "contando", recontar: [1], conteo: { "0": 12 }, avance: 1, ronda: 2, revisadoPor: "IV", revisadoPorNombre: "Iván Inventario", revisadoAt: ts })));
+  await t("C la vuelve a entregar", () => assertSucceeds(updateDoc(doc(Cc, "conteos", "k1"), { conteo: { "0": 12, "1": 3 }, avance: 2, estado: "entregado", entregadoAt: ts })));
+  await t("Inventario la aprueba con lo de Profit", () => assertSucceeds(updateDoc(doc(INVc, "conteos", "k1"), { estado: "aprobado", sistema: { "0": 12, "1": 4 }, revisadoPor: "IV", revisadoPorNombre: "Iván Inventario", revisadoAt: ts })));
+  await t("aprobada ya no se cambia", () => assertFails(updateDoc(doc(INVc, "conteos", "k1"), { estado: "anulado", revisadoPor: "IV", revisadoPorNombre: "Iván Inventario", revisadoAt: ts })));
+  await t("Inventario PF manda en Punto Fijo", () => assertSucceeds(setDoc(doc(PFI, "conteosPF", "p1"), nueva("PFI", "Pili Inventario PF", "PFW", "Wil"))));
+  await t("Inventario PF no manda a alguien de Coro", () => assertFails(setDoc(doc(PFI, "conteosPF", "p2"), nueva("PFI", "Pili Inventario PF", "CV", "Carla"))));
+  await t("Inventario PF no crea en Coro", () => assertFails(setDoc(doc(PFI, "conteos", "p3"), nueva("PFI", "Pili Inventario PF", "PFW", "Wil"))));
+  await t("Inventario Coro no lee las de Punto Fijo", () => assertFails(getDocs(collection(INVc, "conteosPF"))));
+  await t("el admin las lee todas", () => assertSucceeds(getDocs(collection(Ac, "conteosPF"))));
+  await t("Inventario anula una en conteo", () => assertSucceeds(updateDoc(doc(PFI, "conteosPF", "p1"), { estado: "anulado", revisadoPor: "PFI", revisadoPorNombre: "Pili Inventario PF", revisadoAt: ts })));
+}
+
 console.log(`\n${pass} ok, ${fail} fallas`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);

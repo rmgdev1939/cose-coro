@@ -370,6 +370,49 @@ service cloud.firestore {
       allow delete: if col in ["faltantes", "faltantesPF"] && admin();
     }
 
+    // Conteo de inventario (planillas): Inventario y el administrador arman una
+    // planilla de productos y se la mandan a una persona de su sucursal; esa
+    // persona solo anota cuántos contó (a ciegas: no ve lo de Profit) y la
+    // entrega; Inventario la revisa, la aprueba o la devuelve para recontar.
+    function invent() { return verified() && (me().role == "admin" || me().get("cargo", "") == "Inventario"); }
+    function userDe(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    match /{col}/{id} {
+      allow read: if col in ["conteos", "conteosPF"] && enSuc(sucDe(col))
+        && (invent() || resource.data.asignado == request.auth.uid);
+      allow create: if col in ["conteos", "conteosPF"] && enSuc(sucDe(col)) && invent()
+        && request.resource.data.keys().hasOnly(["nombre", "items", "asignado", "asignadoNombre", "creadoPor", "creadoPorNombre", "creadoAt", "estado", "conteo", "avance", "ronda"])
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2 && request.resource.data.nombre.size() <= 60
+        && request.resource.data.items is list && request.resource.data.items.size() >= 1 && request.resource.data.items.size() <= 300
+        && request.resource.data.asignado is string && request.resource.data.asignadoNombre is string && request.resource.data.asignadoNombre.size() <= 60
+        && userDe(request.resource.data.asignado).status == "verificado"
+        && (userDe(request.resource.data.asignado).role == "admin" || userDe(request.resource.data.asignado).get("sucursal", "Coro") == sucDe(col))
+        && request.resource.data.creadoPor == request.auth.uid && request.resource.data.creadoPorNombre == me().name
+        && request.resource.data.creadoAt == request.time
+        && request.resource.data.estado == "contando"
+        && request.resource.data.conteo == {} && request.resource.data.avance == 0 && request.resource.data.ronda == 1;
+      // quien cuenta: anota cantidades y entrega (solo mientras está "contando")
+      allow update: if col in ["conteos", "conteosPF"] && enSuc(sucDe(col))
+        && resource.data.asignado == request.auth.uid && resource.data.estado == "contando"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["conteo", "avance", "estado", "entregadoAt"])
+        && request.resource.data.conteo is map && request.resource.data.conteo.size() <= 300
+        && request.resource.data.avance is int && request.resource.data.avance >= 0 && request.resource.data.avance <= 300
+        && (request.resource.data.estado == "contando"
+            || (request.resource.data.estado == "entregado" && request.resource.data.entregadoAt == request.time));
+      // Inventario: aprueba, devuelve para recontar o anula
+      allow update: if col in ["conteos", "conteosPF"] && enSuc(sucDe(col)) && invent()
+        && resource.data.estado in ["contando", "entregado"]
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado", "recontar", "conteo", "avance", "ronda", "sistema", "revisadoPor", "revisadoPorNombre", "revisadoAt"])
+        && request.resource.data.estado in ["contando", "aprobado", "anulado"]
+        && (request.resource.data.estado != "contando" || resource.data.estado == "entregado")
+        && request.resource.data.conteo is map && request.resource.data.conteo.size() <= 300
+        && (!("recontar" in request.resource.data) || (request.resource.data.recontar is list && request.resource.data.recontar.size() <= 300))
+        && (!("sistema" in request.resource.data) || (request.resource.data.sistema is map && request.resource.data.sistema.size() <= 300))
+        && request.resource.data.ronda is int && request.resource.data.ronda <= 20
+        && request.resource.data.revisadoPor == request.auth.uid && request.resource.data.revisadoPorNombre == me().name
+        && request.resource.data.revisadoAt == request.time;
+      allow delete: if col in ["conteos", "conteosPF"] && admin();
+    }
+
     // Códigos de radio del 1 al 8 (el 5: bajar mercancía a chequeo).
     // Lo pide Autoservicio; Autoservicio y el administrador lo aceptan o
     // rechazan; quien lo aceptó lo marca llevado; quien lo pidió lo cancela.

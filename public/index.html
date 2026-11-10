@@ -1054,6 +1054,32 @@
   .c5-est.abierto{background:#FDE2E2; color:#B42318;} .c5-est.aceptado{background:#FFF1D6; color:#9A5B00;}
   .c5-est.llevado{background:#DDF3E6; color:#1F7A4D;} .c5-est.cancelado{background:var(--line); color:var(--ink-soft);}
   .tool-tile.tile-falt{border-left-color:#C2403A;}
+  /* conteo de inventario */
+  .cn-volver{margin:0 0 10px; font-weight:600;}
+  .cn-manual{display:flex; gap:8px; margin-top:10px;} .cn-manual input{flex:1; min-width:0;}
+  .cn-bar{height:8px; border-radius:6px; background:var(--surface-2); overflow:hidden;} .cn-bar span{display:block; height:100%; width:0; background:var(--accent2); transition:width .3s;}
+  .cn-prog{font-size:0.82rem; color:var(--ink-soft); margin:6px 0 10px;}
+  .cn-row{display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .cn-row:last-child{border-bottom:none;}
+  .cn-row .txt{flex:1; min-width:0;} .cn-row .m{font-weight:600; font-size:0.9rem; overflow-wrap:anywhere;} .cn-row .s{font-size:0.72rem; color:var(--ink-soft); font-family:"IBM Plex Mono", ui-monospace, monospace;}
+  .cn-row.hecho .m::before{content:"✓ "; color:var(--accent2);}
+  .cn-row.foco{background:var(--accent-soft); border-radius:10px;}
+  .cn-cant{display:flex; align-items:center; gap:4px; flex:none;}
+  .cn-cant input{width:64px; text-align:center; padding:8px 4px; font-size:1rem; font-weight:700;}
+  .cn-cant button{width:36px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-size:1.15rem; font-weight:700;}
+  .cn-x{flex:none; border:none; background:none; color:#C2403A; font-size:1.1rem; padding:4px 8px;}
+  .cn-add{flex:none;}
+  .cn-sum{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+  .cn-sum span{flex:1; min-width:80px; text-align:center; padding:8px 6px; border-radius:10px; background:var(--surface-2); font-size:0.78rem;}
+  .cn-sum b{display:block; font-size:1.2rem;}
+  .cn-sum .ok{background:var(--ok-bg); color:var(--ok-fg);} .cn-sum .mas{background:var(--est-bg); color:var(--est-fg);} .cn-sum .menos{background:#F8DEDC; color:#8E2B25;}
+  .cn-solo{display:flex; gap:8px; align-items:center; font-size:0.86rem;}
+  .cn-num{flex:none; text-align:right; font-size:0.78rem; line-height:1.35; min-width:92px;}
+  .cn-num b{font-size:0.95rem;}
+  .cn-dif{font-weight:700;} .cn-dif.ok{color:var(--ok-fg);} .cn-dif.mas{color:var(--est-fg);} .cn-dif.menos{color:#C2403A;}
+  .cn-acc{display:flex; gap:8px; margin-top:10px;} .cn-acc .btn{flex:1;}
+  .cn-st{display:inline-block; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:10px; background:var(--surface-2);}
+  .cn-st.entregado{background:var(--est-bg); color:var(--est-fg);} .cn-st.aprobado{background:var(--ok-bg); color:var(--ok-fg);} .cn-st.anulado{opacity:.6;}
   .fa-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);}
   .fa-row:last-child{border-bottom:none;}
   .fa-row .txt{flex:1; min-width:0;} .fa-row .m{font-weight:600; font-size:0.9rem;} .fa-row .s{font-size:0.74rem; color:var(--ink-soft); overflow-wrap:anywhere;}
@@ -1778,6 +1804,16 @@
         <span class="tool-title">Lo pidieron y no hay</span>
         <span class="tool-sub" id="faTileSub">Anota lo que un cliente buscó y no teníamos</span>
       </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <button class="tool-tile tile-conteo" id="cnTile" type="button" hidden>
+      <span class="tool-icon" style="color:var(--brand-blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 11l1.5 1.5L13 10M9 16h6"/></svg></span>
+      <span class="tool-text">
+        <span class="tool-title">Conteo de inventario</span>
+        <span class="tool-sub" id="cnTileSub">Planillas para contar productos</span>
+      </span>
+      <span class="badge" id="cnTileBadge" hidden></span>
       <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
 
@@ -2790,6 +2826,101 @@
   </section>
 </div>
 
+<div class="screen" id="screen-conteo" hidden>
+  <div class="backbar">
+    <button class="backbtn" data-back>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
+  <p class="dash-greet">Conteo de inventario</p>
+
+  <!-- lista de planillas -->
+  <div id="cnVHome">
+    <section class="card" id="cnMiasCard">
+      <div class="card-title">Para contar</div>
+      <div id="cnMias"></div>
+    </section>
+    <section class="card" id="cnAdmCard" hidden>
+      <div class="card-title"><span>Planillas</span></div>
+      <button class="btn primary" id="cnNueva" type="button" style="width:100%;margin-bottom:10px;">+ Nueva planilla</button>
+      <select id="cnFiltro" class="hist-search" aria-label="Qué planillas ver" style="margin-bottom:8px;"><option value="entregado">Por revisar</option><option value="contando">En conteo</option><option value="hist">Historial</option></select>
+      <div id="cnLista"></div>
+    </section>
+  </div>
+
+  <!-- armar una planilla (Inventario) -->
+  <div id="cnVArmar" hidden>
+    <button class="linkbtn cn-volver" type="button" data-cn-volver>← Planillas</button>
+    <section class="card">
+      <div class="card-title">Nueva planilla</div>
+      <div class="pf-form">
+        <div><label for="cnNombre">Nombre</label><input type="text" id="cnNombre" class="hist-search" maxlength="60" autocomplete="off" placeholder="Ej: Pasillo 3 · Tornillería"></div>
+        <div><label for="cnPersona">¿Quién la cuenta?</label><select id="cnPersona" class="hist-search"><option value="">Cargando compañeros…</option></select></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-title">Productos</div>
+      <p class="smap-note" id="cnFuente" style="margin:0 0 8px;"></p>
+      <form class="pr-search" id="cnBuscarForm" role="search" novalidate>
+        <input type="search" id="cnQ" class="hist-search" placeholder="Nombre o código en Profit" autocomplete="off" enterkeyhint="search" aria-label="Buscar producto">
+        <button class="btn primary pr-scan" id="cnScan" type="button" aria-label="Escanear código de barras">Escanear</button>
+      </form>
+      <div id="cnRes"></div>
+      <form class="cn-manual" id="cnManualForm" novalidate>
+        <input type="text" id="cnManual" class="hist-search" maxlength="80" autocomplete="off" placeholder="O escríbelo a mano (ej: Codo PVC 1/2)" aria-label="Producto escrito a mano">
+        <button class="btn" type="submit">Agregar</button>
+      </form>
+    </section>
+    <section class="card">
+      <div class="card-title"><span>En la planilla</span><span class="mono" id="cnSelN">0</span></div>
+      <div id="cnSel"></div>
+      <p class="pf-msg" id="cnArmarMsg"></p>
+      <button class="btn primary" id="cnEnviar" type="button" style="width:100%;">Enviar planilla</button>
+    </section>
+  </div>
+
+  <!-- contar (quien la recibe) -->
+  <div id="cnVContar" hidden>
+    <button class="linkbtn cn-volver" type="button" data-cn-volver>← Planillas</button>
+    <section class="card cn-head">
+      <div class="card-title" id="cnCTit"></div>
+      <p class="smap-note" id="cnCSub" style="margin:0 0 8px;"></p>
+      <div class="cn-bar"><span id="cnCBar"></span></div>
+      <p class="cn-prog" id="cnCProg"></p>
+      <form class="pr-search" id="cnCForm" role="search" novalidate>
+        <input type="search" id="cnCQ" class="hist-search" placeholder="Buscar en la planilla" autocomplete="off" aria-label="Buscar en la planilla">
+        <button class="btn primary pr-scan" id="cnCScan" type="button" aria-label="Escanear código de barras">Escanear</button>
+      </form>
+    </section>
+    <section class="card"><div id="cnCList"></div></section>
+    <p class="pf-msg" id="cnCMsg"></p>
+    <button class="btn primary" id="cnEntregar" type="button" style="width:100%;">Entregar a Inventario</button>
+  </div>
+
+  <!-- revisar (Inventario) -->
+  <div id="cnVRev" hidden>
+    <button class="linkbtn cn-volver" type="button" data-cn-volver>← Planillas</button>
+    <section class="card">
+      <div class="card-title" id="cnRTit"></div>
+      <p class="smap-note" id="cnRSub" style="margin:0 0 8px;"></p>
+      <div class="cn-sum" id="cnRSum"></div>
+      <label class="cn-solo"><input type="checkbox" id="cnRSolo"> Ver solo las diferencias</label>
+    </section>
+    <section class="card"><div id="cnRList"></div></section>
+    <p class="pf-msg" id="cnRMsg"></p>
+    <div class="cn-acc" id="cnRAcc">
+      <button class="btn primary" id="cnAprobar" type="button">Aprobar planilla</button>
+      <button class="btn" id="cnDevolver" type="button">Devolver para recontar</button>
+    </div>
+    <div class="cn-acc">
+      <button class="btn wa" id="cnWa" type="button">Compartir por WhatsApp</button>
+      <button class="btn" id="cnCsv" type="button">Descargar (Excel)</button>
+    </div>
+    <button class="linkbtn" id="cnAnular" type="button" style="margin-top:14px;color:#C2403A;">Anular esta planilla</button>
+  </div>
+</div>
+
 <div class="screen" id="screen-flota" hidden>
   <div class="backbar">
     <button class="backbtn" data-back>
@@ -3018,7 +3149,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span id="ftName">CoseApp</span>
-    <span id="appVersion">CA/1.6</span>
+    <span id="appVersion">CA/1.7</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -3239,7 +3370,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     bloques: $("screen-bloques"), piso: $("screen-piso"),
     onboarding: $("screen-onboarding"), dashboard: $("screen-dashboard"), historial: $("screen-historial"),
     reporte: $("screen-reporte"), mapa: $("screen-mapa"), admin: $("screen-admin"), proyecto: $("screen-proyecto"), concreto: $("screen-concreto"), perfil: $("screen-perfil"),
-    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo"), precio: $("screen-precio")
+    chat: $("screen-chat"), conv: $("screen-conv"), grupo: $("screen-grupo"), editor: $("screen-editor"), monitor: $("screen-monitor"), avisos: $("screen-avisos"), soporte: $("screen-soporte"), perfilpub: $("screen-perfilpub"), capac: $("screen-capac"), leccion: $("screen-leccion"), techo: $("screen-techo"), tanque: $("screen-tanque"), faltantes: $("screen-faltantes"), codigos: $("screen-codigos"), flota: $("screen-flota"), vehiculo: $("screen-vehiculo"), precio: $("screen-precio"), conteo: $("screen-conteo")
   };
   var headerTags = {
     home: "Inicio",
@@ -3274,7 +3405,8 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     codigos: "Códigos de radio · Autoservicio",
     flota: "Vehículos",
     vehiculo: "Vehículos",
-    precio: "Precio y disponibilidad"
+    precio: "Precio y disponibilidad",
+    conteo: "Conteo de inventario"
   };
 
   function showScreen(name, pushHash){
@@ -8152,8 +8284,10 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   var stream = null, raf = null, zx = null, zxCtl = null, zxCarga = null;
   var FORMATOS = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "itf", "qr_code"];
   function msg(t){ $("prCamMsg").textContent = t; }
+  var alLeer = null; // otra pantalla (Conteo de inventario) puede usar la cámara
   function leido(valor){
     cerrarCamara();
+    if (alLeer){ var f = alLeer; alLeer = null; try { if (navigator.vibrate) navigator.vibrate(30); } catch(e){} f(String(valor || "").trim()); return; }
     try { if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
     var v = String(valor || "").trim();
     $("prQ").value = v;
@@ -8216,8 +8350,9 @@ window.coseFirma = "CCRMG-6906f309ea2b";
 
   $("prForm").addEventListener("submit", function(e){ e.preventDefault(); clearTimeout(timer); abierto = null; pintar(); $("prQ").blur(); });
   $("prQ").addEventListener("input", function(){ clearTimeout(timer); abierto = null; timer = setTimeout(pintar, 150); });
-  $("prScan").addEventListener("click", abrirCamara);
-  $("prCamClose").addEventListener("click", cerrarCamara);
+  $("prScan").addEventListener("click", function(){ alLeer = null; abrirCamara(); });
+  $("prCamClose").addEventListener("click", function(){ alLeer = null; cerrarCamara(); });
+  window.coseScan = function(cb){ alLeer = cb; abrirCamara(); };
   document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !$("prCam").hidden) cerrarCamara(); });
   new MutationObserver(function(){ if (!$("screen-precio").hidden){ cargar(); pintar(); } else cerrarCamara(); })
     .observe($("screen-precio"), { attributes:true, attributeFilter:["hidden"] });
@@ -9131,7 +9266,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 64;
+  var APP_BUILD = 65;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
@@ -10429,6 +10564,480 @@ window.coseFirma = "CCRMG-6906f309ea2b";
 
 <script>
 // ============================================================================
+// CONTEO DE INVENTARIO (window.coseConteo): Inventario (y el administrador)
+// arma una planilla de productos (de Profit o escritos a mano) y se la manda
+// a una persona de su sucursal (conteos/ o conteosPF/). Esa persona anota
+// cuántos contó, A CIEGAS (no ve lo que dice Profit), y la entrega. Inventario
+// la revisa contra el "Disponible" de Profit: la aprueba (se guarda lo que
+// decía Profit en ese momento) o la devuelve solo con los productos dudosos.
+// Profit solo se lee. Lo que se va contando se guarda solo (también sin señal).
+// ============================================================================
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  var X = null, unsubs = [], mias = [], todas = [], fil = "entregado", vista = "home";
+  var arm = null, act = null, guardaT = null, perfiles = null, avisados = {}, primera = true;
+  var MAX = 300;
+  function inv(me){ return !!me && (me.role === "admin" || me.cargo === "Inventario"); }
+  function current(){ return window.coseApp ? window.coseApp.current() : ""; }
+  function norm(s){ return X && X.norm ? X.norm(s) : String(s).toLowerCase().trim(); }
+  function ms(ts){ return ts && ts.toMillis ? ts.toMillis() : 0; }
+  function dia(t){ return t ? new Date(t).toLocaleDateString("es-VE", { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }) : "ahora"; }
+  function P(){ return window.coseProfit; }
+  function col(){ return window.coseSuc.col("conteos"); }
+  function esPF(){ return window.coseSuc && window.coseSuc.esPF(); }
+  function sinCeros(c){ return String(c || "").replace(/[^0-9a-z]/gi, "").replace(/^0+/, "").toUpperCase(); }
+  function num(n){ return (Math.round((Number(n) || 0) * 100) / 100).toLocaleString("es-VE"); }
+  function leerNum(v){ v = String(v || "").trim().replace(/\s/g, ""); if (!v) return null; if (v.indexOf(",") !== -1) v = v.replace(/\./g, "").replace(",", "."); var n = parseFloat(v); return isFinite(n) && n >= 0 ? Math.round(n * 1000) / 1000 : null; }
+  function msg(id, t, ok){ var m = $(id); m.className = "pf-msg" + (t ? (ok ? " ok" : " err") : ""); m.textContent = t || ""; }
+  function profit(){ var d = P() && P().datos("profit"); return d && d.items ? d : null; }
+  function porCodigo(raw){
+    var d = profit(), k = sinCeros(raw), k2 = k.length > 7 ? k.slice(0, -1) : "", hit = null;
+    if (!d || k.length < 3) return null;
+    d.items.some(function(a){ var c = sinCeros(a.c); if (c === k || (k2 && c === k2)){ hit = a; return true; } return false; });
+    return hit;
+  }
+
+  // --- vistas -------------------------------------------------------------------
+  function ver(v){
+    vista = v;
+    ["Home", "Armar", "Contar", "Rev"].forEach(function(k){ $("cnV" + k).hidden = (k.toLowerCase() !== (v === "rev" ? "rev" : v)); });
+    if (v === "home"){ act = null; pintarHome(); }
+    window.scrollTo(0, 0);
+  }
+  function open(){
+    if (!X) return;
+    window.coseApp.showScreen("conteo");
+    ver("home");
+  }
+  function tile(){
+    var porContar = mias.filter(function(c){ return c.estado === "contando"; }).length;
+    var porRevisar = inv(X.me) ? todas.filter(function(c){ return c.estado === "entregado"; }).length : 0;
+    $("cnTile").hidden = !(inv(X.me) || mias.length);
+    var n = porContar + porRevisar, b = $("cnTileBadge");
+    b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n);
+    var s = [];
+    if (porContar) s.push(porContar === 1 ? "1 planilla para contar" : porContar + " planillas para contar");
+    if (porRevisar) s.push(porRevisar === 1 ? "1 por revisar" : porRevisar + " por revisar");
+    $("cnTileSub").textContent = s.length ? s.join(" · ") : (inv(X.me) ? "Arma planillas y mándalas a contar" : "Planillas para contar productos");
+  }
+
+  // --- inicio: mis planillas y (Inventario) todas --------------------------------
+  function fila(c, onClick){
+    var r = el("button", "fa-row"); r.type = "button"; r.style.width = "100%"; r.style.textAlign = "left"; r.style.background = "none"; r.style.border = "none"; r.style.borderBottom = "1px solid var(--line)"; r.style.color = "inherit";
+    var t = el("div", "txt");
+    t.appendChild(el("div", "m", c.nombre));
+    var hechos = c.avance || 0, tot = (c.items || []).length;
+    t.appendChild(el("div", "s", tot + " productos · " + (c.estado === "contando" ? "contados " + hechos + " de " + tot + " · " : "") + "para " + c.asignadoNombre + " · " + dia(ms(c.creadoAt)) + (c.ronda > 1 ? " · reconteo " + (c.ronda - 1) : "")));
+    r.appendChild(t);
+    r.appendChild(el("span", "cn-st " + c.estado, { contando:"En conteo", entregado:"Por revisar", aprobado:"Aprobada", anulado:"Anulada" }[c.estado] || c.estado));
+    r.addEventListener("click", onClick);
+    return r;
+  }
+  function pintarHome(){
+    if (!X || current() !== "conteo" || vista !== "home") return;
+    var box = $("cnMias"); box.innerHTML = "";
+    var pend = mias.filter(function(c){ return c.estado === "contando"; });
+    pend.forEach(function(c){ box.appendChild(fila(c, function(){ abrirContar(c.id); })); });
+    if (!pend.length) box.appendChild(el("div", "c-empty", "No tienes planillas para contar."));
+    $("cnMiasCard").hidden = inv(X.me) && !pend.length;
+    $("cnAdmCard").hidden = !inv(X.me);
+    if (!inv(X.me)) return;
+    var lb = $("cnLista"); lb.innerHTML = "";
+    var l = todas.filter(function(c){ return fil === "hist" ? (c.estado === "aprobado" || c.estado === "anulado") : c.estado === fil; });
+    l.forEach(function(c){ lb.appendChild(fila(c, function(){ abrirRevisar(c.id); })); });
+    if (!l.length) lb.appendChild(el("div", "c-empty", fil === "entregado" ? "Nada por revisar." : fil === "contando" ? "Ninguna planilla en conteo." : "Todavía no hay planillas cerradas."));
+  }
+
+  // --- armar una planilla --------------------------------------------------------
+  function nuevaPlanilla(){
+    arm = { items:[], q:"" };
+    $("cnNombre").value = ""; $("cnQ").value = ""; $("cnManual").value = ""; msg("cnArmarMsg", "");
+    var pf = esPF();
+    $("cnBuscarForm").hidden = pf;
+    $("cnFuente").textContent = pf ? "Punto Fijo todavía no tiene Profit conectado: escribe cada producto a mano." : "Busca en Profit por nombre o código, o escanea. También puedes escribir un producto a mano.";
+    if (!pf && P()) P().cargar("profit").then(function(){ if (vista === "armar") pintarRes(); });
+    ver("armar");
+    cargarPersonas();
+    pintarRes(); pintarSel();
+  }
+  function cargarPersonas(){
+    var s = $("cnPersona");
+    function llenar(){
+      var prev = s.value; s.innerHTML = "";
+      var o0 = el("option", null, "Elige a una persona…"); o0.value = ""; s.appendChild(o0);
+      perfiles.forEach(function(p){ var o = el("option", null, p.name + (p.cargo ? " · " + p.cargo : "") + (p.id === X.uid ? " (yo)" : "")); o.value = p.id; s.appendChild(o); });
+      s.value = prev;
+    }
+    if (perfiles){ llenar(); return; }
+    X.F.getDocs(X.F.collection(X.db, "perfiles")).then(function(q){
+      perfiles = [];
+      q.forEach(function(d){ var v = d.data(); if (v && v.name) perfiles.push({ id:d.id, name:v.name, cargo:v.cargo || "" }); });
+      perfiles.sort(function(a, b){ return a.name.localeCompare(b.name, "es"); });
+      llenar();
+    }, function(){ s.innerHTML = '<option value="">No se pudo cargar la lista. Revisa tu internet.</option>'; });
+  }
+  function yaEsta(c, d){ return arm.items.some(function(it){ return c ? it.c === c : norm(it.d) === norm(d); }); }
+  function agregar(a){
+    if (arm.items.length >= MAX){ msg("cnArmarMsg", "Máximo " + MAX + " productos por planilla. Haz otra para el resto."); return false; }
+    if (yaEsta(a.c, a.d)) return false;
+    arm.items.push({ c:a.c || "", d:String(a.d).slice(0, 80) });
+    return true;
+  }
+  function buscar(q){
+    var d = profit(), ws = norm(q).split(/\s+/).filter(function(w){ return w.length >= 2; });
+    if (!d || !ws.length) return [];
+    var k = sinCeros(q);
+    return d.items.filter(function(a){
+      if (k.length >= 4 && sinCeros(a.c).indexOf(k) === 0) return true;
+      var n = a._n || (a._n = norm(a.d));
+      return ws.every(function(w){ return n.indexOf(w) !== -1; });
+    });
+  }
+  function pintarRes(){
+    var box = $("cnRes"); box.innerHTML = "";
+    if (esPF()) return;
+    var q = $("cnQ").value.trim();
+    if (!q) return;
+    if (!profit()){ box.appendChild(el("div", "c-empty", "Cargando productos de Profit…")); return; }
+    var hits = buscar(q);
+    if (!hits.length){ box.appendChild(el("div", "c-empty", "No aparece en Profit. Puedes escribirlo a mano abajo.")); return; }
+    var nuevos = hits.filter(function(a){ return !yaEsta(a.c); });
+    if (nuevos.length > 1){
+      var all = el("button", "btn", "Agregar los " + Math.min(nuevos.length, MAX - arm.items.length) + " resultados"); all.type = "button"; all.style.width = "100%"; all.style.margin = "8px 0";
+      all.addEventListener("click", function(){ nuevos.some(function(a){ return !agregar(a) && arm.items.length >= MAX; }); pintarRes(); pintarSel(); });
+      box.appendChild(all);
+    }
+    hits.slice(0, 40).forEach(function(a){
+      var r = el("div", "cn-row"), t = el("div", "txt");
+      t.appendChild(el("div", "m", a.d)); t.appendChild(el("div", "s", a.c));
+      r.appendChild(t);
+      var en = yaEsta(a.c), b = el("button", "hist-copybtn cn-add" + (en ? "" : " wa"), en ? "✓ Agregado" : "+ Agregar"); b.type = "button"; b.disabled = en;
+      b.addEventListener("click", function(){ if (agregar(a)){ b.textContent = "✓ Agregado"; b.disabled = true; b.classList.remove("wa"); pintarSel(); } });
+      r.appendChild(b);
+      box.appendChild(r);
+    });
+    if (hits.length > 40) box.appendChild(el("div", "c-empty", "Y " + (hits.length - 40) + " más. Escribe más palabras para afinar."));
+  }
+  function pintarSel(){
+    var box = $("cnSel"); box.innerHTML = "";
+    $("cnSelN").textContent = arm.items.length + " / " + MAX;
+    arm.items.forEach(function(it, i){
+      var r = el("div", "cn-row"), t = el("div", "txt");
+      t.appendChild(el("div", "m", it.d)); t.appendChild(el("div", "s", it.c || "a mano"));
+      r.appendChild(t);
+      var x = el("button", "cn-x", "✕"); x.type = "button"; x.setAttribute("aria-label", "Quitar " + it.d);
+      x.addEventListener("click", function(){ arm.items.splice(i, 1); pintarSel(); pintarRes(); });
+      r.appendChild(x);
+      box.appendChild(r);
+    });
+    if (!arm.items.length) box.appendChild(el("div", "c-empty", "Todavía no hay productos."));
+  }
+  function enviar(){
+    var nombre = $("cnNombre").value.trim().replace(/\s+/g, " ").slice(0, 60), uid = $("cnPersona").value;
+    if (nombre.length < 2){ msg("cnArmarMsg", "Ponle un nombre a la planilla."); return; }
+    if (!uid){ msg("cnArmarMsg", "Elige quién la va a contar."); return; }
+    if (!arm.items.length){ msg("cnArmarMsg", "Agrega al menos un producto."); return; }
+    var p = perfiles.filter(function(x){ return x.id === uid; })[0];
+    var F = X.F, b = $("cnEnviar"); b.disabled = true;
+    F.addDoc(F.collection(X.db, col()), { nombre:nombre, items:arm.items.slice(), asignado:uid, asignadoNombre:(p ? p.name : "").slice(0, 60),
+      creadoPor:X.uid, creadoPorNombre:X.me.name, creadoAt:F.serverTimestamp(), estado:"contando", conteo:{}, avance:0, ronda:1 })
+      .then(function(){ X.toast("Planilla enviada a " + (p ? p.name : "") + " ✓"); fil = "contando"; $("cnFiltro").value = "contando"; ver("home"); },
+            function(){ msg("cnArmarMsg", "No se pudo enviar. Si esa persona es de otra sucursal o no está aprobada, elige a otra. Si no, revisa tu internet."); })
+      .then(function(){ b.disabled = false; });
+  }
+
+  // --- contar (a ciegas) ---------------------------------------------------------
+  function buscarDoc(id){ return mias.concat(todas).filter(function(c){ return c.id === id; })[0] || null; }
+  function lsKey(c){ return "cc_conteo_" + c.id + "_" + (c.ronda || 1); }
+  function abrirContar(id){
+    var c = buscarDoc(id); if (!c) return;
+    var loc = null; try{ loc = JSON.parse(localStorage.getItem(lsKey(c)) || "null"); }catch(e){}
+    var val = {}; Object.keys(c.conteo || {}).forEach(function(k){ val[k] = c.conteo[k]; });
+    if (loc) Object.keys(loc).forEach(function(k){ val[k] = loc[k]; });
+    var rec = (c.recontar && c.recontar.length) ? c.recontar : null;
+    act = { id:c.id, c:c, val:val, rec:rec, q:"" };
+    $("cnCTit").textContent = c.nombre;
+    $("cnCSub").textContent = "La mandó " + c.creadoPorNombre + (rec ? " · Inventario te pide recontar " + rec.length + (rec.length === 1 ? " producto" : " productos") : "") + ". Cuenta lo que hay de verdad y anótalo; se guarda solo.";
+    $("cnCQ").value = ""; msg("cnCMsg", "");
+    $("cnCForm").hidden = false;
+    ver("contar");
+    pintarContar();
+  }
+  function lineas(){ return act.c.items.map(function(it, i){ return i; }).filter(function(i){ return !act.rec || act.rec.indexOf(i) !== -1; }); }
+  function contados(){ return lineas().filter(function(i){ return act.val[i] != null; }).length; }
+  function prog(){
+    var tot = lineas().length, n = contados();
+    $("cnCProg").textContent = "Contados " + n + " de " + tot;
+    $("cnCBar").style.width = (tot ? Math.round(n * 100 / tot) : 0) + "%";
+  }
+  function pintarContar(foco){
+    var box = $("cnCList"); box.innerHTML = "";
+    var q = norm($("cnCQ").value.trim()), k = sinCeros($("cnCQ").value);
+    lineas().forEach(function(i){
+      var it = act.c.items[i];
+      if (q && norm(it.d).indexOf(q) === -1 && !(k && sinCeros(it.c).indexOf(k) === 0)) return;
+      var r = el("div", "cn-row" + (act.val[i] != null ? " hecho" : "") + (foco === i ? " foco" : "")), t = el("div", "txt");
+      r.id = "cnL" + i;
+      t.appendChild(el("div", "m", it.d)); t.appendChild(el("div", "s", it.c || ""));
+      r.appendChild(t);
+      var w = el("div", "cn-cant"), menos = el("button", null, "−"), inp = el("input", "hist-search"), mas = el("button", null, "+");
+      menos.type = mas.type = "button"; menos.setAttribute("aria-label", "Uno menos"); mas.setAttribute("aria-label", "Uno más");
+      inp.type = "text"; inp.inputMode = "decimal"; inp.autocomplete = "off"; inp.placeholder = "—"; inp.setAttribute("aria-label", "Cantidad contada de " + it.d);
+      inp.value = act.val[i] != null ? String(act.val[i]).replace(".", ",") : "";
+      function poner(v){ if (v == null) delete act.val[i]; else act.val[i] = v; r.classList.toggle("hecho", v != null); prog(); guardar(); }
+      inp.addEventListener("input", function(){ poner(leerNum(inp.value)); });
+      menos.addEventListener("click", function(){ var v = Math.max(0, (act.val[i] || 0) - 1); inp.value = String(v).replace(".", ","); poner(v); });
+      mas.addEventListener("click", function(){ var v = (act.val[i] || 0) + 1; inp.value = String(v).replace(".", ","); poner(v); });
+      w.appendChild(menos); w.appendChild(inp); w.appendChild(mas);
+      r.appendChild(w);
+      box.appendChild(r);
+    });
+    if (!box.children.length) box.appendChild(el("div", "c-empty", "Nada coincide con la búsqueda."));
+    prog();
+  }
+  function soloMias(){ var o = {}; Object.keys(act.val).forEach(function(k){ if (act.val[k] != null) o[k] = act.val[k]; }); return o; }
+  function guardar(){
+    if (!act) return;
+    try{ localStorage.setItem(lsKey(act.c), JSON.stringify(soloMias())); }catch(e){}
+    clearTimeout(guardaT);
+    guardaT = setTimeout(subir, 1200);
+  }
+  function subir(){
+    if (!act || !X) return Promise.resolve();
+    var cnt = soloMias();
+    return X.F.updateDoc(X.F.doc(X.db, col(), act.id), { conteo:cnt, avance:Object.keys(cnt).length }).catch(function(){});
+  }
+  function entregar(){
+    var falta = lineas().filter(function(i){ return act.val[i] == null; });
+    if (falta.length){ msg("cnCMsg", "Te faltan " + falta.length + (falta.length === 1 ? " producto" : " productos") + " por anotar. Si no hay ninguno, pon 0."); $("cnCQ").value = ""; pintarContar(falta[0]); var e = $("cnL" + falta[0]); if (e) e.scrollIntoView({ block:"center" }); return; }
+    clearTimeout(guardaT);
+    var cnt = soloMias(), b = $("cnEntregar"), c = act.c; b.disabled = true;
+    X.F.updateDoc(X.F.doc(X.db, col(), act.id), { conteo:cnt, avance:Object.keys(cnt).length, estado:"entregado", entregadoAt:X.F.serverTimestamp() })
+      .then(function(){ try{ localStorage.removeItem(lsKey(c)); }catch(e){} X.toast("Planilla entregada a Inventario ✓"); ver("home"); },
+            function(){ msg("cnCMsg", "No se pudo entregar. Revisa tu internet e inténtalo otra vez (lo contado está guardado)."); })
+      .then(function(){ b.disabled = false; });
+  }
+
+  // --- revisar (Inventario) -------------------------------------------------------
+  var rev = null;
+  function abrirRevisar(id){
+    var c = buscarDoc(id); if (!c) return;
+    rev = { id:id, marc:null };
+    $("cnRSolo").checked = false; msg("cnRMsg", "");
+    ver("rev");
+    if (!esPF() && P() && !(c.estado === "aprobado" || c.estado === "anulado")) P().cargar("profit").then(function(){ if (vista === "rev") pintarRev(); });
+    pintarRev();
+  }
+  // lo que dice el sistema: lo guardado al aprobar, o Profit en vivo (0 si ya no tiene existencia)
+  function esperado(c, i){
+    if (c.sistema && c.sistema[i] != null) return c.sistema[i];
+    if (c.estado === "aprobado" || c.estado === "anulado") return null;
+    var it = c.items[i], d = profit();
+    if (!it.c || !d) return null;
+    var a = d.byCode[it.c];
+    return a ? Number(a.h) || 0 : 0;
+  }
+  function filasRev(c){
+    return c.items.map(function(it, i){
+      var cont = c.conteo && c.conteo[i] != null ? c.conteo[i] : null, esp = esperado(c, i);
+      var dif = cont != null && esp != null ? Math.round((cont - esp) * 1000) / 1000 : null;
+      return { i:i, it:it, cont:cont, esp:esp, dif:dif, tipo:dif == null ? "" : dif === 0 ? "ok" : dif > 0 ? "mas" : "menos" };
+    });
+  }
+  function pintarRev(){
+    var c = rev && buscarDoc(rev.id); if (!c || vista !== "rev") return;
+    var abierta = c.estado === "entregado", fs = filasRev(c);
+    if (!rev.marc) { rev.marc = {}; fs.forEach(function(f){ if (f.tipo === "mas" || f.tipo === "menos") rev.marc[f.i] = true; }); }
+    $("cnRTit").textContent = c.nombre;
+    $("cnRSub").textContent = "Contó " + c.asignadoNombre + (c.entregadoAt ? " · entregada " + dia(ms(c.entregadoAt)) : "") + (c.ronda > 1 ? " · reconteo " + (c.ronda - 1) : "") +
+      (c.estado === "aprobado" ? " · aprobada por " + (c.revisadoPorNombre || "") : c.estado === "anulado" ? " · anulada" : c.estado === "contando" ? " · todavía la están contando" : "") +
+      (esPF() ? " · Punto Fijo: sin Profit, solo lo contado" : (!profit() && abierta ? " · cargando Profit…" : ""));
+    var n = { ok:0, mas:0, menos:0 }; fs.forEach(function(f){ if (n[f.tipo] != null) n[f.tipo]++; });
+    var sum = $("cnRSum"); sum.innerHTML = "";
+    [["ok", "✅ Cuadran", n.ok], ["mas", "🔺 Sobran", n.mas], ["menos", "🔻 Faltan", n.menos]].forEach(function(x){ var s = el("span", x[0]); s.appendChild(el("b", null, String(x[2]))); s.appendChild(document.createTextNode(x[1])); sum.appendChild(s); });
+    var box = $("cnRList"), solo = $("cnRSolo").checked; box.innerHTML = "";
+    fs.forEach(function(f){
+      if (solo && (f.tipo === "ok" || f.tipo === "")) return;
+      var r = el("div", "cn-row"), t = el("div", "txt");
+      if (abierta && f.tipo !== "ok"){
+        var ck = el("input"); ck.type = "checkbox"; ck.checked = !!rev.marc[f.i]; ck.setAttribute("aria-label", "Recontar " + f.it.d);
+        ck.addEventListener("change", function(){ if (ck.checked) rev.marc[f.i] = true; else delete rev.marc[f.i]; botones(c); });
+        r.appendChild(ck);
+      }
+      t.appendChild(el("div", "m", f.it.d)); t.appendChild(el("div", "s", f.it.c || "a mano"));
+      r.appendChild(t);
+      var nb = el("div", "cn-num");
+      var l1 = el("div"); l1.appendChild(document.createTextNode("Contó ")); l1.appendChild(el("b", null, f.cont != null ? num(f.cont) : "—")); nb.appendChild(l1);
+      if (f.esp != null) nb.appendChild(el("div", null, "Profit " + num(f.esp)));
+      if (f.dif != null) nb.appendChild(el("div", "cn-dif " + f.tipo, f.dif === 0 ? "✅ cuadra" : (f.dif > 0 ? "🔺 +" : "🔻 ") + num(f.dif)));
+      r.appendChild(nb);
+      box.appendChild(r);
+    });
+    if (!box.children.length) box.appendChild(el("div", "c-empty", "Sin diferencias."));
+    $("cnRAcc").hidden = !abierta;
+    $("cnAnular").hidden = !(c.estado === "contando" || c.estado === "entregado");
+    botones(c);
+  }
+  function botones(c){
+    var k = Object.keys(rev.marc || {}).length;
+    $("cnDevolver").textContent = k ? "Devolver para recontar (" + k + ")" : "Devolver para recontar";
+    $("cnDevolver").disabled = !k;
+  }
+  function revisado(extra){
+    var F = X.F, o = { revisadoPor:X.uid, revisadoPorNombre:X.me.name, revisadoAt:F.serverTimestamp() };
+    Object.keys(extra).forEach(function(k){ o[k] = extra[k]; });
+    return F.updateDoc(F.doc(X.db, col(), rev.id), o);
+  }
+  function aprobar(){
+    var c = buscarDoc(rev.id); if (!c) return;
+    if (!esPF() && !profit()){ msg("cnRMsg", "Espera a que cargue Profit para guardar la comparación."); return; }
+    var sis = {}; filasRev(c).forEach(function(f){ if (f.esp != null) sis[f.i] = f.esp; });
+    $("cnAprobar").disabled = true;
+    revisado({ estado:"aprobado", sistema:sis }).then(function(){ X.toast("Planilla aprobada ✓"); }, function(){ msg("cnRMsg", "No se pudo aprobar. Revisa tu internet."); })
+      .then(function(){ $("cnAprobar").disabled = false; });
+  }
+  function devolver(){
+    var c = buscarDoc(rev.id); if (!c) return;
+    var idx = Object.keys(rev.marc).map(Number).sort(function(a, b){ return a - b; });
+    if (!idx.length) return;
+    var cnt = {}; Object.keys(c.conteo || {}).forEach(function(k){ if (idx.indexOf(Number(k)) === -1) cnt[k] = c.conteo[k]; });
+    $("cnDevolver").disabled = true;
+    revisado({ estado:"contando", recontar:idx, conteo:cnt, avance:Object.keys(cnt).length, ronda:(c.ronda || 1) + 1 })
+      .then(function(){ X.toast("Devuelta a " + c.asignadoNombre + " para recontar " + idx.length + (idx.length === 1 ? " producto" : " productos")); rev.marc = null; ver("home"); },
+            function(){ msg("cnRMsg", "No se pudo devolver. Revisa tu internet."); $("cnDevolver").disabled = false; });
+  }
+  var anularArm = null;
+  function anular(){
+    var b = $("cnAnular");
+    if (!anularArm){ b.textContent = "Toca otra vez para anularla"; anularArm = setTimeout(function(){ anularArm = null; b.textContent = "Anular esta planilla"; }, 3000); return; }
+    clearTimeout(anularArm); anularArm = null; b.textContent = "Anular esta planilla";
+    revisado({ estado:"anulado" }).then(function(){ X.toast("Planilla anulada"); ver("home"); }, function(){ msg("cnRMsg", "No se pudo anular. Revisa tu internet."); });
+  }
+  function texto(c){
+    var fs = filasRev(c), L = ["*Conteo de inventario: " + c.nombre + "*", "Contó: " + c.asignadoNombre + " · " + dia(ms(c.entregadoAt || c.creadoAt)), ""];
+    var dif = fs.filter(function(f){ return f.tipo === "mas" || f.tipo === "menos"; });
+    L.push("✅ Cuadran: " + fs.filter(function(f){ return f.tipo === "ok"; }).length + " · Con diferencia: " + dif.length);
+    (dif.length ? dif : fs).slice(0, 60).forEach(function(f){
+      L.push("• " + f.it.d + (f.it.c ? " (" + f.it.c + ")" : "") + ": contó " + (f.cont != null ? num(f.cont) : "—") + (f.esp != null ? ", Profit " + num(f.esp) : "") + (f.dif ? " → " + (f.dif > 0 ? "+" : "") + num(f.dif) : ""));
+    });
+    return L.join("\n");
+  }
+  function csv(c){
+    var q = function(s){ s = String(s == null ? "" : s); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    var dec = function(n){ return n == null ? "" : String(n).replace(".", ","); };
+    var rows = [["Código", "Producto", "Contado", "Profit", "Diferencia"]];
+    filasRev(c).forEach(function(f){ rows.push([f.it.c, f.it.d, dec(f.cont), dec(f.esp), dec(f.dif)]); });
+    var blob = new Blob(["﻿" + rows.map(function(r){ return r.map(q).join(";"); }).join("\r\n")], { type:"text/csv;charset=utf-8" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "conteo-" + c.nombre.replace(/[^a-z0-9áéíóúñ ]/gi, "").replace(/\s+/g, "-").slice(0, 40) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+  }
+
+  // --- escanear (usa la cámara de "Precio y disponibilidad") ---------------------
+  function escanear(destino){
+    if (!window.coseScan) return;
+    window.coseScan(function(v){
+      if (destino === "armar"){
+        var a = porCodigo(v);
+        if (!a){ X.toast("El código " + v + " no aparece en Profit (Coro)."); return; }
+        if (agregar(a)){ X.toast("Agregado: " + a.d); pintarSel(); pintarRes(); } else X.toast("Ya está en la planilla: " + a.d);
+        return;
+      }
+      if (!act) return;
+      var k = sinCeros(v), k2 = k.length > 7 ? k.slice(0, -1) : "", hit = -1;
+      var pa = porCodigo(v);
+      lineas().some(function(i){ var c = sinCeros(act.c.items[i].c); if (c && (c === k || c === k2 || (pa && c === sinCeros(pa.c)))){ hit = i; return true; } return false; });
+      if (hit < 0){ X.toast("Ese producto no está en esta planilla."); return; }
+      $("cnCQ").value = ""; pintarContar(hit);
+      var e = $("cnL" + hit); if (e){ e.scrollIntoView({ block:"center" }); var inp = e.querySelector("input"); if (inp) inp.focus(); }
+    });
+  }
+
+  // --- en vivo ---------------------------------------------------------------------
+  function leer(s){ var o = []; s.forEach(function(d){ var v = d.data({ serverTimestamps:"estimate" }); v.id = d.id; o.push(v); }); o.sort(function(a, b){ return ms(b.creadoAt) - ms(a.creadoAt); }); return o; }
+  function refrescar(){
+    tile();
+    if (current() !== "conteo") return;
+    if (vista === "home") pintarHome();
+    else if (vista === "rev") pintarRev();
+    else if (vista === "contar" && act){
+      var c = buscarDoc(act.id);
+      if (!c || c.estado !== "contando"){ X.toast("Esta planilla ya no está en conteo."); ver("home"); }
+      else if ((c.ronda || 1) !== (act.c.ronda || 1)) abrirContar(c.id);
+      else act.c = c;
+    }
+  }
+  function start(ctx){
+    if (X && X.uid === ctx.uid && inv(X.me) === inv(ctx.me)){ X.me = ctx.me; tile(); return; }
+    if (X) stop();
+    X = ctx; primera = true; avisados = {};
+    var F = X.F;
+    unsubs.push(F.onSnapshot(F.query(F.collection(X.db, col()), F.where("asignado", "==", X.uid)), function(s){
+      mias = leer(s);
+      mias.forEach(function(c){
+        var k = c.id + ":" + (c.ronda || 1);
+        if (c.estado === "contando" && !avisados[k]){ if (!primera) X.toast((c.ronda > 1 ? "Te devolvieron para recontar: " : "Te mandaron una planilla para contar: ") + c.nombre); avisados[k] = 1; }
+      });
+      primera = false;
+      refrescar();
+    }, function(){}));
+    if (inv(X.me)) unsubs.push(F.onSnapshot(F.query(F.collection(X.db, col()), F.orderBy("creadoAt", "desc"), F.limit(150)), function(s){
+      var antes = {}; todas.forEach(function(c){ antes[c.id] = c.estado; });
+      var habia = todas.length > 0;
+      todas = leer(s);
+      if (habia) todas.forEach(function(c){ if (c.estado === "entregado" && antes[c.id] === "contando") X.toast(c.asignadoNombre + " entregó la planilla «" + c.nombre + "»"); });
+      refrescar();
+    }, function(){}));
+    tile();
+  }
+  function stop(){
+    if (act) subir();
+    unsubs.forEach(function(u){ try{ u(); }catch(e){} }); unsubs = [];
+    X = null; mias = []; todas = []; act = null; arm = null; perfiles = null; rev = null;
+    $("cnTile").hidden = true; $("cnTileBadge").hidden = true;
+    if (current() === "conteo") window.coseApp.showScreen("home");
+  }
+
+  $("cnTile").addEventListener("click", open);
+  $("cnNueva").addEventListener("click", nuevaPlanilla);
+  $("cnFiltro").addEventListener("change", function(){ fil = this.value; pintarHome(); });
+  document.querySelectorAll("[data-cn-volver]").forEach(function(b){ b.addEventListener("click", function(){ if (vista === "contar") subir(); ver("home"); }); });
+  $("cnBuscarForm").addEventListener("submit", function(e){ e.preventDefault(); pintarRes(); $("cnQ").blur(); });
+  var qT = null;
+  $("cnQ").addEventListener("input", function(){ clearTimeout(qT); qT = setTimeout(pintarRes, 200); });
+  $("cnScan").addEventListener("click", function(){ escanear("armar"); });
+  $("cnManualForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = $("cnManual").value.trim().replace(/\s+/g, " ");
+    if (v.length < 2) return;
+    if (agregar({ c:"", d:v })){ $("cnManual").value = ""; pintarSel(); } else if (arm.items.length < MAX) X.toast("Ya está en la planilla.");
+  });
+  $("cnEnviar").addEventListener("click", function(){ if (X && arm) enviar(); });
+  $("cnCForm").addEventListener("submit", function(e){ e.preventDefault(); $("cnCQ").blur(); });
+  $("cnCQ").addEventListener("input", function(){ if (act) pintarContar(); });
+  $("cnCScan").addEventListener("click", function(){ escanear("contar"); });
+  $("cnEntregar").addEventListener("click", function(){ if (X && act) entregar(); });
+  $("cnRSolo").addEventListener("change", pintarRev);
+  $("cnAprobar").addEventListener("click", function(){ if (X && rev) aprobar(); });
+  $("cnDevolver").addEventListener("click", function(){ if (X && rev) devolver(); });
+  $("cnAnular").addEventListener("click", function(){ if (X && rev) anular(); });
+  $("cnWa").addEventListener("click", function(){ var c = rev && buscarDoc(rev.id); if (c) window.coseApp.openWhatsApp(texto(c)); });
+  $("cnCsv").addEventListener("click", function(){ var c = rev && buscarDoc(rev.id); if (c) csv(c); });
+  // si se sale de la pantalla mientras cuenta, que suba lo último
+  new MutationObserver(function(){ if ($("screen-conteo").hidden && act){ clearTimeout(guardaT); subir(); } })
+    .observe($("screen-conteo"), { attributes:true, attributeFilter:["hidden"] });
+  window.addEventListener("pagehide", function(){ if (act){ clearTimeout(guardaT); subir(); } });
+  if ((location.hash || "").slice(1) === "conteo") setTimeout(function(){ if (!X) window.coseApp.showScreen("home"); else ver("home"); }, 0);
+  window.coseConteo = { start:start, stop:stop, open:open };
+})();
+</script>
+
+
+<script>
+// ============================================================================
 // CÓDIGOS DE RADIO (del 1 al 8; el más usado es el 5: bajar o traer
 // mercancía a chequeo). Lo pide Autoservicio (codigos/), con destino (Chequeo por
 // defecto, un pasillo, Patio u otro). Al resto de Autoservicio (y al
@@ -10691,6 +11300,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/>',
     bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
     c5:'<rect x="7" y="7" width="10" height="15" rx="2"/><path d="M10 7V2"/><path d="M10 12h4M10 16h4"/>',
+    cn:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 11l1.5 1.5L13 10M9 16h6"/>',
     fa:'<path d="M6 2h12l2 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"/><path d="M4 6h16"/><path d="M9 11l6 6M15 11l-6 6"/>',
     flota:'<path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
     capac:'<circle cx="12" cy="15" r="6"/><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7"/>',
@@ -10707,6 +11317,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     ["chat", "Chat", "chat", "chatBtn", "chatBtn", "chatBtnBadge"],
     ["bell", "Notificaciones", "bell", "bellBtn", "bellBtn", "bellBadge"],
     ["c5", "Códigos de radio", "c5", "c5Tile", "c5Tile"],
+    ["cn", "Conteo de inventario", "cn", "cnTile", "cnTile", "cnTileBadge"],
     ["fa", "Lo pidieron y no hay", "fa", "faTile", "faTile"],
     ["flota", "Vehículos", "flota", "flTile", "flTile"],
     ["capac", "Capacitación", "capac", "capTile", "capTile"],
@@ -10715,7 +11326,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     ["help", "Ayuda y soporte", "help", "helpBtn", null, null, "hdot"]
   ];
   var ACTIVE = { home:"home", calculadoras:"calc", cieloraso:"calc", recubrimientos:"calc", bloques:"calc", piso:"calc", concreto:"calc", techo:"calc", tanque:"calc", proyecto:"calc",
-    mapa:"mapa", editor:"editor", chat:"chat", conv:"chat", grupo:"chat", perfilpub:"chat", avisos:"bell", faltantes:"fa", codigos:"c5", flota:"flota", vehiculo:"flota",
+    mapa:"mapa", editor:"editor", chat:"chat", conv:"chat", grupo:"chat", perfilpub:"chat", avisos:"bell", faltantes:"fa", conteo:"cn", codigos:"c5", flota:"flota", vehiculo:"flota",
     capac:"capac", leccion:"capac", dashboard:"dash", ajustes:"dash", perfil:"dash", monitor:"dash", admin:"dash", reporte:"dash", historial:"dash", soporte:"help" };
   var els = {};
   var brand = document.createElement("button");
@@ -10756,7 +11367,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (it[6]){ var host = $(it[3]); if (host && host.querySelector("." + it[6])){ var d = document.createElement("span"); d.className = "side-dot"; e.btn.appendChild(d); } }
     });
     // la sección "Equipo" se ve si hay algo dentro
-    var team = ["chat", "bell", "fa", "flota", "capac"].some(function(k){ return els[k] && !els[k].btn.hidden; });
+    var team = ["chat", "bell", "cn", "fa", "flota", "capac"].some(function(k){ return els[k] && !els[k].btn.hidden; });
     els["secEquipo"].hidden = !team;
     var cur = window.coseApp ? window.coseApp.current() : "home";
     document.body.setAttribute("data-scr", cur);
@@ -10767,7 +11378,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function later(){ if (queued) return; queued = true; requestAnimationFrame(function(){ queued = false; sync(); }); }
   var mo = new MutationObserver(later);
   document.querySelectorAll(".screen").forEach(function(sc){ mo.observe(sc, { attributes:true, attributeFilter:["hidden"] }); });
-  ["editorTile", "chatBtn", "bellBtn", "c5Tile", "faTile", "flTile", "capTile", "chatBtnBadge", "bellBadge", "helpBtn"].forEach(function(id){
+  ["editorTile", "chatBtn", "bellBtn", "c5Tile", "cnTile", "cnTileBadge", "faTile", "flTile", "capTile", "chatBtnBadge", "bellBadge", "helpBtn"].forEach(function(id){
     var n = $(id); if (n) mo.observe(n, { attributes:true, attributeFilter:["hidden"], childList:true, characterData:true, subtree:true });
   });
   sync();
@@ -11107,6 +11718,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (window.coseCapac) window.coseCapac.stop();
       if (window.coseFlota) window.coseFlota.stop();
       if (window.coseFaltantes) window.coseFaltantes.stop();
+      if (window.coseConteo) window.coseConteo.stop();
       if (window.coseCodigos) window.coseCodigos.stop();
       if (window.cosePush) window.cosePush.stop();
       window.coseSuc.set(null);
@@ -11126,6 +11738,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
       if (window.coseCapac) window.coseCapac.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
       if (window.coseFlota) window.coseFlota.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
       if (window.coseFaltantes) window.coseFaltantes.start({ db:db, F:F, uid:uid, me:ve, toast:toast, norm:norm });
+      if (window.coseConteo) window.coseConteo.start({ db:db, F:F, uid:uid, me:ve, toast:toast, norm:norm });
       if (window.coseCodigos) window.coseCodigos.start({ db:db, F:F, uid:uid, me:ve, toast:toast });
       if (window.coseMonitor){ if (ve.role === "admin") window.coseMonitor.start({ db:db, F:F, uid:uid, me:ve }); else window.coseMonitor.stop(); }
       if (window.coseUso) window.coseUso.start({ db:db, F:F, uid:uid, me:ve });
