@@ -3018,7 +3018,7 @@
   <div class="ft">
     <svg class="ft-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/><rect x="20.6" y="17" width="8.4" height="8.4" rx="1.8" fill="currentColor"/></svg>
     <span id="ftName">CoseApp</span>
-    <span id="appVersion">CA/1.6</span>
+    <span id="appVersion">CA/1.8</span>
     <span class="ft-copy">© 2026 Rafael Morín · Todos los derechos reservados</span>
   </div>
 </footer>
@@ -3742,6 +3742,131 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     ["escoba","cepillo de barrer"],
     ["cables","alambre electrico","cableado"]
   ];
+  // más palabras de mostrador (CA/1.8): solo para buscar. SYNONYMS (arriba) también
+  // decide la «ubicación sugerida» del catálogo; esta lista no la toca.
+  var SIN_EXTRA = [
+    ["tobo","balde","cubeta"],
+    ["teipe","cinta aislante","tape electrico"],
+    ["tirro","cinta de enmascarar","masking","cinta de papel"],
+    ["teflon","cinta selladora"],
+    ["interruptor","suiche","switch","apagador"],
+    ["socate","portalampara","roseta","plafonera"],
+    ["mecate","cuerda","soga"],
+    ["machete","peinilla"],
+    ["segueta","sierra de arco","arco de segueta"],
+    ["esmeril","esmeriladora","pulidora","amoladora"],
+    ["destapador","chupon","sopapa"],
+    ["coleto","mopa","trapeador","lampazo"],
+    ["ramplug","ramplus","tarugo","taco fisher","anclaje"],
+    ["bombona","cilindro de gas"],
+    ["anime","icopor","poliestireno"],
+    ["zinc","acerolit","lamina de techo"],
+    ["tester","multimetro","polimetro"],
+    ["cabilla","varilla","hierro corrugado"],
+    ["manilla","manija","pomo","tirador"],
+    ["regadera","ducha","alcachofa"],
+    ["flotante","flotador","boya"],
+    ["thinner","tiner","diluyente"],
+    ["masilla","pasta profesional","pasta de pared","mastique"],
+    ["destornillador","desarmador","atornillador"],
+    ["alicate","pinza"],
+    ["taladro","rotomartillo","barreno"],
+    ["calentador","termo","boiler"],
+    ["manto","impermeabilizante"],
+    ["tirafondo","tornillo para madera"],
+    ["sifon","trampa"],
+    ["cerrojo","pasador"],
+    ["ceramica","baldosa","porcelanato","azulejo"],
+    ["pega","adhesivo","pegamento"],
+    ["llave ajustable","llave inglesa","perica"],
+    ["llave de tubo","stilson","stillson"],
+    ["carretilla","carreta"],
+    ["pala","palin"],
+    ["pico","piqueta"],
+    ["cuchara","palustre"],
+    ["lentes","gafas","anteojos"],
+    ["mascarilla","tapaboca","tapabocas","cubrebocas"],
+    ["linterna","lampara de mano"],
+    ["reflector","proyector"],
+    ["bateria","pila"],
+    ["cajetin","caja electrica","cajeta"],
+    ["conduit","emt","tubo electrico"],
+    ["valvula","llave de paso","llave de arresto"],
+    ["pipote","tambor","barril","tonel"],
+    ["tanque","rotoplas","tanque de agua"],
+    ["hidroneumatico","bomba de agua","bomba periferica","motobomba"],
+    ["arandela","guacha","golilla"],
+    ["ventilador","abanico"],
+    ["gato","crique"],
+    ["cincel","cortafrio","punzon"],
+    ["formon","escoplo"],
+    ["laca","barniz"],
+    ["sellador","fondo"],
+    ["electrodo","varilla de soldar"],
+    ["cava","cooler","hielera"],
+    ["batea","lavadero"],
+    ["piedra","granzon","piedra picada"],
+    ["malla truckson","truckson","malla electrosoldada"],
+    ["alambre de puas","puas","alambre de pua"],
+    ["malla ciclon","ciclon","malla de alambre"],
+    ["cemento gris","portland"],
+    ["brocha","pincel"],
+    ["rodillo","rolo"],
+    ["mandarria","marreta"],
+    ["garrucha","carrucha"],
+    ["tirraje","precinto","cintillo","amarre plastico","brida"],
+    ["cepillo de alambre","grata"],
+    ["pasabicho","burlete","guardapolvo"],
+    ["breaker","brequer","taco"],
+    ["clavija","enchufe macho","ficha electrica"]
+  ];
+  // Búsqueda con sinónimos para Precio y disponibilidad, agotados y el mapa
+  // (window.coseSinonimos). El texto se parte en «piezas»: cada frase que está en
+  // una lista se vuelve una pieza con todas sus palabras hermanas; el resto queda
+  // palabra por palabra. Un artículo sirve si cumple todas las piezas.
+  var SIN_TODOS = SYNONYMS.concat(SIN_EXTRA);
+  var SIN_TERMS = [];
+  SIN_TODOS.forEach(function(g, i){ g.forEach(function(t){ SIN_TERMS.push({ t:t, g:i }); }); });
+  SIN_TERMS.sort(function(a, b){ return b.t.length - a.t.length; });
+  function sinPlural(w){ return w.length > 3 ? w.replace(/(es|s)$/, "") : w; }
+  function sinRaiz(s){ return s.split(" ").map(sinPlural).join(" "); }
+  function sinPiezas(raw){
+    var resto = " " + norm(raw).replace(/[^a-z0-9.\/"-]+/g, " ").trim() + " ", out = [], usados = {};
+    var raiz = " " + sinRaiz(resto.trim()) + " ";
+    SIN_TERMS.forEach(function(x){
+      var r = " " + sinRaiz(x.t) + " ", i = raiz.indexOf(r);
+      if (i === -1) return;
+      // dos palabras del mismo grupo («pintura caucho») cuentan como una sola pieza
+      if (!usados[x.g]) out.push({ alts:SIN_TODOS[x.g] });
+      usados[x.g] = 1;
+      raiz = raiz.slice(0, i) + new Array(r.length).join(" ") + raiz.slice(i + r.length - 1);
+    });
+    raiz.split(" ").forEach(function(w){
+      if (w.length < 2) return;
+      // palabra a medio escribir (4+ letras) que empieza una del diccionario
+      var alts = [w];
+      if (w.length >= 4) SIN_TERMS.forEach(function(x){
+        if (x.t.indexOf(" ") === -1 && x.t.indexOf(w) === 0 && !usados[x.g]){ usados[x.g] = 1; alts = alts.concat(SIN_TODOS[x.g]); }
+      });
+      out.push({ alts:alts, w:w });
+    });
+    return out;
+  }
+  // t: texto del artículo ya normalizado. La palabra escrita busca dentro de la
+  // descripción (como antes); los sinónimos buscan palabras enteras (o en plural),
+  // para que «termo» no traiga «termomagnético».
+  function sinCumple(t, piezas){
+    var tw = " " + t.replace(/[^a-z0-9]+/g, " ") + " ";
+    return piezas.every(function(p){
+      return p.alts.some(function(a){
+        if (a === p.w) return t.indexOf(a) !== -1;
+        return sinRaiz(a).split(" ").every(function(w){
+          return tw.indexOf(" " + w + " ") !== -1 || tw.indexOf(" " + w + "s ") !== -1 || tw.indexOf(" " + w + "es ") !== -1;
+        });
+      });
+    });
+  }
+  window.coseSinonimos = { grupos:SIN_TODOS, piezas:sinPiezas, cumple:sinCumple };
   // familias para colorear el mapa
   var FAMILIES = [
     { n:"Electricidad", c:"#E3B23C", kw:["cable","breaker","protector","lampara","bombillo","extension","tomacorriente","interruptor","ticino","lumistar","tiras","cajas"] },
@@ -4174,7 +4299,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   function expandTerms(q){
     var terms = [q];
     if (q.length >= 3){
-      SYNONYMS.forEach(function(g){
+      SIN_TODOS.forEach(function(g){
         var hit = g.some(function(t){ return t.indexOf(q) === 0 || q.indexOf(t) === 0; });
         if (hit) g.forEach(function(t){ if (terms.indexOf(t) === -1) terms.push(t); });
       });
@@ -4222,9 +4347,9 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (!P || !P.puedeAgotados()) return [];
     var d = P.datos("profitAgotados");
     if (!d || !d.items){ P.cargar("profitAgotados"); return []; }
-    var ws = norm(raw).split(/\s+/).filter(function(w){ return w.length >= 2; });
-    if (!ws.length) return [];
-    return d.items.filter(function(a){ var t = norm(a.d + " " + a.c); return ws.every(function(w){ return t.indexOf(w) !== -1; }); });
+    var pz = sinPiezas(raw);
+    if (!pz.length) return [];
+    return d.items.filter(function(a){ return sinCumple(norm(a.d + " " + a.c), pz); });
   }
   function renderMapa(){
     var raw = ($("mapaSearch").value || "").trim();
@@ -8080,10 +8205,13 @@ window.coseFirma = "CCRMG-6906f309ea2b";
     if (!ws.length) return hits;
     var cod = porCodigo(q);
     if (cod.length) return cod;
+    // con sinónimos y palabras de mostrador (window.coseSinonimos, en el bloque del mapa)
+    var S = window.coseSinonimos, pz = S ? S.piezas(q) : null;
     fuentes().forEach(function(f){
       f.items.forEach(function(a){
         var t = a._n || (a._n = norm(a.d + " " + a.c));
-        for (var i = 0; i < ws.length; i++) if (t.indexOf(ws[i]) === -1) return;
+        if (pz){ if (!S.cumple(t, pz)) return; }
+        else for (var i = 0; i < ws.length; i++) if (t.indexOf(ws[i]) === -1) return;
         hits.push({ a:a, agot:f.agot });
       });
     });
@@ -9131,7 +9259,7 @@ window.coseFirma = "CCRMG-6906f309ea2b";
   }
   // Versión interna del código que está corriendo: el mismo número de CACHE en
   // sw.js ("coseimpa-cosecoro-v54" → 54). Subir los dos juntos en cada versión.
-  var APP_BUILD = 64;
+  var APP_BUILD = 66;
   function version(){ var v = ($("appVersion") || {}).textContent || ""; return (v + " · v" + APP_BUILD).slice(0, 24); }
 
   // --- guardar mi uso ----------------------------------------------------------
